@@ -118,5 +118,51 @@ class Deploy extends Command
         }
 
         info("Repository created: https://github.com/{$owner}/{$repoName}");
+
+        $shouldCommit = confirm(
+            label: 'Would you like to add and commit your files?',
+            default: true,
+        );
+
+        if (! $shouldCommit) {
+            return;
+        }
+
+        $commitMessage = text(
+            label: 'Commit message',
+            default: 'first commit',
+            required: true,
+        );
+
+        $git->addAll();
+
+        $commitResult = $git->commit($commitMessage);
+
+        if (! $commitResult->successful()) {
+            error('Failed to commit: ' . $commitResult->errorOutput());
+
+            exit(1);
+        }
+
+        info('Files committed successfully.');
+
+        $shouldPush = confirm(
+            label: 'Would you like to push to GitHub?',
+            default: true,
+        );
+
+        if (! $shouldPush) {
+            return;
+        }
+
+        $pushResult = $git->push();
+
+        if (! $pushResult->successful()) {
+            error('Failed to push: ' . $pushResult->errorOutput());
+
+            exit(1);
+        }
+
+        info('Pushed to GitHub successfully.');
     }
 }

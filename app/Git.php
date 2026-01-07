@@ -85,6 +85,21 @@ class Git
         return $this->run(['git', 'remote', 'get-url', 'origin'])->output();
     }
 
+    public function addAll(): bool
+    {
+        return $this->run(['git', 'add', '-A'])->successful();
+    }
+
+    public function commit(string $message): ProcessResult
+    {
+        return $this->run(['git', 'commit', '-m', $message]);
+    }
+
+    public function push(): ProcessResult
+    {
+        return $this->run(['git', 'push', '-u', 'origin', 'HEAD']);
+    }
+
     protected function run(array $command): ProcessResult
     {
         $process = new Process($command);
