@@ -120,7 +120,7 @@ class Deploy extends Command
         info("Repository created: https://github.com/{$owner}/{$repoName}");
 
         $shouldCommit = confirm(
-            label: 'Would you like to add and commit your files?',
+            label: 'Would you like to add, commit, and push your files?',
             default: true,
         );
 
@@ -145,15 +145,6 @@ class Deploy extends Command
         }
 
         info('Files committed successfully.');
-
-        $shouldPush = confirm(
-            label: 'Would you like to push to GitHub?',
-            default: true,
-        );
-
-        if (! $shouldPush) {
-            return;
-        }
 
         $pushResult = $git->push();
 
