@@ -69,7 +69,7 @@ class Deploy extends Command
             );
 
             if (! $createRepo) {
-                warning('Git repository required to deploy to Laravel Cloud.');
+                warning('Your codebase must be in a Git repository in order to deploy to Laravel Cloud.');
 
                 exit(0);
             }
