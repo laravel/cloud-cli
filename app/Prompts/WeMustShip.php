@@ -54,7 +54,7 @@ class WeMustShip extends Prompt
                         $line .= ' ';
                     }
 
-                    $tag = $startBoldAt <= $index ? 'comment' : 'info';
+                    $tag = $startBoldAt <= $index ? 'info' : 'comment';
 
                     return "<{$tag}>{$line}</{$tag}>";
                 });

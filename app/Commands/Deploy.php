@@ -108,7 +108,6 @@ class Deploy extends Command
 
                 $deployment = $client->initiateDeployment($existingEnvironment->id);
                 info('Deployment initiated at '.$deployment->startedAt?->toDateTimeString());
-                $timeElapsed = $deployment->startedAt?->diffInSeconds(CarbonImmutable::now());
 
                 (new DynamicSpinner($this->getDeploymentMessage($deployment)))->spin(function (callable $updateMessage) use ($client, $deployment) {
                     $checkApi = true;
