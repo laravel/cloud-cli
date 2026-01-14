@@ -3,9 +3,8 @@
 namespace App\Prompts;
 
 use Laravel\Prompts\Spinner;
-use Laravel\Prompts\Themes\Default\Renderer;
 
-class DynamicSpinnerRenderer extends Renderer
+class SpinnerRenderer extends Renderer
 {
     /**
      * The frames of the spinner.
@@ -27,16 +26,16 @@ class DynamicSpinnerRenderer extends Renderer
     /**
      * Render the spinner.
      */
-    public function __invoke(DynamicSpinner $spinner): string
+    public function __invoke(Spinner|DynamicSpinner $spinner): string
     {
         if ($spinner->static) {
-            return $this->line(" {$this->cyan($this->staticFrame)} {$spinner->message}");
+            return $this->line("{$this->cyan($this->staticFrame)} {$spinner->message}");
         }
 
         $spinner->interval = $this->interval;
 
         $frame = $this->frames[$spinner->count % count($this->frames)];
 
-        return $this->line(" {$this->cyan($frame)} {$spinner->message}");
+        return $this->line("{$this->cyan($frame)} {$spinner->message}");
     }
 }

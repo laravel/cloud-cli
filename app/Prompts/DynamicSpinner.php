@@ -40,7 +40,7 @@ class DynamicSpinner extends Prompt
      */
     public function __construct(public string $message = '')
     {
-        self::$themes['default'][self::class] = DynamicSpinnerRenderer::class;
+        //
     }
 
     /**

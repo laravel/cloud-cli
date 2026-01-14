@@ -18,6 +18,7 @@ use LaravelZero\Framework\Commands\Command;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
+use function Laravel\Prompts\intro;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -43,6 +44,8 @@ class Deploy extends Command
 
     public function handle(ConfigRepository $config, Git $git)
     {
+        intro('Deploying to Laravel Cloud');
+
         $apiKey = $config->get('api_key');
 
         if (! $apiKey) {
@@ -103,6 +106,9 @@ class Deploy extends Command
 
                 (new DynamicSpinner($this->getDeploymentMessage($deployment)))->spin(function (callable $updateMessage) use ($client, $deployment) {
                     $checkApi = true;
+                    $total = 0;
+                    $checkInterval = 3;
+                    $updateInterval = .9;
 
                     do {
                         if ($checkApi) {
@@ -110,8 +116,9 @@ class Deploy extends Command
                         }
 
                         $updateMessage($this->getDeploymentMessage($deploymentStatus));
-                        Sleep::for(CarbonInterval::seconds(.75));
-                        $checkApi = ! $checkApi;
+                        Sleep::for(CarbonInterval::seconds($updateInterval));
+                        $total += $updateInterval;
+                        $checkApi = round($total) % $checkInterval === 0;
                     } while (! $deploymentStatus->isCompleted());
                 });
 
