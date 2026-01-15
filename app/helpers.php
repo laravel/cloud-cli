@@ -27,8 +27,8 @@ if (! function_exists('slideIn')) {
 }
 
 if (! function_exists('dynamicSpinner')) {
-    function dynamicSpinner(callable $callback, string $message): void
+    function dynamicSpinner(callable $callback, string $message): mixed
     {
-        (new DynamicSpinner(message: $message))->spin($callback);
+        return (new DynamicSpinner(message: $message))->spin($callback);
     }
 }

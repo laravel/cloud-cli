@@ -5,6 +5,7 @@ namespace App;
 use App\Dto\Application;
 use App\Dto\Deployment;
 use App\Dto\Environment;
+use App\Dto\EnvironmentInstance;
 use App\Dto\Paginated;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
@@ -80,6 +81,31 @@ class CloudClient
             data: array_map(fn ($item) => Environment::fromApiResponse($item), $response['data']),
             links: $response['links'],
         );
+    }
+
+    public function getEnvironment(string $environmentId): Environment
+    {
+        $response = $this->get("/environments/{$environmentId}", [
+            'include' => implode(',', ['instances']),
+        ]);
+
+        return Environment::fromApiResponse($response['data']);
+    }
+
+    public function getInstance(string $instanceId): EnvironmentInstance
+    {
+        $response = $this->get("/instances/{$instanceId}");
+
+        return EnvironmentInstance::fromApiResponse($response['data']);
+    }
+
+    public function updateInstance(string $instanceId, array $data): EnvironmentInstance
+    {
+        $response = $this->client->patch("/instances/{$instanceId}", $data);
+
+        dump($response);
+
+        return EnvironmentInstance::fromApiResponse($response->json()['data']);
     }
 
     public function createEnvironment(string $applicationId, string $name, ?string $branch = null): Environment

@@ -10,6 +10,7 @@ class Environment
         public readonly string $name,
         public readonly ?string $branch = null,
         public readonly ?string $status = null,
+        public readonly array $instances = [],
     ) {
         //
     }
@@ -22,6 +23,7 @@ class Environment
             url: str($data['attributes']['vanity_domain'])->start('https://'),
             branch: $data['attributes']['branch'] ?? null,
             status: $data['attributes']['status'],
+            instances: array_column($data['relationships']['instances']['data'] ?? [], 'id'),
         );
     }
 }

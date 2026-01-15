@@ -5,10 +5,12 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Dto\Application;
+use App\Dto\Environment;
 use App\Enums\CloudRegion;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
+use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\Colors;
@@ -102,10 +104,72 @@ class Ship extends Command
         success('Application created!');
 
         $application = $this->client->getApplication($application->id);
+        $environment = $this->client->getEnvironment($application->defaultEnvironmentId ?? '');
 
         $this->pushCustomEnvironmentVariables($application);
+        $this->collectOptionsToEnable($environment);
 
         outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+    }
+
+    protected function collectOptionsToEnable(Environment $environment): void
+    {
+        $composer = new Composer(app('files'), getcwd());
+        $enableOptions = [
+            'scheduler' => 'Laravel Scheduler',
+            'hibernation' => 'Hibernation',
+        ];
+
+        if ($composer->hasPackage('inertiajs/inertia-laravel')) {
+            $enableOptions['inertia_ssr'] = 'Inertia SSR';
+        }
+
+        if ($composer->hasPackage('laravel/octane')) {
+            $enableOptions['octane'] = 'Laravel Octane';
+        }
+
+        $selectedOptions = multiselect(
+            label: 'Enable any of the following features?',
+            options: $enableOptions,
+        );
+
+        if (count($selectedOptions) === 0) {
+            return;
+        }
+
+        $params = [];
+
+        if (in_array('scheduler', $selectedOptions)) {
+            $params['uses_scheduler'] = true;
+        }
+
+        if (in_array('octane', $selectedOptions)) {
+            $params['uses_octane'] = true;
+        }
+
+        if (in_array('inertia_ssr', $selectedOptions)) {
+            $params['uses_inertia_ssr'] = true;
+        }
+
+        if (in_array('hibernation', $selectedOptions)) {
+            $hibernateFor = text(
+                label: 'Hibernate after',
+                default: '5',
+                required: true,
+                validate: fn ($value) => is_numeric($value) && intval($value) >= 1 && intval($value) <= 60 ? null : 'Must be a number between 1 and 60',
+                hint: 'The number of minutes without HTTP requests received before your application hibernates (1-60)',
+            );
+
+            $params['uses_sleep_mode'] = true;
+            $params['sleep_timeout'] = $hibernateFor;
+        }
+
+        dynamicSpinner(
+            function () use ($environment, $params) {
+                $this->client->updateInstance($environment->instances[0], $params);
+            },
+            'Updating environment'
+        );
     }
 
     protected function pushCustomEnvironmentVariables(Application $application): void
