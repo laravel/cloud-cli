@@ -2,9 +2,10 @@
 
 namespace App;
 
+use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
-use Symfony\Component\Process\Process;
 
 class Git
 {
@@ -123,13 +124,6 @@ class Git
 
     protected function run(array $command): ProcessResult
     {
-        $process = new Process($command);
-        $process->run();
-
-        return new ProcessResult(
-            $process->isSuccessful(),
-            $process->getOutput(),
-            $process->getErrorOutput(),
-        );
+        return Process::run($command);
     }
 }

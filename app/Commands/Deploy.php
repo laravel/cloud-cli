@@ -5,16 +5,18 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
 use App\Concerns\RequiresEnvironment;
-use App\ConfigRepository;
+use App\Concerns\RequiresRemoteGitRepo;
 use App\Dto\Deployment;
 use App\Git;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
-use Exception;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
 
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
@@ -26,23 +28,20 @@ class Deploy extends Command
     use HasAClient;
     use RequiresApplication;
     use RequiresEnvironment;
+    use RequiresRemoteGitRepo;
 
     protected $signature = 'deploy {application? : The ID of the application to deploy} {environment? : The name of the environment to deploy}';
 
     protected $description = 'Deploy the application to Laravel Cloud';
 
-    public function handle(ConfigRepository $config, Git $git)
+    public function handle()
     {
         intro('Deploying application to Laravel Cloud');
 
         $this->ensureClient();
-        $this->ensureGitHubRepo($git);
-        $this->ensureCloudApplication($git);
-    }
+        $this->ensureRemoteGitRepo();
 
-    protected function ensureCloudApplication(Git $git): void
-    {
-        $repository = $git->remoteRepo();
+        $repository = app(Git::class)->remoteRepo();
 
         $applications = spin(
             fn () => $this->client->listApplications(),
@@ -55,6 +54,16 @@ class Deploy extends Command
 
         if ($existingApps->isEmpty()) {
             warning('No existing Cloud application found for this repository.');
+
+            $shouldShip = confirm('Do you want to ship this repository to Laravel Cloud?');
+
+            if ($shouldShip) {
+                Artisan::call('ship', [], $this->output);
+
+                return;
+            }
+
+            error('Deployment cancelled.');
 
             exit(1);
         }
@@ -126,14 +135,5 @@ class Deploy extends Command
             str_pad($timeElapsed % 60, 2, '0', STR_PAD_LEFT),
             $deployment->status->label(),
         );
-    }
-
-    protected function ensureGitHubRepo(Git $git): void
-    {
-        if ($git->hasGitHubRemote()) {
-            return;
-        }
-
-        throw new Exception('GitHub repository not found');
     }
 }
