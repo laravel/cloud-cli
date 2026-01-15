@@ -3,10 +3,11 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use App\Concerns\RequiresApplication;
+use App\Concerns\RequiresEnvironment;
 use App\ConfigRepository;
 use App\Dto\Deployment;
 use App\Git;
-use App\Prompts\DynamicSpinner;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Exception;
@@ -16,7 +17,6 @@ use LaravelZero\Framework\Commands\Command;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
@@ -24,6 +24,8 @@ class Deploy extends Command
 {
     use Colors;
     use HasAClient;
+    use RequiresApplication;
+    use RequiresEnvironment;
 
     protected $signature = 'deploy {application? : The ID of the application to deploy} {environment? : The name of the environment to deploy}';
 
@@ -57,80 +59,61 @@ class Deploy extends Command
             exit(1);
         }
 
-        if ($this->argument('application')) {
-            $app = $existingApps->firstWhere('id', $this->argument('application'));
-            answered(label: 'Application', answer: "{$app->name}");
-        } elseif ($existingApps->count() === 1) {
-            $app = $existingApps->first();
-            answered(label: 'Application', answer: "{$app->name}");
-        } else {
-            $selectedApp = select(
-                label: 'Select an application',
-                options: $existingApps->mapWithKeys(fn ($app) => [$app->id => $app->name]),
-            );
-
-            $app = $existingApps->firstWhere('id', $selectedApp);
-        }
+        $app = $this->getApplication($existingApps);
 
         $environments = spin(
             fn () => $this->client->listEnvironments($app->id),
             'Checking for existing environments...'
         );
 
-        if ($this->argument('environment')) {
-            $environment = collect($environments->data)->firstWhere('name', $this->argument('environment'));
-            answered(label: 'Environment', answer: "{$environment->name}");
-        } elseif (count($environments->data) === 1) {
-            $environment = $environments->data[0];
-            answered(label: 'Environment', answer: "{$environment->name}");
-        } else {
-            $selection = select(
-                label: 'Select an environment',
-                options: collect($environments->data)->mapWithKeys(fn ($env) => [$env->id => $env->name]),
-            );
-            $environment = collect($environments->data)->firstWhere('id', $selection);
-        }
+        $environment = $this->getEnvironment(collect($environments->data));
 
         $deployment = $this->client->initiateDeployment($environment->id);
 
-        (new DynamicSpinner($this->getDeploymentMessage($deployment)))->spin(function (callable $updateMessage) use ($deployment) {
-            $checkApi = true;
-            $total = 0;
-            $checkInterval = 3;
-            $updateInterval = 900;
-            $dotFrames = ['', '.', '..', '...', '...'];
-            $lastMessage = '';
-            $dotFrameIndex = 0;
-
-            do {
-                if ($checkApi) {
-                    $deploymentStatus = $this->client->getDeployment($deployment->id);
-                }
-
-                $newMessage = $this->getDeploymentMessage($deploymentStatus);
-
-                if ($lastMessage !== $deployment->status->label()) {
-                    $dotFrameIndex = 0;
-                }
-
-                $lastMessage = $deployment->status->label();
-
-                if (! str_ends_with($lastMessage, '!')) {
-                    $newMessage .= $this->dim($dotFrames[$dotFrameIndex % count($dotFrames)]);
-                }
-
-                $updateMessage($newMessage);
-
-                Sleep::for(CarbonInterval::milliseconds($updateInterval));
-                $total++;
-                $dotFrameIndex++;
-                $checkApi = $total % $checkInterval === 0;
-            } while (! $deploymentStatus->isCompleted());
-        });
+        dynamicSpinner(
+            $this->getDeploymentMessage($deployment),
+            fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),
+        );
 
         $deployment = $this->client->getDeployment($deployment->id);
 
         outro('Deployment completed in <info>'.$deployment->totalTime()->format('%I:%S').'</info>');
+    }
+
+    protected function updateDeploymentStatus(Deployment $deployment, callable $updateMessage): void
+    {
+        $checkApi = true;
+        $count = 0;
+        $checkInterval = 3;
+        $updateInterval = 900;
+        $dotFrames = ['', '.', '..', '...', '...'];
+        $lastMessage = '';
+        $dotFrameIndex = 0;
+
+        do {
+            if ($checkApi) {
+                $deploymentStatus = $this->client->getDeployment($deployment->id);
+            }
+
+            $newMessage = $this->getDeploymentMessage($deploymentStatus);
+
+            if ($lastMessage !== $deployment->status->label()) {
+                $dotFrameIndex = 0;
+            }
+
+            $lastMessage = $deployment->status->label();
+
+            if (! str_ends_with($lastMessage, '!')) {
+                $newMessage .= $this->dim($dotFrames[$dotFrameIndex % count($dotFrames)]);
+            }
+
+            $updateMessage($newMessage);
+
+            Sleep::for(CarbonInterval::milliseconds($updateInterval));
+            $count++;
+            $dotFrameIndex++;
+            $checkApi = $count % $checkInterval === 0;
+        } while (! $deploymentStatus->isCompleted());
     }
 
     protected function getDeploymentMessage(Deployment $deployment): string

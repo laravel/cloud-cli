@@ -1,6 +1,7 @@
 <?php
 
 use App\Prompts\Answered;
+use App\Prompts\DynamicSpinner;
 use App\Prompts\SlideIn;
 use Laravel\Prompts\Note;
 
@@ -22,5 +23,12 @@ if (! function_exists('slideIn')) {
     function slideIn(string $message): void
     {
         (new SlideIn(message: $message))->animate();
+    }
+}
+
+if (! function_exists('dynamicSpinner')) {
+    function dynamicSpinner(string $message, callable $callback): void
+    {
+        (new DynamicSpinner(message: $message))->spin($callback);
     }
 }
