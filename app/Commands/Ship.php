@@ -28,6 +28,7 @@ use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\textarea;
 
 class Ship extends Command
 {
@@ -108,6 +109,39 @@ class Ship extends Command
         );
 
         outro(sprintf('https://cloud.laravel.com/%s/%s', $application->organizationId, $application->slug));
+
+        $deploy = confirm('Do you want to deploy the application?');
+
+        if (! $deploy) {
+            return;
+        }
+
+        if (confirm('Do you want to edit the build command before deploying?')) {
+            $this->loopUntilValid(
+                function () use ($environment) {
+                    $buildCommand = textarea(
+                        label: 'Build command',
+                        default: $environment->buildCommand,
+                        required: true,
+                    );
+
+                    if ($buildCommand === $environment->buildCommand) {
+                        return;
+                    }
+
+                    return dynamicSpinner(
+                        fn () => $this->client->updateEnvironment($environment->id, [
+                            'build_command' => $buildCommand,
+                        ]),
+                        'Updating build command',
+                    );
+                },
+            );
+        }
+
+        Artisan::call('deploy', [
+            'application' => $application->id,
+        ], $this->output);
     }
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application

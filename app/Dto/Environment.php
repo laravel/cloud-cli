@@ -8,9 +8,10 @@ class Environment
         public readonly string $id,
         public readonly string $url,
         public readonly string $name,
-        public readonly ?string $branch = null,
-        public readonly ?string $status = null,
-        public readonly array $instances = [],
+        public readonly ?string $branch,
+        public readonly ?string $status,
+        public readonly array $instances,
+        public readonly string $buildCommand,
     ) {
         //
     }
@@ -24,6 +25,7 @@ class Environment
             branch: $data['attributes']['branch'] ?? null,
             status: $data['attributes']['status'],
             instances: array_column($data['relationships']['instances']['data'] ?? [], 'id'),
+            buildCommand: $data['attributes']['build_command'],
         );
     }
 }

@@ -12,6 +12,7 @@ use App\Prompts\SelectPromptRenderer;
 use App\Prompts\SlideIn;
 use App\Prompts\SlideInRenderer;
 use App\Prompts\SpinnerRenderer;
+use App\Prompts\TextareaPromptRenderer;
 use App\Prompts\TextPromptRenderer;
 use Illuminate\Support\ServiceProvider;
 use Laravel\Prompts\ConfirmPrompt;
@@ -21,6 +22,7 @@ use Laravel\Prompts\PasswordPrompt;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
 use Laravel\Prompts\Spinner;
+use Laravel\Prompts\TextareaPrompt;
 use Laravel\Prompts\TextPrompt;
 
 class AppServiceProvider extends ServiceProvider
@@ -41,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
             MultiSelectPrompt::class => MultiSelectPromptRenderer::class,
             PasswordPrompt::class => PasswordPromptRenderer::class,
             ConfirmPrompt::class => ConfirmPromptRenderer::class,
+            TextareaPrompt::class => TextareaPromptRenderer::class,
         ]);
 
         Prompt::theme('cloud');
