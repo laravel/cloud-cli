@@ -17,13 +17,22 @@ class Deployment
         public readonly ?CarbonImmutable $startedAt = null,
         public readonly ?CarbonImmutable $finishedAt = null,
         public readonly ?string $failureReason = null,
+        public readonly string $branchName = '',
+        public readonly string $phpMajorVersion = '',
+        public readonly ?string $buildCommand = null,
+        public readonly ?string $nodeVersion = null,
+        public readonly bool $usesOctane = false,
+        public readonly bool $usesHibernation = false,
+        public readonly ?string $environmentId = null,
+        public readonly ?string $initiatorId = null,
     ) {
         //
     }
 
     public static function fromApiResponse(array $data): self
     {
-        $attributes = $data['attributes'] ?? $data;
+        $attributes = $data['attributes'] ?? [];
+        $relationships = $data['relationships'] ?? [];
         $commit = $attributes['commit'] ?? [];
 
         return new self(
@@ -32,9 +41,17 @@ class Deployment
             commitHash: $commit['hash'] ?? $attributes['commit_hash'] ?? null,
             commitMessage: $commit['message'] ?? $attributes['commit_message'] ?? null,
             commitAuthor: $commit['author'] ?? $attributes['commit_author'] ?? null,
-            startedAt: $attributes['started_at'] ? CarbonImmutable::parse($attributes['started_at']) : null,
-            finishedAt: $attributes['finished_at'] ? CarbonImmutable::parse($attributes['finished_at']) : null,
+            startedAt: isset($attributes['started_at']) ? CarbonImmutable::parse($attributes['started_at']) : null,
+            finishedAt: isset($attributes['finished_at']) ? CarbonImmutable::parse($attributes['finished_at']) : null,
             failureReason: $attributes['failure_reason'] ?? null,
+            branchName: $attributes['branch_name'] ?? '',
+            phpMajorVersion: $attributes['php_major_version'] ?? '',
+            buildCommand: $attributes['build_command'] ?? null,
+            nodeVersion: $attributes['node_version'] ?? null,
+            usesOctane: $attributes['uses_octane'] ?? false,
+            usesHibernation: $attributes['uses_hibernation'] ?? false,
+            environmentId: $relationships['environment']['data']['id'] ?? null,
+            initiatorId: $relationships['initiator']['data']['id'] ?? null,
         );
     }
 

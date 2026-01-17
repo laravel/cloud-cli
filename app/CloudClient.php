@@ -89,7 +89,7 @@ class CloudClient
     public function getEnvironment(string $environmentId): Environment
     {
         $response = $this->get("/environments/{$environmentId}", [
-            'include' => implode(',', ['instances']),
+            'include' => implode(',', ['instances', 'currentDeployment']),
         ]);
 
         return Environment::fromApiResponse($response['data']);
@@ -140,6 +140,16 @@ class CloudClient
         $response = $this->get("/deployments/{$deploymentId}");
 
         return Deployment::fromApiResponse($response['data']);
+    }
+
+    public function listDeployments(string $environmentId): Paginated
+    {
+        $response = $this->get("/environments/{$environmentId}/deployments");
+
+        return new Paginated(
+            data: array_map(fn ($item) => Deployment::fromApiResponse($item), $response['data']),
+            links: $response['links'],
+        );
     }
 
     protected function get(string $endpoint, array $query = []): array

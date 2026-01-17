@@ -5,6 +5,8 @@ namespace App\Providers;
 use App\Prompts\Answered;
 use App\Prompts\ConfirmPromptRenderer;
 use App\Prompts\DynamicSpinner;
+use App\Prompts\MonitorDeployments;
+use App\Prompts\MonitorDeploymentsRenderer;
 use App\Prompts\MultiSelectPromptRenderer;
 use App\Prompts\NoteRenderer;
 use App\Prompts\PasswordPromptRenderer;
@@ -44,6 +46,7 @@ class AppServiceProvider extends ServiceProvider
             PasswordPrompt::class => PasswordPromptRenderer::class,
             ConfirmPrompt::class => ConfirmPromptRenderer::class,
             TextareaPrompt::class => TextareaPromptRenderer::class,
+            MonitorDeployments::class => MonitorDeploymentsRenderer::class,
         ]);
 
         Prompt::theme('cloud');

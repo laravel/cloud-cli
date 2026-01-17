@@ -155,13 +155,8 @@ class Deploy extends Command
 
     protected function getDeploymentMessage(Deployment $deployment): string
     {
-        $timeElapsed = $deployment->startedAt?->diffInSeconds(CarbonImmutable::now());
+        $timeElapsed = $deployment->startedAt?->diff(CarbonImmutable::now());
 
-        return sprintf(
-            $this->dim('%s:%s').' %s',
-            str_pad(floor($timeElapsed / 60), 2, '0', STR_PAD_LEFT),
-            str_pad($timeElapsed % 60, 2, '0', STR_PAD_LEFT),
-            $deployment->status->label(),
-        );
+        return $this->dim($timeElapsed?->format('%I:%S') ?? '00:00').' '.$deployment->status->label();
     }
 }

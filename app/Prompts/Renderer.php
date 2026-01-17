@@ -6,6 +6,11 @@ use App\Enums\TimelineSymbol;
 
 abstract class Renderer extends \Laravel\Prompts\Themes\Default\Renderer
 {
+    protected function lineWithBorder(string $message): self
+    {
+        return $this->line(TimelineSymbol::LINE->value.'  '.$message);
+    }
+
     /**
      * Render a warning message.
      */
