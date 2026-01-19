@@ -78,9 +78,13 @@ class MonitorDeploymentsRenderer extends Renderer
 
         if ($monitor->autoExitAt) {
             $this->lineWithBorder('');
-            $this->lineWithBorder(
-                $this->dim('Auto-exiting in '.$monitor->autoExitAt->diff(CarbonImmutable::now())->format('%I:%S'))
-            );
+            if ($monitor->autoExitAt->isFuture()) {
+                $this->lineWithBorder(
+                    $this->dim('Auto-exiting in '.$monitor->autoExitAt->diff(CarbonImmutable::now())->format('%I:%S'))
+                );
+            } else {
+                $this->lineWithBorder($this->dim('Auto-exiting after deployment'));
+            }
         }
 
         return $this;
