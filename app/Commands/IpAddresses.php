@@ -20,9 +20,9 @@ class IpAddresses extends Command
     use HasAClient;
 
     protected $signature = 'ip:addresses'
-        .'{--json : Output as JSON}'
-        .'{--copy : Copy to clipboard}'
-        .'{--region= : Filter by region}';
+        .' {--json : Output as JSON}'
+        .' {--copy : Copy to clipboard}'
+        .' {--region= : Filter by region}';
 
     protected $description = 'Get Laravel Cloud IP addresses by region';
 
