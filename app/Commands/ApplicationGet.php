@@ -23,7 +23,13 @@ class ApplicationGet extends Command
     {
         $this->ensureClient();
 
-        intro('Application Details');
+        if (! $this->option('json')) {
+            if ($this->argument('application')) {
+                intro('Application Details: '.$this->argument('application'));
+            } else {
+                intro('Application Details');
+            }
+        }
 
         $application = $this->getCloudApplication(showPrompt: false);
 

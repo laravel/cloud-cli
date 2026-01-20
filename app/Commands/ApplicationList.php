@@ -23,7 +23,9 @@ class ApplicationList extends Command
     {
         $this->ensureClient();
 
-        intro('Listing applications');
+        if (! $this->option('json')) {
+            intro('Applications');
+        }
 
         $applications = spin(
             fn () => $this->client->listApplications(),
@@ -31,18 +33,7 @@ class ApplicationList extends Command
         );
 
         if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => array_map(fn ($app) => [
-                    'id' => $app->id,
-                    'name' => $app->name,
-                    'slug' => $app->slug,
-                    'region' => $app->region,
-                    'repository' => $app->repositoryFullName,
-                    'default_environment_id' => $app->defaultEnvironmentId,
-                    'created_at' => $app->createdAt?->toIso8601String(),
-                ], $applications->data),
-                'links' => $applications->links,
-            ], JSON_PRETTY_PRINT));
+            $this->line($applications->toJson());
 
             return;
         }

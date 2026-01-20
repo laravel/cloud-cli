@@ -18,6 +18,7 @@ use App\Prompts\SelectPromptRenderer;
 use App\Prompts\SlideIn;
 use App\Prompts\SlideInRenderer;
 use App\Prompts\SpinnerRenderer;
+use App\Prompts\TableRenderer;
 use App\Prompts\TextareaPromptRenderer;
 use App\Prompts\TextPromptRenderer;
 use Illuminate\Console\Events\CommandStarting;
@@ -30,6 +31,7 @@ use Laravel\Prompts\PasswordPrompt;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\SelectPrompt;
 use Laravel\Prompts\Spinner;
+use Laravel\Prompts\Table;
 use Laravel\Prompts\TextareaPrompt;
 use Laravel\Prompts\TextPrompt;
 use Symfony\Component\Console\ConsoleEvents;
@@ -56,6 +58,7 @@ class AppServiceProvider extends ServiceProvider
             TextareaPrompt::class => TextareaPromptRenderer::class,
             MonitorDeployments::class => MonitorDeploymentsRenderer::class,
             DataList::class => DataListRenderer::class,
+            Table::class => TableRenderer::class,
         ]);
 
         Prompt::theme('cloud');
