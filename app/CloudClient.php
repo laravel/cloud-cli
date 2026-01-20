@@ -14,6 +14,7 @@ use App\Dto\EnvironmentInstance;
 use App\Dto\Paginated;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
+use Psr\Http\Message\RequestInterface;
 
 class CloudClient
 {
@@ -31,9 +32,17 @@ class CloudClient
             ->baseUrl('https://cloud.laravel.com/api')
             ->acceptJson()
             ->asJson()
-            ->beforeSending(fn ($request) => $request->withQueryParams(
-                ['include' => implode(',', $this->includes)],
-            ))
+            ->withRequestMiddleware(function (RequestInterface $request) {
+                if (empty($this->includes)) {
+                    return $request;
+                }
+
+                $uri = $request->getUri();
+                parse_str($uri->getQuery(), $queryParams);
+                $queryParams['include'] = implode(',', $this->includes);
+
+                return $request->withUri($uri->withQuery(http_build_query($queryParams)));
+            })
             ->afterResponse(fn ($response) => $this->includes = [])
             ->throw();
     }
