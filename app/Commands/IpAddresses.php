@@ -27,9 +27,9 @@ class IpAddresses extends Command
 
     public function handle()
     {
-        $this->ensureClient();
-
         intro('Laravel Cloud IP Addresses');
+
+        $this->ensureClient();
 
         $addresses = spin(
             fn () => collect($this->client->getIpAddresses()),
@@ -37,7 +37,7 @@ class IpAddresses extends Command
         );
 
         if ($this->option('region')) {
-            $addresses = $addresses->filter(fn ($ips, $region) => $region === $this->option('region'));
+            $addresses = $addresses->filter(fn ($ips, $region) => str_starts_with($region, strtolower($this->option('region'))));
 
             if ($addresses->isEmpty()) {
                 warning('No IP addresses found for region: '.$this->option('region'));
@@ -45,6 +45,8 @@ class IpAddresses extends Command
                 return;
             }
         }
+
+        $addresses = $addresses->sortBy(fn ($ips, $region) => $region);
 
         if ($this->option('json')) {
             $this->line(json_encode($addresses, JSON_PRETTY_PRINT));
@@ -72,10 +74,14 @@ class IpAddresses extends Command
         );
 
         if ($this->option('copy')) {
-            $regionToCopy = $this->option('region') ?? select(
-                label: 'Region to copy',
-                options: $tableData->pluck('region')->toArray(),
-            );
+            if ($addresses->containsOneItem()) {
+                $regionToCopy = $addresses->keys()->first();
+            } else {
+                $regionToCopy = select(
+                    label: 'Region to copy',
+                    options: $addresses->keys()->toArray(),
+                );
+            }
 
             $ipTypeToCopy = select(
                 label: 'Select IP type to copy',
