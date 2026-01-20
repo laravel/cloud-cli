@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Concerns\Colors;
 use LaravelZero\Framework\Commands\Command;
@@ -74,29 +75,30 @@ class IpAddresses extends Command
         );
 
         if ($this->option('copy')) {
-            if ($addresses->containsOneItem()) {
-                $regionToCopy = $addresses->keys()->first();
-            } else {
-                $regionToCopy = select(
-                    label: 'Region to copy',
-                    options: $addresses->keys()->toArray(),
-                );
-            }
-
-            $ipTypeToCopy = select(
-                label: 'Select IP type to copy',
-                options: ['ipv4', 'ipv6'],
-            );
-
-            $this->copyToClipboard(
-                $tableData->where('region', $regionToCopy)->pluck($ipTypeToCopy)->implode(PHP_EOL),
-            );
+            $this->copyToClipboard($addresses);
         }
     }
 
-    protected function copyToClipboard(string $text): void
+    protected function copyToClipboard(Collection $addresses): void
     {
-        Process::run(sprintf('echo "%s" | pbcopy', trim($text)));
+        if ($addresses->containsOneItem()) {
+            $regionToCopy = $addresses->keys()->first();
+        } else {
+            $regionToCopy = select(
+                label: 'Region to copy',
+                options: $addresses->keys()->toArray(),
+            );
+        }
+
+        $ipTypeToCopy = select(
+            label: 'Select IP type to copy',
+            options: ['ipv4', 'ipv6'],
+        );
+
+        $ips = $addresses->first(fn ($ips, $region) => $region === $regionToCopy)[$ipTypeToCopy];
+        $text = trim(implode(PHP_EOL, $ips));
+
+        Process::run(sprintf('echo "%s" | pbcopy', $text));
 
         success('IP addresses copied to clipboard');
     }
