@@ -32,7 +32,7 @@ class DeployMonitor extends Command
     use UpdatesBuildDeployCommands;
 
     protected $signature = 'deploy:monitor '
-        .'{application? : The ID of the application to deploy} '
+        .'{application? : The application ID or name} '
         .'{environment? : The name of the environment to deploy}';
 
     protected $description = 'Monitor application deployments to Laravel Cloud';

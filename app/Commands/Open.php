@@ -28,7 +28,7 @@ class Open extends Command
     use RequiresRemoteGitRepo;
 
     protected $signature = 'open '
-        .'{application? : The ID of the application to deploy} '
+        .'{application? : The application ID or name} '
         .'{environment? : The name of the environment to deploy} ';
 
     protected $description = 'Open the site in the browser';

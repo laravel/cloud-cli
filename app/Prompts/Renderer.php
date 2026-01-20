@@ -3,12 +3,21 @@
 namespace App\Prompts;
 
 use App\Enums\TimelineSymbol;
+use Laravel\Prompts\Themes\Default\Renderer as BaseRenderer;
 
-abstract class Renderer extends \Laravel\Prompts\Themes\Default\Renderer
+abstract class Renderer extends BaseRenderer
 {
     protected function lineWithBorder(string $message): self
     {
         return $this->line(TimelineSymbol::LINE->value.'  '.$message);
+    }
+
+    /**
+     * Render a warning message.
+     */
+    protected function bullet(string $message): self
+    {
+        return $this->line($this->green(TimelineSymbol::DOT->value)."  {$message}");
     }
 
     /**

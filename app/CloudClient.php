@@ -25,9 +25,8 @@ class CloudClient
 
     protected array $includes = [];
 
-    public function __construct(
-        protected string $apiKey,
-    ) {
+    public function __construct(protected string $apiKey)
+    {
         $this->client = Http::withToken($this->apiKey)
             ->baseUrl('https://cloud.laravel.com/api')
             ->acceptJson()
@@ -43,7 +42,7 @@ class CloudClient
 
                 return $request->withUri($uri->withQuery(http_build_query($queryParams)));
             })
-            ->afterResponse(fn ($response) => $this->includes = [])
+            ->afterResponse(fn($response) => $this->includes = [])
             ->throw();
     }
 
@@ -57,7 +56,7 @@ class CloudClient
         $response = $this->client->get('/applications');
 
         return new Paginated(
-            data: array_map(fn ($item) => Application::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Application::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -77,7 +76,7 @@ class CloudClient
     {
         $response = $this->client->post("/environments/{$environmentId}/variables", [
             'method' => 'append',
-            'variables' => collect($variables)->map(fn ($value, $key) => [
+            'variables' => collect($variables)->map(fn($value, $key) => [
                 'key' => $key,
                 'value' => $value,
             ])->toArray(),
@@ -110,7 +109,7 @@ class CloudClient
         $response = $this->client->get("/applications/{$applicationId}/environments");
 
         return new Paginated(
-            data: array_map(fn ($item) => Environment::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Environment::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -158,7 +157,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/instances");
 
         return new Paginated(
-            data: array_map(fn ($item) => EnvironmentInstance::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => EnvironmentInstance::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -207,7 +206,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/deployments");
 
         return new Paginated(
-            data: array_map(fn ($item) => Deployment::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Deployment::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -220,7 +219,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/domains");
 
         return new Paginated(
-            data: array_map(fn ($item) => Domain::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Domain::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -261,7 +260,7 @@ class CloudClient
         $response = $this->client->get("/environments/{$environmentId}/commands");
 
         return new Paginated(
-            data: array_map(fn ($item) => Command::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => Command::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -290,7 +289,7 @@ class CloudClient
         $response = $this->client->get("/instances/{$instanceId}/background-processes");
 
         return new Paginated(
-            data: array_map(fn ($item) => BackgroundProcess::fromApiResponse($item), $response->json('data')),
+            data: array_map(fn($item) => BackgroundProcess::fromApiResponse($item), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -338,7 +337,7 @@ class CloudClient
         $response = $this->client->get('/databases');
 
         return new Paginated(
-            data: array_map(fn ($item) => Database::fromApiResponse($item, $response->json()), $response->json('data')),
+            data: array_map(fn($item) => Database::fromApiResponse($item, $response->json()), $response->json('data')),
             links: $response->json('links'),
         );
     }
@@ -350,7 +349,7 @@ class CloudClient
     {
         $response = $this->client->get('/databases/types');
 
-        return array_map(fn ($item) => DatabaseType::fromApiResponse($item), $response->json('data'));
+        return array_map(fn($item) => DatabaseType::fromApiResponse($item), $response->json('data'));
     }
 
     public function getDatabase(string $databaseId): Database

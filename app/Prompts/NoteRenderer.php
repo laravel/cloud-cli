@@ -24,7 +24,7 @@ class NoteRenderer extends Renderer
 
                 foreach ($lines as $line) {
                     $line = str_pad($line, $longest, ' ');
-                    $this->line($this->cyan(TimelineSymbol::CIRCLE->value.$spacer.$line));
+                    $this->line($this->cyan(TimelineSymbol::DOT->value.$spacer.$line));
                 }
 
                 return $this;

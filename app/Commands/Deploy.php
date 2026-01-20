@@ -33,7 +33,7 @@ class Deploy extends Command
     use UpdatesBuildDeployCommands;
 
     protected $signature = 'deploy '
-        .'{application? : The ID of the application to deploy} '
+        .'{application? : The application ID or name} '
         .'{environment? : The name of the environment to deploy} '
         .'{--open : Open the site in the browser after a successful deployment}';
 

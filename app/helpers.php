@@ -1,6 +1,7 @@
 <?php
 
 use App\Prompts\Answered;
+use App\Prompts\DataList;
 use App\Prompts\DynamicSpinner;
 use App\Prompts\SlideIn;
 use Laravel\Prompts\Note;
@@ -30,5 +31,12 @@ if (! function_exists('dynamicSpinner')) {
     function dynamicSpinner(callable $callback, string $message): mixed
     {
         return (new DynamicSpinner(message: $message))->spin($callback);
+    }
+}
+
+if (! function_exists('dataList')) {
+    function dataList(array $data): void
+    {
+        (new DataList(data: $data))->display();
     }
 }

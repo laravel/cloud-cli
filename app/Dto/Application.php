@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Carbon\CarbonImmutable;
 
-class Application
+class Application extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -49,5 +49,25 @@ class Application
             deploymentIds: array_column($relationships['deployments']['data'] ?? [], 'id'),
             defaultEnvironmentId: $relationships['defaultEnvironment']['data']['id'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'slug' => $this->slug,
+            'region' => $this->region,
+            'repository' => [
+                'full_name' => $this->repositoryFullName,
+                'provider' => $this->repositoryProvider,
+                'branch' => $this->repositoryBranch,
+            ],
+            'slack_channel' => $this->slackChannel,
+            'environment_ids' => $this->environmentIds,
+            'default_environment_id' => $this->defaultEnvironmentId,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+        ];
     }
 }
