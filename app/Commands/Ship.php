@@ -230,29 +230,26 @@ class Ship extends Command
             }
         }
 
-        dynamicSpinner(
-            function () use ($environment, $instanceParams, $environmentParams) {
-                if (count($instanceParams) > 0) {
-                    $this->loopUntilValid(
-                        fn () => $this->client->updateInstance($environment->instances[0], $instanceParams),
-                    );
-                }
+        if (count($instanceParams) > 0) {
+            $this->loopUntilValid(
+                fn () => spin(
+                    fn () => $this->client->updateInstance($environment->instances[0], $instanceParams),
+                    'Updating instance...',
+                ),
+            );
+        }
 
-                if (count($environmentParams) > 0) {
-                    $this->loopUntilValid(
-                        function ($errors) use ($environmentParams, $environment) {
-                            if ($errors->messageContains('global', 'wait a few seconds')) {
-                                Sleep::for(CarbonInterval::seconds(5));
-                            }
+        if (count($environmentParams) > 0) {
+            $this->loopUntilValid(
+                function ($errors) use ($environmentParams, $environment) {
+                    if ($errors->messageContains('global', 'wait a few seconds')) {
+                        Sleep::for(CarbonInterval::seconds(5));
+                    }
 
-                            return $this->client->updateEnvironment($environment->id, $environmentParams);
-                        },
-                        suppressOutput: fn ($message) => str_contains($message, 'wait a few seconds'),
-                    );
-                }
-            },
-            'Updating environment'
-        );
+                    return spin(fn () => $this->client->updateEnvironment($environment->id, $environmentParams), 'Updating environment...');
+                },
+            );
+        }
     }
 
     protected function getDatabase(DatabaseCluster $database): ?Database
