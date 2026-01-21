@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Carbon\CarbonImmutable;
 
-class EnvironmentInstance
+class EnvironmentInstance extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -49,5 +49,25 @@ class EnvironmentInstance
             environmentId: $relationships['environment']['data']['id'] ?? null,
             backgroundProcessIds: array_column($relationships['backgroundProcesses']['data'] ?? [], 'id'),
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'name' => $this->name,
+            'type' => $this->type,
+            'size' => $this->size,
+            'scaling_type' => $this->scalingType,
+            'min_replicas' => $this->minReplicas,
+            'max_replicas' => $this->maxReplicas,
+            'uses_scheduler' => $this->usesScheduler,
+            'scaling_cpu_threshold_percentage' => $this->scalingCpuThresholdPercentage,
+            'scaling_memory_threshold_percentage' => $this->scalingMemoryThresholdPercentage,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'environment_id' => $this->environmentId,
+            'background_process_ids' => $this->backgroundProcessIds,
+        ];
     }
 }

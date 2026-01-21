@@ -5,7 +5,7 @@ namespace App\Dto;
 use App\Enums\EnvironmentStatus;
 use Carbon\CarbonImmutable;
 
-class Environment
+class Environment extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -82,5 +82,39 @@ class Environment
             domainIds: array_column($relationships['domains']['data'] ?? [], 'id'),
             primaryDomainId: $relationships['primaryDomain']['data']['id'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'url' => $this->url,
+            'name' => $this->name,
+            'branch' => $this->branch,
+            'status' => $this->status,
+            'instances' => $this->instances,
+            'build_command' => $this->buildCommand,
+            'deploy_command' => $this->deployCommand,
+            'slug' => $this->slug,
+            'status_enum' => $this->statusEnum,
+            'created_from_automation' => $this->createdFromAutomation,
+            'vanity_domain' => $this->vanityDomain,
+            'php_major_version' => $this->phpMajorVersion,
+            'node_version' => $this->nodeVersion,
+            'uses_octane' => $this->usesOctane,
+            'uses_hibernation' => $this->usesHibernation,
+            'uses_push_to_deploy' => $this->usesPushToDeploy,
+            'uses_deploy_hook' => $this->usesDeployHook,
+            'environment_variables' => $this->environmentVariables,
+            'network_settings' => $this->networkSettings,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'application_id' => $this->applicationId,
+            'branch_id' => $this->branchId,
+            'deployment_ids' => $this->deploymentIds,
+            'current_deployment_id' => $this->currentDeploymentId,
+            'domain_ids' => $this->domainIds,
+            'primary_domain_id' => $this->primaryDomainId,
+        ];
     }
 }

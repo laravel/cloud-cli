@@ -19,7 +19,7 @@ class Paginated extends Data
     public function toArray(): array
     {
         return [
-            'data' => array_map(fn ($item) => $item->toArray(), $this->data),
+            'data' => array_map(fn (Data $item) => $item->toArray(), $this->data),
             'links' => $this->links,
         ];
     }

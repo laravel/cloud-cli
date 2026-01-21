@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Carbon\CarbonImmutable;
 
-class BackgroundProcess
+class BackgroundProcess extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -49,5 +49,25 @@ class BackgroundProcess
             updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
             instanceId: $relationships['instance']['data']['id'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'command' => $this->command,
+            'instances' => $this->instances,
+            'type' => $this->type,
+            'queue' => $this->queue,
+            'connection' => $this->connection,
+            'timeout' => $this->timeout,
+            'sleep' => $this->sleep,
+            'tries' => $this->tries,
+            'max_processes' => $this->maxProcesses,
+            'min_processes' => $this->minProcesses,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'instance_id' => $this->instanceId,
+        ];
     }
 }

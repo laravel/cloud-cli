@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-class DatabaseType
+class DatabaseType extends Data
 {
     public function __construct(
         public readonly string $type,
@@ -26,5 +26,15 @@ class DatabaseType
                 $data['config_schema'] ?? []
             ),
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'type' => $this->type,
+            'label' => $this->label,
+            'regions' => $this->regions,
+            'config_schema' => array_map(fn (ConfigSchema $schema) => $schema->toArray(), $this->configSchema),
+        ];
     }
 }

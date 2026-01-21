@@ -44,4 +44,21 @@ class Command
             instanceId: $relationships['instance']['data']['id'] ?? null,
         );
     }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'command' => $this->command,
+            'status' => $this->status,
+            'output' => $this->output,
+            'exit_code' => $this->exitCode,
+            'started_at' => $this->startedAt?->toIso8601String(),
+            'finished_at' => $this->finishedAt?->toIso8601String(),
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'environment_id' => $this->environmentId,
+            'instance_id' => $this->instanceId,
+        ];
+    }
 }

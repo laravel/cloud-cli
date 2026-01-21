@@ -4,7 +4,7 @@ namespace App\Dto;
 
 use Carbon\CarbonImmutable;
 
-class Domain
+class Domain extends Data
 {
     public function __construct(
         public readonly string $id,
@@ -37,5 +37,19 @@ class Domain
             updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
             environmentId: $relationships['environment']['data']['id'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'domain' => $this->domain,
+            'status' => $this->status,
+            'is_primary' => $this->isPrimary,
+            'verification_status' => $this->verificationStatus,
+            'created_at' => $this->createdAt?->toIso8601String(),
+            'updated_at' => $this->updatedAt?->toIso8601String(),
+            'environment_id' => $this->environmentId,
+        ];
     }
 }

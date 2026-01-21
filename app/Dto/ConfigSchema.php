@@ -2,7 +2,7 @@
 
 namespace App\Dto;
 
-class ConfigSchema
+class ConfigSchema extends Data
 {
     public function __construct(
         public readonly string $name,
@@ -31,5 +31,20 @@ class ConfigSchema
             enum: $data['enum'] ?? null,
             example: $data['example'] ?? null,
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'name' => $this->name,
+            'type' => $this->type,
+            'required' => $this->required,
+            'nullable' => $this->nullable,
+            'description' => $this->description,
+            'min' => $this->min,
+            'max' => $this->max,
+            'enum' => $this->enum,
+            'example' => $this->example,
+        ];
     }
 }
