@@ -233,11 +233,22 @@ class Ship extends Command
         dynamicSpinner(
             function () use ($environment, $instanceParams, $environmentParams) {
                 if (count($instanceParams) > 0) {
-                    $this->client->updateInstance($environment->instances[0], $instanceParams);
+                    $this->loopUntilValid(
+                        fn () => $this->client->updateInstance($environment->instances[0], $instanceParams),
+                    );
                 }
 
                 if (count($environmentParams) > 0) {
-                    $this->client->updateEnvironment($environment->id, $environmentParams);
+                    $this->loopUntilValid(
+                        function ($errors) use ($environmentParams, $environment) {
+                            if ($errors->messageContains('global', 'wait a few seconds')) {
+                                Sleep::for(CarbonInterval::seconds(5));
+                            }
+
+                            return $this->client->updateEnvironment($environment->id, $environmentParams);
+                        },
+                        suppressOutput: fn ($message) => str_contains($message, 'wait a few seconds'),
+                    );
                 }
             },
             'Updating environment'
@@ -252,7 +263,7 @@ class Ship extends Command
         $schema = select(
             label: 'Database',
             options: $options,
-            default: $options[0]?->id ?? null,
+            default: $database->schemas[0]?->id ?? null,
             required: true,
         );
 
@@ -301,7 +312,7 @@ class Ship extends Command
         $database = select(
             label: 'Database cluster',
             options: $options,
-            default: $options[0]?->id ?? null,
+            default: $databases->data[0]?->id ?? null,
             required: true,
         );
 
