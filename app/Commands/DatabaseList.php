@@ -53,7 +53,7 @@ class DatabaseList extends Command
                 $db->type,
                 $db->status,
                 $db->region,
-                collect($db->schemas)->pluck('name')->implode(', '),
+                collect($db->schemas)->pluck('name')->implode(PHP_EOL),
             ])->toArray()
         );
     }
