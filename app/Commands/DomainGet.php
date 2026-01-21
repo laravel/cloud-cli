@@ -3,14 +3,12 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
 
 class DomainGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'domain:get {domain : The domain ID} {--json : Output as JSON}';

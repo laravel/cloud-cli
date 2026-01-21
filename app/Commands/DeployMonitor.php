@@ -13,7 +13,6 @@ use App\Git;
 use App\Prompts\MonitorDeployments;
 use App\Support\Notification;
 use Illuminate\Support\Facades\Artisan;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -22,7 +21,6 @@ use function Laravel\Prompts\warning;
 
 class DeployMonitor extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresApplication;
     use RequiresEnvironment;

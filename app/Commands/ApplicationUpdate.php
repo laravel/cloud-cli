@@ -7,7 +7,6 @@ use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Illuminate\Filesystem\join_paths;
 use function Laravel\Prompts\error;
@@ -17,7 +16,6 @@ use function Laravel\Prompts\text;
 
 class ApplicationUpdate extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresApplication;
     use Validates;

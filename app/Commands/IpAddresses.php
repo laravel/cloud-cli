@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -14,7 +13,6 @@ use function Laravel\Prompts\warning;
 
 class IpAddresses extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'ip:addresses'

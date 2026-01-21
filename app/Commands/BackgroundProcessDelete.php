@@ -4,17 +4,14 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\success;
 
 class BackgroundProcessDelete extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'background-process:delete {process : The background process ID} {--force : Skip confirmation}';

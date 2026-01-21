@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
@@ -11,7 +10,6 @@ use function Laravel\Prompts\table;
 
 class DeploymentList extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'deployment:list {environment : The environment ID} {--json : Output as JSON}';

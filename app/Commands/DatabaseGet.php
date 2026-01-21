@@ -4,11 +4,9 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresDatabaseCluster;
-use Laravel\Prompts\Concerns\Colors;
 
 class DatabaseGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresDatabaseCluster;
 

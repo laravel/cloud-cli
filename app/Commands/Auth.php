@@ -6,7 +6,6 @@ use App\CloudClient;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Collection;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\password;
@@ -16,8 +15,6 @@ use function Laravel\Prompts\table;
 
 class Auth extends BaseCommand implements NoAuthRequired
 {
-    use Colors;
-
     protected $signature = 'auth {--add : Add a new API token} {--remove : Remove an API token} {--list : List API tokens}';
 
     protected $description = 'Manage Laravel Cloud API tokens';

@@ -3,14 +3,12 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
 
 class CommandGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'command:get {command : The command ID} {--json : Output as JSON}';

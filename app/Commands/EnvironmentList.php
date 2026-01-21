@@ -4,7 +4,6 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
@@ -12,7 +11,6 @@ use function Laravel\Prompts\table;
 
 class EnvironmentList extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresApplication;
 

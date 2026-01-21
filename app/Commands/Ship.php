@@ -19,7 +19,6 @@ use Dotenv\Dotenv;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
-use Laravel\Prompts\Concerns\Colors;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
@@ -31,7 +30,6 @@ use function Laravel\Prompts\text;
 
 class Ship extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;

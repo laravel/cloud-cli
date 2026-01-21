@@ -7,7 +7,6 @@ use App\Dto\Application;
 use App\Dto\Organization;
 use App\Git;
 use App\LocalConfig;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\select;
@@ -16,7 +15,6 @@ use function Laravel\Prompts\warning;
 
 class RepoConfig extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'repo:config';

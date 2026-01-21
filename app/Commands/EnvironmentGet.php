@@ -3,14 +3,12 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
 
 class EnvironmentGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'environment:get {environment : The environment ID} {--json : Output as JSON}';

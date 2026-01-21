@@ -5,14 +5,12 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Dto\ValidationErrors;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
 class EnvironmentCreate extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use Validates;
 

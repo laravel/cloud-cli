@@ -3,14 +3,12 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
 
 class BackgroundProcessGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'background-process:get {process : The background process ID} {--json : Output as JSON}';

@@ -4,17 +4,14 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\success;
 
 class DomainDelete extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'domain:delete {domain : The domain ID} {--force : Skip confirmation}';

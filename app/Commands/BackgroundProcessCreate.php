@@ -4,14 +4,12 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use Illuminate\Http\Client\RequestException;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\spin;
 
 class BackgroundProcessCreate extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'background-process:create

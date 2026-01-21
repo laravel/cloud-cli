@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Laravel\Prompts\Concerns\Colors;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\spin;
@@ -11,7 +10,6 @@ use function Laravel\Prompts\table;
 
 class InstanceList extends BaseCommand
 {
-    use Colors;
     use HasAClient;
 
     protected $signature = 'instance:list {environment : The environment ID} {--json : Output as JSON}';

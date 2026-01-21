@@ -4,11 +4,9 @@ namespace App\Commands;
 
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresApplication;
-use Laravel\Prompts\Concerns\Colors;
 
 class ApplicationGet extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresApplication;
 

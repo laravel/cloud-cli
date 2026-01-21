@@ -7,11 +7,9 @@ use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\Validates;
 use App\Prompts\Hyb as HybPrompt;
-use Laravel\Prompts\Concerns\Colors;
 
 class Hyb extends BaseCommand
 {
-    use Colors;
     use HasAClient;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
