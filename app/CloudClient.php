@@ -102,7 +102,25 @@ class CloudClient
 
     public function updateApplication(string $applicationId, array $data): Application
     {
-        $response = $this->client->patch("/applications/{$applicationId}", $data);
+        $endpoint = "/applications/{$applicationId}";
+
+        if (isset($data['avatar'])) {
+            [$avatar, $extension] = $data['avatar'];
+            unset($data['avatar']);
+
+            $response = $this->client
+                ->attach('avatar', $avatar, 'avatar.'.$extension)
+                ->patch($endpoint, $data);
+
+            dd(
+                $response,
+                $response->json(),
+                $this->client
+                    ->attach('avatar', $avatar, 'avatar.'.$extension)
+            );
+        } else {
+            $response = $this->client->patch($endpoint, $data);
+        }
 
         return Application::fromApiResponse($response->json());
     }
