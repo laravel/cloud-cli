@@ -29,11 +29,7 @@ class ApplicationList extends BaseCommand
             'Fetching applications...'
         );
 
-        if ($this->option('json')) {
-            $this->line($applications->toJson());
-
-            return;
-        }
+        $this->outputJsonIfWanted($applications);
 
         if (count($applications->data) === 0) {
             info('No applications found.');

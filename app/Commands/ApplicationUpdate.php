@@ -9,7 +9,6 @@ use App\Dto\Application;
 use App\Git;
 
 use function Illuminate\Filesystem\join_paths;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -34,17 +33,9 @@ class ApplicationUpdate extends BaseCommand
     public function handle()
     {
         $this->ensureClient();
-
-        if (! $this->option('json')) {
-            if ($this->argument('application')) {
-                $this->intro('Updating application: '.$this->argument('application'));
-            } else {
-                $this->intro('Updating application');
-            }
-        }
+        $this->intro('Updating application', $this->argument('application'));
 
         $application = $this->getCloudApplication(showPrompt: false);
-
         $data = [];
 
         if ($this->option('name')) {
@@ -97,6 +88,59 @@ class ApplicationUpdate extends BaseCommand
             );
         }
 
+        if ($this->isInteractive()) {
+            $data = $this->collectDataFromPrompts($data);
+        }
+
+        if (empty($data)) {
+            $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
+
+            return self::FAILURE;
+        }
+
+        $this->loopUntilValid(
+            function ($errors) use ($application, $data) {
+                if ($this->isInteractive()) {
+                    if ($errors->has('name')) {
+                        $data['name'] = $this->getNewName($data['name'] ?? $application->name);
+                    }
+
+                    if ($errors->has('slug')) {
+                        $data['slug'] = $this->getNewSlug($data['slug'] ?? $application->slug);
+                    }
+
+                    if ($errors->has('repository')) {
+                        $data['repository'] = $this->getNewRepository($data['repository'] ?? $application->repositoryFullName);
+                    }
+
+                    if ($errors->has('avatar')) {
+                        $data['avatar'] = $this->getNewAvatar();
+                    }
+
+                    if ($errors->has('default_environment_id')) {
+                        $data['default_environment_id'] = $this->getNewDefaultEnvironmentId($application);
+                    }
+
+                    if ($errors->has('slack_channel')) {
+                        $data['slack_channel'] = $this->getNewSlackChannel($data['slack_channel'] ?? $application->slackChannel);
+                    }
+                } elseif ($errors->hasAny()) {
+                    exit(self::FAILURE);
+                }
+
+                return spin(fn () => $this->client->updateApplication($application->id, $data), 'Updating application...');
+            }
+        );
+
+        $application = $this->getCloudApplication(showPrompt: false);
+
+        $this->outputJsonIfWanted($application);
+
+        $this->outro('Application updated');
+    }
+
+    protected function collectDataFromPrompts(array $data): array
+    {
         do {
             $selection = select(
                 label: 'What do you want to update?',
@@ -125,51 +169,7 @@ class ApplicationUpdate extends BaseCommand
             };
         } while ($selection !== 'done');
 
-        if (empty($data)) {
-            error('No fields to update. Provide at least one option.');
-
-            return 1;
-        }
-
-        $this->loopUntilValid(
-            function ($errors) use ($application, $data) {
-                if ($errors->has('name')) {
-                    $data['name'] = $this->getNewName($data['name'] ?? $application->name);
-                }
-
-                if ($errors->has('slug')) {
-                    $data['slug'] = $this->getNewSlug($data['slug'] ?? $application->slug);
-                }
-
-                if ($errors->has('repository')) {
-                    $data['repository'] = $this->getNewRepository($data['repository'] ?? $application->repositoryFullName);
-                }
-
-                if ($errors->has('avatar')) {
-                    $data['avatar'] = $this->getNewAvatar();
-                }
-
-                if ($errors->has('default_environment_id')) {
-                    $data['default_environment_id'] = $this->getNewDefaultEnvironmentId($application);
-                }
-
-                if ($errors->has('slack_channel')) {
-                    $data['slack_channel'] = $this->getNewSlackChannel($data['slack_channel'] ?? $application->slackChannel);
-                }
-
-                return spin(fn () => $this->client->updateApplication($application->id, $data), 'Updating application...');
-            }
-        );
-
-        if ($this->option('json')) {
-            $this->line($application->toJson());
-
-            return;
-        }
-
-        if (! $this->option('json')) {
-            $this->outro('Application updated');
-        }
+        return $data;
     }
 
     protected function reportChange(string $field, string $oldValue, string $newValue): void

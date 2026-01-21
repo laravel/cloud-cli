@@ -16,6 +16,11 @@ class ValidationErrors
         return isset($this->errors[$field]);
     }
 
+    public function hasAny(): bool
+    {
+        return count($this->errors) > 0;
+    }
+
     public function messageContains(string $field, string $needle): bool
     {
         return isset($this->errors[$field]) && str_contains($this->errors[$field], $needle);

@@ -59,13 +59,10 @@ class DeploymentGet extends BaseCommand
             'Started At' => $deployment->startedAt?->toIso8601String() ?? '—',
             'Finished At' => $deployment->finishedAt?->toIso8601String() ?? '—',
             'Duration' => $deployment->finishedAt ? $deployment->totalTime()->format('%I:%S') : '—',
+            'Failure Reason' => $deployment->failureReason,
         ];
 
-        if ($deployment->failureReason) {
-            $data['Failure Reason'] = $deployment->failureReason;
-        }
-
-        dataList($data);
+        dataList(array_filter($data));
     }
 
     protected function getDeployment(Environment $environment): ?Deployment
@@ -77,28 +74,26 @@ class DeploymentGet extends BaseCommand
             );
         }
 
-        $deployments = spin(
-            fn () => $this->client->listDeployments($environment->id),
-            'Fetching deployments...'
+        $deployments = collect(
+            spin(
+                fn () => $this->client->listDeployments($environment->id),
+                'Fetching deployments...'
+            )->data,
         );
 
-        if (count($deployments->data) === 0) {
-            return null;
-        }
-
-        if (count($deployments->data) === 1) {
-            return $deployments->data[0];
+        if (! $deployments->containsManyItems()) {
+            return $deployments->first();
         }
 
         $this->ensureInteractive('Please provide a deployment ID.');
 
         $selection = select(
             label: 'Deployment',
-            options: collect($deployments->data)->mapWithKeys(fn ($deployment) => [
+            options: $deployments->mapWithKeys(fn ($deployment) => [
                 $deployment->id => $deployment->startedAt?->toIso8601String().$this->dim(' ('.str($deployment->commitMessage)->limit(10).')'),
             ]),
         );
 
-        return collect($deployments->data)->firstWhere('id', $selection);
+        return $deployments->firstWhere('id', $selection);
     }
 }

@@ -22,11 +22,7 @@ class ApplicationGet extends BaseCommand
 
         $application = $this->getCloudApplication(showPrompt: false);
 
-        if ($this->wantsJson()) {
-            $this->line($application->toJson());
-
-            return;
-        }
+        $this->outputJsonIfWanted($application);
 
         dataList([
             'Name' => $application->name,
