@@ -43,7 +43,7 @@ class DeploymentGet extends BaseCommand
             return;
         }
 
-        if ($this->option('json')) {
+        if ($this->wantsJson()) {
             $this->line($deployment->toJson());
 
             return;
@@ -89,6 +89,8 @@ class DeploymentGet extends BaseCommand
         if (count($deployments->data) === 1) {
             return $deployments->data[0];
         }
+
+        $this->ensureInteractive('Please provide a deployment ID.');
 
         $selection = select(
             label: 'Deployment',

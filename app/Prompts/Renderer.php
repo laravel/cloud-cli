@@ -7,6 +7,8 @@ use Laravel\Prompts\Themes\Default\Renderer as BaseRenderer;
 
 abstract class Renderer extends BaseRenderer
 {
+    public static bool $suppressOutput = false;
+
     protected function lineWithBorder(string $message): self
     {
         return $this->line(TimelineSymbol::LINE->value.'  '.$message);
@@ -57,6 +59,10 @@ abstract class Renderer extends BaseRenderer
      */
     public function __toString()
     {
+        if (self::$suppressOutput) {
+            return '';
+        }
+
         return str_repeat(TimelineSymbol::LINE->value.PHP_EOL, max(2 - $this->prompt->newLinesWritten(), 0))
             .$this->output
             .(in_array($this->prompt->state, ['submit', 'cancel']) ? TimelineSymbol::LINE->value.PHP_EOL : '');

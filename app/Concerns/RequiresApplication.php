@@ -59,6 +59,8 @@ trait RequiresApplication
             return $app;
         }
 
+        $this->ensureInteractive('Please provide an application ID or name.');
+
         $selectedApp = select(
             label: 'Application',
             options: $apps->mapWithKeys(fn ($app) => [$app->id => $app->name]),

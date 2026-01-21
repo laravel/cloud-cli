@@ -18,17 +18,11 @@ class ApplicationGet extends BaseCommand
     {
         $this->ensureClient();
 
-        if (! $this->option('json')) {
-            if ($this->argument('application')) {
-                $this->intro('Application Details: '.$this->argument('application'));
-            } else {
-                $this->intro('Application Details');
-            }
-        }
+        $this->intro('Application Details', $this->argument('application'));
 
         $application = $this->getCloudApplication(showPrompt: false);
 
-        if ($this->option('json')) {
+        if ($this->wantsJson()) {
             $this->line($application->toJson());
 
             return;
