@@ -23,6 +23,8 @@ This is a Laravel Zero CLI tool for deploying applications to Laravel Cloud.
 -   Constructor methods with empty bodies should contain a single empty comment
 -   Non-public methods/properties should be `protected`, not `private`
 -   Limit comments to non-obvious code only
+-   For long command signatures, separate the arguments and concatonate them in the property to make it more readable (leading space)
+-   Never use the helper methods in `Command`, always use Prompts helper functions
 
 ## Dependencies
 

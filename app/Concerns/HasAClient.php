@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\CloudClient;
 use App\ConfigRepository;
+use App\LocalConfig;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -13,9 +14,9 @@ trait HasAClient
 {
     protected CloudClient $client;
 
-    protected function ensureClient()
+    protected function ensureClient(bool $ignoreLocalConfig = false)
     {
-        $apiToken = $this->resolveApiToken();
+        $apiToken = $this->resolveApiToken($ignoreLocalConfig);
 
         $this->client = new CloudClient($apiToken);
     }
@@ -32,7 +33,7 @@ trait HasAClient
         $this->resolveApiToken();
     }
 
-    protected function resolveApiToken(): string
+    protected function resolveApiToken(bool $ignoreLocalConfig = false): string
     {
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
@@ -51,18 +52,32 @@ trait HasAClient
                         $application = $client->listApplications()->data[0] ?? null;
 
                         if (! $application || ! $application->organization) {
-                            return [$token => $token];
+                            return [$token => 'Unknown ('.str($token)->limit(8).')'];
                         }
 
-                        return [$token => $application->organization->name];
+                        return [$token => $application->organization];
                     });
                 },
                 'Fetching token details'
             );
 
+            if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
+                foreach ($orgs as $token => $organization) {
+                    if (is_string($organization)) {
+                        continue;
+                    }
+
+                    if ($organization->id === $defaultOrganizationId) {
+                        return $token;
+                    }
+                }
+            }
+
             $apiToken = select(
-                label: 'Select an organization',
-                options: $orgs->toArray(),
+                label: 'Organization',
+                options: $orgs->mapWithKeys(fn ($organization, $token) => [
+                    $token => is_string($organization) ? $organization : $organization->name,
+                ]),
             );
 
             return $apiToken;

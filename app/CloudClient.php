@@ -6,6 +6,7 @@ use App\Dto\Application;
 use App\Dto\BackgroundProcess;
 use App\Dto\Command;
 use App\Dto\Database;
+use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Deployment;
 use App\Dto\Domain;
@@ -15,6 +16,7 @@ use App\Dto\Paginated;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Http;
 use Psr\Http\Message\RequestInterface;
+use SensitiveParameter;
 
 class CloudClient
 {
@@ -25,8 +27,10 @@ class CloudClient
 
     protected array $includes = [];
 
-    public function __construct(protected string $apiKey)
-    {
+    public function __construct(
+        #[SensitiveParameter]
+        protected string $apiKey
+    ) {
         $this->client = Http::withToken($this->apiKey)
             ->baseUrl('https://cloud.laravel.com/api')
             ->acceptJson()
@@ -342,7 +346,7 @@ class CloudClient
     }
 
     /**
-     * @return Paginated<Database>
+     * @return Paginated<DatabaseCluster>
      */
     public function listDatabases(): Paginated
     {
@@ -353,7 +357,7 @@ class CloudClient
         $responseData = $response->json();
 
         return new Paginated(
-            data: array_map(fn ($item) => Database::fromApiResponse($responseData, $item), $responseData['data'] ?? []),
+            data: array_map(fn ($item) => DatabaseCluster::fromApiResponse($responseData, $item), $responseData['data'] ?? []),
             links: $responseData['links'] ?? [],
         );
     }
@@ -370,11 +374,20 @@ class CloudClient
         return array_map(fn ($item) => DatabaseType::fromApiResponse($responseData, $item), $responseData['data'] ?? []);
     }
 
-    public function getDatabase(string $databaseId): Database
+    public function getDatabase(string $databaseId): DatabaseCluster
     {
         $this->include('schemas');
 
         $response = $this->client->get("/databases/{$databaseId}");
+
+        return DatabaseCluster::fromApiResponse($response->json());
+    }
+
+    public function createDatabase(string $clusterId, string $name): Database
+    {
+        $response = $this->client->post("/databases/clusters/{$clusterId}/databases", [
+            'name' => $name,
+        ]);
 
         return Database::fromApiResponse($response->json());
     }

@@ -34,13 +34,14 @@ class Application extends Data
 
         $attributes = $data['attributes'];
         $repository = $attributes['repository'] ?? null;
-        $relationships = $data['relationships'];
+        $relationships = $data['relationships'] ?? [];
 
         $organizationId = $relationships['organization']['data']['id'] ?? null;
         $environmentIds = array_column($relationships['environments']['data'] ?? [], 'id');
         $deploymentIds = array_column($relationships['deployments']['data'] ?? [], 'id');
 
         $organization = null;
+
         if ($organizationId) {
             $orgData = collect($included)->first(fn ($item) => $item['type'] === 'organizations' && $item['id'] === $organizationId);
             if ($orgData) {

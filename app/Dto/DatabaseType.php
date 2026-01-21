@@ -16,7 +16,6 @@ class DatabaseType
     public static function fromApiResponse(array $response, ?array $item = null): self
     {
         $data = $item ?? $response['data'] ?? [];
-        $included = $response['included'] ?? [];
 
         return new self(
             type: $data['type'],

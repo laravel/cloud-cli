@@ -17,7 +17,7 @@ trait Validates
      * @param  callable(ValidationErrors): TReturn  $callback
      * @return TReturn
      */
-    protected function loopUntilValid(callable $callback, int $maxAttempts = 10): mixed
+    protected function loopUntilValid(callable $callback, int $maxAttempts = 10, bool|callable $suppressOutput = false): mixed
     {
         $result = null;
         $errors = new ValidationErrors;
@@ -42,19 +42,38 @@ trait Validates
 
                     if (count($responseErrors) > 0) {
                         foreach ($responseErrors as $field => $messages) {
-                            error(ucwords($field).': '.implode(', ', $messages));
-                            $errors->add($field);
+                            $this->displayValidationError(ucwords($field).': '.implode(', ', $messages), $suppressOutput);
+
+                            $errors->add($field, implode(', ', $messages));
                         }
                     } else {
                         $message = $e->response->json()['message'] ?? 'Unknown validation error';
-                        error('Failed to create application: '.$message);
+
+                        $this->displayValidationError($message, $suppressOutput);
                     }
                 } else {
-                    error('Failed to create application: '.$e->getMessage());
+                    $this->displayValidationError($e->getMessage(), $suppressOutput);
                 }
             }
         }
 
         return $result;
+    }
+
+    protected function displayValidationError(string $message, bool|callable $suppressOutput): void
+    {
+        if (is_callable($suppressOutput)) {
+            if (! $suppressOutput($message)) {
+                error($message);
+            }
+
+            return;
+        }
+
+        if ($suppressOutput) {
+            return;
+        }
+
+        error($message);
     }
 }

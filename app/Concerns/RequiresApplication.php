@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Dto\Application;
+use App\LocalConfig;
 use Exception;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -17,8 +18,10 @@ trait RequiresApplication
      */
     protected function getCloudApplication(?Collection $apps = null, $showPrompt = true): Application
     {
-        if ($this->argument('application')) {
-            $identifier = $this->argument('application');
+        $defaultApplicationId = $this->argument('application') ?? app(LocalConfig::class)->get('application_id');
+
+        if ($defaultApplicationId) {
+            $identifier = $defaultApplicationId;
 
             if ($apps) {
                 $app = $this->getByNameOrId($identifier, $apps);

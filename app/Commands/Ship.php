@@ -8,6 +8,7 @@ use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Dto\Database;
+use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Environment;
 use App\Dto\ValidationErrors;
@@ -77,7 +78,7 @@ class Ship extends Command
             $options->prepend('Create new application', 'new');
 
             $selectedApp = select(
-                label: 'Select an application',
+                label: 'Application',
                 options: $options,
             );
 
@@ -220,50 +221,76 @@ class Ship extends Command
         }
 
         if (in_array('database', $selectedOptions)) {
-            $database = $this->getDatabase();
+            $cluster = $this->getDatabaseCluster();
 
-            if ($database) {
-                $database = $this->client->getDatabase($database->id);
-                dump($database);
-                $schema = $this->getDatabaseSchema($database);
-                dump($schema);
-                $environmentParams['database_schema_id'] = $schema['id'];
+            if ($cluster) {
+                $cluster = $this->client->getDatabase($cluster->id);
+                $database = $this->getDatabase($cluster);
+                $environmentParams['database_schema_id'] = $database->id;
             }
         }
 
         dynamicSpinner(
             function () use ($environment, $instanceParams, $environmentParams) {
                 if (count($instanceParams) > 0) {
-                    $this->client->updateInstance($environment->instances[0], $instanceParams);
+                    $this->loopUntilValid(
+                        fn () => $this->client->updateInstance($environment->instances[0], $instanceParams),
+                    );
                 }
 
                 if (count($environmentParams) > 0) {
-                    $this->client->updateEnvironment($environment->id, $environmentParams);
+                    $this->loopUntilValid(
+                        function ($errors) use ($environmentParams, $environment) {
+                            if ($errors->messageContains('global', 'wait a few seconds')) {
+                                Sleep::for(CarbonInterval::seconds(5));
+                            }
+
+                            return $this->client->updateEnvironment($environment->id, $environmentParams);
+                        },
+                        suppressOutput: fn ($message) => str_contains($message, 'wait a few seconds'),
+                    );
                 }
             },
             'Updating environment'
         );
     }
 
-    protected function getDatabaseSchema(Database $database): array
+    protected function getDatabase(DatabaseCluster $database): ?Database
     {
-        $options = collect($database->schemas)->mapWithKeys(fn ($schema) => [$schema['id'] => $schema['name']]);
-        $options->prepend('Create new schema', 'new');
+        $options = collect($database->schemas)->mapWithKeys(fn (Database $schema) => [$schema->id => $schema->name]);
+        $options->prepend('Create new database', 'new');
 
         $schema = select(
-            label: 'Select a schema',
+            label: 'Database',
             options: $options,
+            default: $database->schemas[0]?->id ?? null,
             required: true,
         );
 
-        if ($schema === 'new') {
-            dd('Implement create schema');
+        if ($schema !== 'new') {
+            return collect($database->schemas)->firstWhere('id', $schema);
         }
 
-        return collect($database->schemas)->firstWhere('id', $schema);
+        $name = text(
+            label: 'Database name',
+            required: true,
+            validate: function ($value) {
+                if (! preg_match('/^[a-z0-9_-]+$/', $value)) {
+                    return 'Must contain only lowercase letters, numbers, and underscores';
+                }
+
+                if (strlen($value) < 3 || strlen($value) > 40) {
+                    return 'Must be between 3 and 40 characters';
+                }
+
+                return null;
+            },
+        );
+
+        return $this->client->createDatabase($database->id, $name);
     }
 
-    protected function getDatabase(): ?Database
+    protected function getDatabaseCluster(): ?DatabaseCluster
     {
         $databases = $this->client->listDatabases();
 
@@ -279,23 +306,24 @@ class Ship extends Command
             return null;
         }
 
-        $options = collect($databases->data)->mapWithKeys(fn (Database $database) => [$database->id => $database->name]);
-        $options->prepend('Create new database', 'new');
+        $options = collect($databases->data)->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
+        $options->prepend('Create new database cluster', 'new');
 
         $database = select(
-            label: 'Select a database',
+            label: 'Database cluster',
             options: $options,
+            default: $databases->data[0]?->id ?? null,
             required: true,
         );
 
-        if ($database === 'new') {
-            return $this->createDatabase();
+        if ($database !== 'new') {
+            return collect($databases->data)->firstWhere('id', $database);
         }
 
-        return collect($databases->data)->firstWhere('id', $database);
+        return $this->createDatabase();
     }
 
-    protected function createDatabase(): ?Database
+    protected function createDatabase(): ?DatabaseCluster
     {
         $name = text(
             label: 'Database cluster name',

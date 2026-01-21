@@ -29,7 +29,7 @@ trait RequiresEnvironment
         }
 
         $selection = select(
-            label: 'Select an environment',
+            label: 'Environment',
             options: $environments->mapWithKeys(fn ($env) => [$env->id => $env->name]),
         );
 

@@ -14,6 +14,17 @@ class Git
         return $this->run(['git', 'rev-parse', '--is-inside-work-tree'])->successful();
     }
 
+    public function getRoot(): ?string
+    {
+        $result = $this->run(['git', 'rev-parse', '--show-toplevel']);
+
+        if (! $result->successful()) {
+            return null;
+        }
+
+        return trim($result->output());
+    }
+
     public function hasGitHubRemote(): bool
     {
         $result = $this->run(['git', 'remote', '-v']);

@@ -2,7 +2,7 @@
 
 namespace App\Concerns;
 
-use App\Dto\Database;
+use App\Dto\DatabaseCluster;
 use Exception;
 use Illuminate\Support\Collection;
 use RuntimeException;
@@ -13,9 +13,9 @@ use function Laravel\Prompts\spin;
 trait RequiresDatabaseCluster
 {
     /**
-     * @param  Collection<Database>  $databases
+     * @param  Collection<DatabaseCluster>  $databases
      */
-    protected function getDatabaseCluster(?Collection $databases = null, $showPrompt = true): Database
+    protected function getDatabaseCluster(?Collection $databases = null, $showPrompt = true): DatabaseCluster
     {
         if ($this->argument('database')) {
             $identifier = $this->argument('database');
@@ -64,7 +64,7 @@ trait RequiresDatabaseCluster
         return $databases->firstWhere('id', $selectedDatabase);
     }
 
-    protected function getByNameOrId(string $identifier, ?Collection $databases = null): ?Database
+    protected function getByNameOrId(string $identifier, ?Collection $databases = null): ?DatabaseCluster
     {
         $databases ??= $this->fetchDatabases();
 
@@ -72,7 +72,7 @@ trait RequiresDatabaseCluster
             ?? $databases->firstWhere('name', $identifier);
     }
 
-    protected function displayDatabase(Database $database, $showPrompt = true): void
+    protected function displayDatabase(DatabaseCluster $database, $showPrompt = true): void
     {
         if ($showPrompt) {
             answered(label: 'Database', answer: "{$database->name}");
