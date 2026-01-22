@@ -19,14 +19,14 @@ class ApplicationUpdate extends BaseCommand
     use RequiresApplication;
     use Validates;
 
-    protected $signature = 'application:update'
-        .' {application? : The application ID or name}'
-        .' {--name= : Application name}'
-        .' {--slack-channel= : Slack channel for notifications}'
-        .' {--repository= : Repository URL}'
-        .' {--avatar= : Avatar URL or full path to a file}'
-        .' {--default-environment= : Default environment ID or name}'
-        .' {--json : Output as JSON}';
+    protected $signature = 'application:update
+                            {application? : The application ID or name}
+                            {--name= : Application name}
+                            {--slack-channel= : Slack channel for notifications}
+                            {--repository= : Repository URL}
+                            {--avatar= : Avatar URL or full path to a file}
+                            {--default-environment= : Default environment ID or name}
+                            {--json : Output as JSON}';
 
     protected $description = 'Update an application';
 

@@ -27,10 +27,10 @@ class Deploy extends BaseCommand
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
 
-    protected $signature = 'deploy '
-        .'{application? : The application ID or name} '
-        .'{environment? : The name of the environment to deploy} '
-        .'{--open : Open the site in the browser after a successful deployment}';
+    protected $signature = 'deploy
+                            {application? : The application ID or name}
+                            {environment? : The name of the environment to deploy}
+                            {--open : Open the site in the browser after a successful deployment}';
 
     protected $description = 'Deploy the application to Laravel Cloud';
 

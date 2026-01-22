@@ -19,11 +19,11 @@ class ApplicationCreate extends BaseCommand
     use RequiresRemoteGitRepo;
     use Validates;
 
-    protected $signature = 'application:create'
-        .' {--repository= : Repository (owner/repo format)}'
-        .' {--name= : Application name}'
-        .' {--region= : Application region}'
-        .' {--json : Output as JSON}';
+    protected $signature = 'application:create
+                            {--repository= : Repository (owner/repo format)}
+                            {--name= : Application name}
+                            {--region= : Application region}
+                            {--json : Output as JSON}';
 
     protected $description = 'Create a new application';
 

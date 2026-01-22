@@ -19,11 +19,11 @@ class DeploymentGet extends BaseCommand
     use RequiresApplication;
     use RequiresEnvironment;
 
-    protected $signature = 'deployment:get'
-        .' {application? : The application ID or name}'
-        .' {environment? : The environment ID or name}'
-        .' {deployment? : The deployment ID}'
-        .' {--json : Output as JSON}';
+    protected $signature = 'deployment:get
+                            {application? : The application ID or name}
+                            {environment? : The environment ID or name}
+                            {deployment? : The deployment ID}
+                            {--json : Output as JSON}';
 
     protected $description = 'Get deployment details';
 

@@ -22,9 +22,9 @@ class Open extends BaseCommand
     use RequiresEnvironment;
     use RequiresRemoteGitRepo;
 
-    protected $signature = 'open '
-        .'{application? : The application ID or name} '
-        .'{environment? : The name of the environment to deploy} ';
+    protected $signature = 'open
+                            {application? : The application ID or name}
+                            {environment? : The name of the environment to deploy} ';
 
     protected $description = 'Open the site in the browser';
 
