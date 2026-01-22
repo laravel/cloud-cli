@@ -15,7 +15,10 @@ use function Laravel\Prompts\table;
 
 class Auth extends BaseCommand implements NoAuthRequired
 {
-    protected $signature = 'auth {--add : Add a new API token} {--remove : Remove an API token} {--list : List API tokens}';
+    protected $signature = 'auth'
+        .' {--add : Add a new API token}'
+        .' {--remove : Remove an API token}'
+        .' {--list : List API tokens}';
 
     protected $description = 'Manage Laravel Cloud API tokens';
 
@@ -55,17 +58,11 @@ class Auth extends BaseCommand implements NoAuthRequired
             ],
         );
 
-        switch ($action) {
-            case 'add':
-                $this->addToken($tokens);
-                break;
-            case 'remove':
-                $this->removeToken($tokens);
-                break;
-            case 'list':
-                $this->listTokens($tokens);
-                break;
-        }
+        match ($action) {
+            'add' => $this->addToken($tokens),
+            'remove' => $this->removeToken($tokens),
+            'list' => $this->listTokens($tokens),
+        };
     }
 
     /**
