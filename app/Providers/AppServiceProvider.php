@@ -79,6 +79,6 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->singleton(CommandMiddlewareManager::class);
-        $this->app->singleton(SupressOutputIfJson::class);
+        $this->app->singleton(SuppressOutputIfJson::class);
     }
 }
