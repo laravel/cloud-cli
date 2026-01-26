@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\Validates;
-use App\Dto\ValidationErrors;
 use App\Enums\CloudRegion;
 use App\Git;
 
@@ -27,12 +26,6 @@ class ApplicationCreate extends BaseCommand
 
     protected $description = 'Create a new application';
 
-    protected ?string $applicationName = null;
-
-    protected ?string $repository = null;
-
-    protected ?string $region = null;
-
     protected ?string $defaultRegion = null;
 
     public function handle()
@@ -41,20 +34,15 @@ class ApplicationCreate extends BaseCommand
 
         $this->intro('Creating application');
 
-        $application = $this->loopUntilValid(
-            fn (ValidationErrors $errors) => $this->createApplication($errors)
-        );
+        $application = $this->loopUntilValid($this->createApplication(...));
 
         $this->outputJsonIfWanted($application);
 
         $this->outro("Application created: {$application->name}");
     }
 
-    protected function createApplication(ValidationErrors $errors)
+    protected function createApplication()
     {
-        $this->setErrors($errors);
-        $this->breakValidationLoopIfNotInteractive($errors);
-
         $git = app(Git::class);
 
         $this->addParam(
