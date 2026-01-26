@@ -43,6 +43,8 @@ class LocalConfig
         $config = $this->getConfig();
         $config = array_merge($config, $values);
 
+        File::ensureDirectoryExists(dirname($this->configPath));
+
         File::put(
             $this->configPath,
             json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL,
