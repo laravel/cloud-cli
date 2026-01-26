@@ -33,8 +33,12 @@ abstract class BaseCommand extends Command
         $this->paramCollectors[$name]->retrieve();
     }
 
-    protected function getParam(string $name): ?string
+    protected function getParam(string $name, mixed $default = null): ?string
     {
+        if (! array_key_exists($name, $this->paramCollectors)) {
+            return $default;
+        }
+
         return $this->paramCollectors[$name]?->value();
     }
 
