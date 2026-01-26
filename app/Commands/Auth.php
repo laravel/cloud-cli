@@ -119,7 +119,7 @@ class Auth extends BaseCommand implements NoAuthRequired
                     ];
                 });
             },
-            'Fetching token details'
+            'Fetching token details',
         );
 
         table(

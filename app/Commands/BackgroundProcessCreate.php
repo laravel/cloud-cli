@@ -43,7 +43,7 @@ class BackgroundProcessCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Creating background process');
+        intro('Creating Background Process');
 
         $process = $this->loopUntilValid($this->createBackgroundProcess(...));
 
@@ -245,7 +245,7 @@ class BackgroundProcessCreate extends BaseCommand
 
         return spin(
             fn () => $this->client->createBackgroundProcess($instanceId, $data),
-            'Creating background process...'
+            'Creating background process...',
         );
     }
 

@@ -27,7 +27,7 @@ class DatabaseList extends BaseCommand
 
         $databases = spin(
             fn () => $this->client->listDatabases(),
-            'Fetching databases...'
+            'Fetching databases...',
         );
 
         if ($this->option('json')) {
@@ -51,7 +51,7 @@ class DatabaseList extends BaseCommand
                 $db->status,
                 $db->region,
                 collect($db->schemas)->pluck('name')->implode(PHP_EOL),
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

@@ -82,7 +82,7 @@ class ConfigRepository
 
         file_put_contents(
             $this->configPath,
-            json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            json_encode($this->config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
         );
     }
 }

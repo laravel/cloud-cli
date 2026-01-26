@@ -27,7 +27,7 @@ trait RequiresDatabaseCluster
                     try {
                         $database = spin(
                             fn () => $this->client->getDatabase($identifier),
-                            'Fetching database...'
+                            'Fetching database...',
                         );
                     } catch (Exception $e) {
                         $database = $this->getByNameOrId($identifier);
@@ -83,7 +83,7 @@ trait RequiresDatabaseCluster
     {
         return collect(spin(
             fn () => $this->client->listDatabases(),
-            'Fetching databases...'
+            'Fetching databases...',
         )->data);
     }
 }

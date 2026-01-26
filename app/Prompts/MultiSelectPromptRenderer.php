@@ -55,7 +55,7 @@ class MultiSelectPromptRenderer extends Renderer implements Scrolling
                 ->when(
                     $prompt->hint,
                     fn () => $this->hint($prompt->hint),
-                    fn () => $this->newLine() // Space for errors
+                    fn () => $this->newLine(), // Space for errors
                 ),
         };
     }
@@ -98,7 +98,7 @@ class MultiSelectPromptRenderer extends Renderer implements Scrolling
             $prompt->scroll,
             count($prompt->options),
             min($this->longest($prompt->options, padding: 6), $prompt->terminal()->cols() - 6),
-            $prompt->state === 'cancel' ? 'dim' : 'cyan'
+            $prompt->state === 'cancel' ? 'dim' : 'cyan',
         ));
     }
 
@@ -113,7 +113,7 @@ class MultiSelectPromptRenderer extends Renderer implements Scrolling
 
         return implode("\n", array_map(
             fn ($label) => $this->truncate($label, $prompt->terminal()->cols() - 6),
-            $prompt->labels()
+            $prompt->labels(),
         ));
     }
 

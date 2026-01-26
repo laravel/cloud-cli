@@ -57,8 +57,8 @@ class TextareaPromptRenderer extends Renderer implements Scrolling
                 ->when(
                     $prompt->hint,
                     fn () => $this->hint($prompt->hint),
-                    fn () => $this->newLine() // Space for errors
-                )
+                    fn () => $this->newLine(), // Space for errors
+                ),
         };
     }
 

@@ -25,15 +25,15 @@ class DomainCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Creating domain');
+        intro('Creating Domain');
 
         try {
             $domain = spin(
                 fn () => $this->client->createDomain(
                     $this->argument('environment'),
-                    $this->argument('domain')
+                    $this->argument('domain'),
                 ),
-                'Creating domain...'
+                'Creating domain...',
             );
 
             if ($this->option('json')) {

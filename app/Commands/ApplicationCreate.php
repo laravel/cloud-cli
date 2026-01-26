@@ -34,7 +34,7 @@ class ApplicationCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Creating application');
+        intro('Creating Application');
 
         $application = $this->loopUntilValid($this->createApplication(...));
 
@@ -91,7 +91,7 @@ class ApplicationCreate extends BaseCommand
                 $this->getParam('name'),
                 $this->getParam('region'),
             ),
-            'Creating application...'
+            'Creating application...',
         );
     }
 }

@@ -28,7 +28,7 @@ class InstanceUpdate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Updating instance');
+        intro('Updating Instance');
 
         $data = [];
 
@@ -57,7 +57,7 @@ class InstanceUpdate extends BaseCommand
         try {
             $instance = spin(
                 fn () => $this->client->updateInstance($this->argument('instance'), $data),
-                'Updating instance...'
+                'Updating instance...',
             );
 
             if ($this->option('json')) {

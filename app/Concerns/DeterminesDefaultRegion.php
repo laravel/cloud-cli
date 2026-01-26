@@ -18,7 +18,7 @@ trait DeterminesDefaultRegion
 
         $applications = spin(
             fn () => $this->client->listApplications(),
-            'Fetching applications...'
+            'Fetching applications...',
         );
 
         $mostUsedRegion = collect($applications->data)

@@ -24,7 +24,7 @@ class InstanceGet extends BaseCommand
 
         $instance = spin(
             fn () => $this->client->getInstance($this->argument('instance')),
-            'Fetching instance...'
+            'Fetching instance...',
         );
 
         if ($this->option('json')) {

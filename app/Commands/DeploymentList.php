@@ -21,11 +21,11 @@ class DeploymentList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing deployments');
+        intro('Listing Deployments');
 
         $deployments = spin(
             fn () => $this->client->listDeployments($this->argument('environment')),
-            'Fetching deployments...'
+            'Fetching deployments...',
         );
 
         if ($this->option('json')) {
@@ -59,7 +59,7 @@ class DeploymentList extends BaseCommand
                 $deployment->branchName,
                 $deployment->commitHash ? substr($deployment->commitHash, 0, 7) : 'N/A',
                 $deployment->startedAt?->format('Y-m-d H:i:s') ?? 'N/A',
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

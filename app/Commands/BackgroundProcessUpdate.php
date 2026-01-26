@@ -26,7 +26,7 @@ class BackgroundProcessUpdate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Updating background process');
+        intro('Updating Background Process');
 
         $data = [];
 
@@ -47,7 +47,7 @@ class BackgroundProcessUpdate extends BaseCommand
         try {
             $process = spin(
                 fn () => $this->client->updateBackgroundProcess($this->argument('process'), $data),
-                'Updating background process...'
+                'Updating background process...',
             );
 
             if ($this->option('json')) {

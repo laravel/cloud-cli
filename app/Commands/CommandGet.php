@@ -24,7 +24,7 @@ class CommandGet extends BaseCommand
 
         $cmd = spin(
             fn () => $this->client->getCommand($this->argument('command')),
-            'Fetching command...'
+            'Fetching command...',
         );
 
         if ($this->option('json')) {

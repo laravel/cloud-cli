@@ -25,15 +25,15 @@ class CommandRun extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Running command');
+        intro('Running Command');
 
         try {
             $cmd = spin(
                 fn () => $this->client->runCommand(
                     $this->argument('environment'),
-                    $this->argument('command')
+                    $this->argument('command'),
                 ),
-                'Running command...'
+                'Running command...',
             );
 
             if ($this->option('json')) {

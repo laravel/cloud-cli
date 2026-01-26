@@ -21,11 +21,11 @@ class DomainList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing domains');
+        intro('Listing Domains');
 
         $domains = spin(
             fn () => $this->client->listDomains($this->argument('environment')),
-            'Fetching domains...'
+            'Fetching domains...',
         );
 
         if ($this->option('json')) {
@@ -57,7 +57,7 @@ class DomainList extends BaseCommand
                 $domain->domain,
                 $domain->status,
                 $domain->isPrimary ? 'Yes' : 'No',
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

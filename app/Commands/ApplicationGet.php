@@ -30,9 +30,9 @@ class ApplicationGet extends BaseCommand
             'Name' => $application->name,
             'ID' => $application->id,
             'Region' => $application->region,
-            'Repository' => 'https://github.com/' . $application->repositoryFullName,
-            'Environments' => collect($application->environments)->map(fn($env) => $env->name . ' ' . $this->dim($env->id) . '')->toArray(),
-            'Organization' => $application->organization->name . ' ' . $this->dim($application->organization->id) . '',
+            'Repository' => 'https://github.com/'.$application->repositoryFullName,
+            'Environments' => collect($application->environments)->map(fn ($env) => $env->name.' '.$this->dim($env->id).'')->toArray(),
+            'Organization' => $application->organization->name.' '.$this->dim($application->organization->id).'',
         ]);
     }
 }

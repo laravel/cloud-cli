@@ -40,7 +40,7 @@ class DeployMonitor extends BaseCommand
         slideIn('EYES ON THE *SKY*');
         $this->newLine();
 
-        intro('Monitoring application deployments');
+        intro('Monitoring Application Deployments');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -49,11 +49,11 @@ class DeployMonitor extends BaseCommand
 
         $applications = spin(
             fn () => $this->client->listApplications(),
-            'Checking for existing application...'
+            'Checking for existing application...',
         );
 
         $existingApps = collect($applications->data ?? [])->filter(
-            fn ($app) => $app->repositoryFullName === $repository
+            fn ($app) => $app->repositoryFullName === $repository,
         );
 
         if ($existingApps->isEmpty()) {
@@ -76,7 +76,7 @@ class DeployMonitor extends BaseCommand
 
         $environments = spin(
             fn () => $this->client->listEnvironments($app->id),
-            'Checking for existing environments...'
+            'Checking for existing environments...',
         );
 
         $environment = $this->getEnvironment(collect($environments->data));

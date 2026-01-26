@@ -55,7 +55,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
                 ->when(
                     $prompt->hint,
                     fn () => $this->hint($prompt->hint),
-                    fn () => $this->newLine() // Space for errors
+                    fn () => $this->newLine(), // Space for errors
                 ),
         };
     }
@@ -75,7 +75,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
                     return $this->dim(
                         $prompt->highlighted === $index
                             ? "› ● {$this->strikethrough($label)}  "
-                            : "  ○ {$this->strikethrough($label)}  "
+                            : "  ○ {$this->strikethrough($label)}  ",
                     );
                 }
 
@@ -87,7 +87,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
             $prompt->scroll,
             count($prompt->options),
             min($this->longest($prompt->options, padding: 6), $prompt->terminal()->cols() - 6),
-            $prompt->state === 'cancel' ? 'dim' : 'cyan'
+            $prompt->state === 'cancel' ? 'dim' : 'cyan',
         ));
     }
 

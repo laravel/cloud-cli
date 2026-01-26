@@ -23,14 +23,14 @@ class InstanceDelete extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Deleting instance');
+        intro('Deleting Instance');
 
         $instanceId = $this->argument('instance');
 
         if (! $this->option('force')) {
             $instance = spin(
                 fn () => $this->client->getInstance($instanceId),
-                'Fetching instance...'
+                'Fetching instance...',
             );
 
             if (! confirm("Delete instance '{$instance->name}'?")) {
@@ -43,7 +43,7 @@ class InstanceDelete extends BaseCommand
         try {
             spin(
                 fn () => $this->client->deleteInstance($instanceId),
-                'Deleting instance...'
+                'Deleting instance...',
             );
 
             success('Instance deleted.');

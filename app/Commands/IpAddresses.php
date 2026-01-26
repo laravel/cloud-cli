@@ -31,7 +31,7 @@ class IpAddresses extends BaseCommand
 
         $addresses = spin(
             fn () => collect($this->client->getIpAddresses()),
-            'Fetching IP addresses...'
+            'Fetching IP addresses...',
         );
 
         if ($this->option('region')) {

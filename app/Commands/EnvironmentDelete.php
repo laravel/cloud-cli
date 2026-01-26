@@ -25,14 +25,14 @@ class EnvironmentDelete extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Deleting environment');
+        intro('Deleting Environment');
 
         $environmentId = $this->argument('environment');
 
         if (! $this->option('force')) {
             $environment = spin(
                 fn () => $this->client->getEnvironment($environmentId),
-                'Fetching environment...'
+                'Fetching environment...',
             );
 
             if (! confirm("Delete environment '{$environment->name}'?")) {
@@ -45,7 +45,7 @@ class EnvironmentDelete extends BaseCommand
         try {
             spin(
                 fn () => $this->client->deleteEnvironment($environmentId),
-                'Deleting environment...'
+                'Deleting environment...',
             );
 
             success('Environment deleted.');

@@ -24,7 +24,7 @@ class BackgroundProcessGet extends BaseCommand
 
         $process = spin(
             fn () => $this->client->getBackgroundProcess($this->argument('process')),
-            'Fetching background process...'
+            'Fetching background process...',
         );
 
         if ($this->option('json')) {

@@ -31,7 +31,7 @@ trait RequiresApplication
                     try {
                         $app = spin(
                             fn () => $this->client->getApplication($identifier),
-                            'Fetching application...'
+                            'Fetching application...',
                         );
                     } catch (Exception $e) {
                         $app = $this->getByNameOrId($identifier);
@@ -89,7 +89,7 @@ trait RequiresApplication
     {
         return collect(spin(
             fn () => $this->client->listApplications(),
-            'Fetching applications...'
+            'Fetching applications...',
         )->data);
     }
 }

@@ -23,7 +23,7 @@ class DatabaseType extends Data
             regions: $data['regions'] ?? [],
             configSchema: array_map(
                 fn (array $schema) => ConfigSchema::fromApiResponse($schema),
-                $data['config_schema'] ?? []
+                $data['config_schema'] ?? [],
             ),
         );
     }

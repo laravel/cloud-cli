@@ -132,8 +132,8 @@ class ApplicationUpdate extends BaseCommand
                     exit(self::FAILURE);
                 }
 
-                return spin(fn() => $this->client->updateApplication($application->id, $data), 'Updating application...');
-            }
+                return spin(fn () => $this->client->updateApplication($application->id, $data), 'Updating application...');
+            },
         );
 
         $application = $this->getCloudApplication(showPrompt: false);
@@ -179,7 +179,7 @@ class ApplicationUpdate extends BaseCommand
     protected function reportChange(string $field, string $oldValue, string $newValue): void
     {
         dataList([
-            $field => $this->yellow($oldValue) . ' ' . $this->dim('→') . ' ' . $this->green($newValue),
+            $field => $this->yellow($oldValue).' '.$this->dim('→').' '.$this->green($newValue),
         ]);
     }
 
@@ -189,7 +189,7 @@ class ApplicationUpdate extends BaseCommand
             label: 'Name',
             required: true,
             default: $oldName,
-            validate: fn($value) => match (true) {
+            validate: fn ($value) => match (true) {
                 strlen($value) < 3 => 'Name must be at least 3 characters',
                 strlen($value) > 40 => 'Name must be less than 40 characters',
                 ! preg_match('/^[\p{Latin}0-9 _.\'-]+$/u', $value) => 'Name must contain only letters, numbers, spaces, and: _ . \' -',
@@ -204,7 +204,7 @@ class ApplicationUpdate extends BaseCommand
             label: 'Slug',
             required: true,
             default: $oldSlug,
-            validate: fn($value) => match (true) {
+            validate: fn ($value) => match (true) {
                 strlen($value) < 3 => 'Slug must be at least 3 characters',
                 default => null,
             },
@@ -227,7 +227,7 @@ class ApplicationUpdate extends BaseCommand
         if ($avatarCandidates->isNotEmpty()) {
             $root = app(Git::class)->getRoot();
 
-            $options = $avatarCandidates->mapWithKeys(fn($path) => [
+            $options = $avatarCandidates->mapWithKeys(fn ($path) => [
                 $path => str($path)->after($root)->ltrim(DIRECTORY_SEPARATOR)->toString(),
             ]);
 
@@ -257,7 +257,7 @@ class ApplicationUpdate extends BaseCommand
             label: 'Avatar',
             required: true,
             hint: 'Path or URL to the avatar image',
-            validate: fn($value) => match (true) {
+            validate: fn ($value) => match (true) {
                 ! file_exists($value) && ! filter_var($value, FILTER_VALIDATE_URL) => 'Invalid path or URL',
                 default => null,
             },
@@ -272,7 +272,7 @@ class ApplicationUpdate extends BaseCommand
     protected function getNewDefaultEnvironmentId(Application $application): string
     {
         $options = collect($application->environments)
-            ->mapWithKeys(fn($environment) => [
+            ->mapWithKeys(fn ($environment) => [
                 $environment->id => $environment->name,
             ]);
 

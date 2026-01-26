@@ -76,31 +76,31 @@ class KeyPressListener
                 [Key::LEFT, Key::LEFT_ARROW, Key::CTRL_B],
                 function () use (&$cursorPosition) {
                     $cursorPosition = max(0, $cursorPosition - 1);
-                }
+                },
             )
             ->on(
                 [Key::RIGHT, Key::RIGHT_ARROW, Key::CTRL_F],
                 function () use (&$value, &$cursorPosition) {
                     $cursorPosition = min(mb_strlen($value), $cursorPosition + 1);
-                }
+                },
             )
             ->on(
                 [Key::HOME, Key::CTRL_A],
                 function () use (&$cursorPosition) {
                     $cursorPosition = 0;
-                }
+                },
             )
             ->on(
                 [Key::END, Key::CTRL_E],
                 function () use (&$value, &$cursorPosition) {
                     $cursorPosition = mb_strlen($value);
-                }
+                },
             )
             ->on(
                 Key::DELETE,
                 function () use (&$value, &$cursorPosition) {
                     $value = mb_substr($value, 0, $cursorPosition).mb_substr($value, $cursorPosition + 1);
-                }
+                },
             )
             ->on(
                 [Key::BACKSPACE, Key::CTRL_H],

@@ -55,7 +55,7 @@ class Ship extends BaseCommand
         $this->git = $git;
 
         slideIn('WE MUST *SHIP*');
-        intro('Shipping application to Laravel Cloud');
+        intro('Shipping Application To Laravel Cloud');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -64,11 +64,11 @@ class Ship extends BaseCommand
 
         $applications = spin(
             fn () => $this->client->listApplications(),
-            'Checking for existing application...'
+            'Checking for existing application...',
         );
 
         $existingApps = collect($applications->data)->filter(
-            fn (Application $app) => $app->repositoryFullName === $repository
+            fn (Application $app) => $app->repositoryFullName === $repository,
         );
 
         if ($existingApps->isNotEmpty()) {
@@ -437,7 +437,7 @@ class Ship extends BaseCommand
 
                 $this->client->replaceEnvironmentVariables($application->environmentIds[0], $varsToAdd->toArray());
             },
-            'Adding selected variables to Cloud environment'
+            'Adding selected variables to Cloud environment',
         );
     }
 }

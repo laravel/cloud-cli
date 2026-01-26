@@ -21,11 +21,11 @@ class InstanceList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing instances');
+        intro('Listing Instances');
 
         $instances = spin(
             fn () => $this->client->listInstances($this->argument('environment')),
-            'Fetching instances...'
+            'Fetching instances...',
         );
 
         if ($this->option('json')) {
@@ -60,7 +60,7 @@ class InstanceList extends BaseCommand
                 $instance->type,
                 $instance->size,
                 "{$instance->minReplicas}-{$instance->maxReplicas}",
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

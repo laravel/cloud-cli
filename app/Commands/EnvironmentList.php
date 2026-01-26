@@ -25,14 +25,14 @@ class EnvironmentList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing environments');
+        intro('Listing Environments');
 
         $applicationId = $this->argument('application');
 
         if (! $applicationId) {
             $applications = spin(
                 fn () => $this->client->listApplications(),
-                'Fetching applications...'
+                'Fetching applications...',
             );
 
             $app = $this->getCloudApplication(collect($applications->data));
@@ -41,7 +41,7 @@ class EnvironmentList extends BaseCommand
 
         $environments = spin(
             fn () => $this->client->listEnvironments($applicationId),
-            'Fetching environments...'
+            'Fetching environments...',
         );
 
         if ($this->option('json')) {
@@ -74,7 +74,7 @@ class EnvironmentList extends BaseCommand
                 $env->branch ?? 'N/A',
                 $env->status ?? 'N/A',
                 $env->url ?: 'N/A',
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

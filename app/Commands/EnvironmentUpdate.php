@@ -27,7 +27,7 @@ class EnvironmentUpdate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Updating environment');
+        intro('Updating Environment');
 
         $data = [];
 
@@ -52,7 +52,7 @@ class EnvironmentUpdate extends BaseCommand
         try {
             $environment = spin(
                 fn () => $this->client->updateEnvironment($this->argument('environment'), $data),
-                'Updating environment...'
+                'Updating environment...',
             );
 
             if ($this->option('json')) {

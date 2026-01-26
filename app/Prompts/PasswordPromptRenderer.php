@@ -52,7 +52,7 @@ class PasswordPromptRenderer extends Renderer
                 ->when(
                     $prompt->hint,
                     fn () => $this->hint($prompt->hint),
-                    fn () => $this->newLine() // Space for errors
+                    fn () => $this->newLine(), // Space for errors
                 ),
         };
     }

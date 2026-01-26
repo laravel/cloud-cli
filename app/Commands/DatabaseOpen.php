@@ -33,28 +33,28 @@ class DatabaseOpen extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Opening database in TablePlus');
+        intro('Opening Database In TablePlus');
 
         $app = $this->getCloudApplication();
         $environments = spin(
             fn () => $this->client->listEnvironments($app->id),
-            'Fetching environments...'
+            'Fetching environments...',
         );
         $environment = $this->getEnvironment(collect($environments->data));
 
         $environment = spin(
             fn () => $this->client->getEnvironment($environment->id),
-            'Fetching environment details...'
+            'Fetching environment details...',
         );
 
         $databases = spin(
             fn () => $this->client->listDatabases(),
-            'Fetching databases...'
+            'Fetching databases...',
         );
 
         $database = $this->resolveDatabase(
             collect($databases->data),
-            $environment
+            $environment,
         );
 
         if (! $this->canOpenTablePlus()) {

@@ -24,8 +24,8 @@ class ApplicationList extends BaseCommand
         intro('Applications');
 
         $applications = spin(
-            fn() => $this->client->listApplications(),
-            'Fetching applications...'
+            fn () => $this->client->listApplications(),
+            'Fetching applications...',
         );
 
         $this->outputJsonIfWanted($applications);
@@ -38,12 +38,12 @@ class ApplicationList extends BaseCommand
 
         table(
             ['ID', 'Name', 'Region', 'Repository'],
-            collect($applications->data)->map(fn($app) => [
+            collect($applications->data)->map(fn ($app) => [
                 $app->id,
                 $app->name,
                 $app->region,
                 $app->repositoryFullName ?? 'N/A',
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

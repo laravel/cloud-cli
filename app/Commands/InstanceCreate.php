@@ -15,7 +15,7 @@ class InstanceCreate extends BaseCommand
     use HasAClient;
 
     protected $signature = 'instance:create
-                            {environment : The environment ID}
+                            {environment? : The environment ID}
                             {--name= : Instance name}
                             {--type= : Instance type (app|worker)}
                             {--size= : Instance size}
@@ -29,7 +29,7 @@ class InstanceCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Creating instance');
+        intro('Creating Instance');
 
         $data = [];
 
@@ -56,7 +56,7 @@ class InstanceCreate extends BaseCommand
         try {
             $instance = spin(
                 fn () => $this->client->createInstance($this->argument('environment'), $data),
-                'Creating instance...'
+                'Creating instance...',
             );
 
             if ($this->option('json')) {

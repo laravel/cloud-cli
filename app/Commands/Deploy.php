@@ -42,7 +42,7 @@ class Deploy extends BaseCommand
         slideIn('TO THE *CLOUD*');
         $this->newLine();
 
-        intro('Deploying application to Laravel Cloud');
+        intro('Deploying Application To Laravel Cloud');
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
@@ -51,11 +51,11 @@ class Deploy extends BaseCommand
 
         $applications = spin(
             fn () => $this->client->listApplications(),
-            'Checking for existing application...'
+            'Checking for existing application...',
         );
 
         $existingApps = collect($applications->data ?? [])->filter(
-            fn ($app) => $app->repositoryFullName === $repository
+            fn ($app) => $app->repositoryFullName === $repository,
         );
 
         if ($existingApps->isEmpty()) {
@@ -78,7 +78,7 @@ class Deploy extends BaseCommand
 
         $environments = spin(
             fn () => $this->client->listEnvironments($app->id),
-            'Checking for existing environments...'
+            'Checking for existing environments...',
         );
 
         $environment = $this->getEnvironment(collect($environments->data));

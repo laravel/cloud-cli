@@ -58,7 +58,7 @@ trait HasAClient
                         return [$token => $application->organization];
                     });
                 },
-                'Fetching token details'
+                'Fetching token details',
             );
 
             if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {

@@ -23,14 +23,14 @@ class DomainDelete extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Deleting domain');
+        intro('Deleting Domain');
 
         $domainId = $this->argument('domain');
 
         if (! $this->option('force')) {
             $domain = spin(
                 fn () => $this->client->getDomain($domainId),
-                'Fetching domain...'
+                'Fetching domain...',
             );
 
             if (! confirm("Delete domain '{$domain->domain}'?")) {
@@ -43,7 +43,7 @@ class DomainDelete extends BaseCommand
         try {
             spin(
                 fn () => $this->client->deleteDomain($domainId),
-                'Deleting domain...'
+                'Deleting domain...',
             );
 
             success('Domain deleted.');

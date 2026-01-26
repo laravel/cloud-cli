@@ -25,7 +25,7 @@ class DomainUpdate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Updating domain');
+        intro('Updating Domain');
 
         $data = [];
 
@@ -42,7 +42,7 @@ class DomainUpdate extends BaseCommand
         try {
             $domain = spin(
                 fn () => $this->client->updateDomain($this->argument('domain'), $data),
-                'Updating domain...'
+                'Updating domain...',
             );
 
             if ($this->option('json')) {

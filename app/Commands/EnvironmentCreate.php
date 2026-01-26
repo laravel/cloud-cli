@@ -30,7 +30,7 @@ class EnvironmentCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Creating environment');
+        intro('Creating Environment');
 
         $application = $this->getCloudApplication();
 

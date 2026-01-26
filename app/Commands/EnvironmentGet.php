@@ -24,7 +24,7 @@ class EnvironmentGet extends BaseCommand
 
         $environment = spin(
             fn () => $this->client->getEnvironment($this->argument('environment')),
-            'Fetching environment...'
+            'Fetching environment...',
         );
 
         if ($this->option('json')) {

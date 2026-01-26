@@ -71,7 +71,7 @@ class RepoConfig extends BaseCommand
         // TODO: Refactor once we have proper endpoints for orgs
         return spin(
             fn () => $this->client->listApplications()->data[0]?->organization ?? null,
-            'Fetching organization...'
+            'Fetching organization...',
         );
     }
 
@@ -79,7 +79,7 @@ class RepoConfig extends BaseCommand
     {
         $applications = spin(
             fn () => collect($this->client->listApplications()->data),
-            'Fetching applications...'
+            'Fetching applications...',
         );
 
         if ($applications->isEmpty()) {

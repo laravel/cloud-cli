@@ -40,7 +40,7 @@ class EnvironmentLogs extends BaseCommand
         $app = $this->getCloudApplication();
         $environments = spin(
             fn () => $this->client->listEnvironments($app->id),
-            'Fetching environments...'
+            'Fetching environments...',
         );
         $environment = $this->getEnvironment(collect($environments->data));
 
@@ -49,7 +49,7 @@ class EnvironmentLogs extends BaseCommand
 
         $logsResponse = spin(
             fn () => $this->client->getEnvironmentLogs($environment->id, $from, $to),
-            'Fetching logs...'
+            'Fetching logs...',
         );
 
         if ($this->option('json')) {

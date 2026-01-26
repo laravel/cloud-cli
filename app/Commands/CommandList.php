@@ -21,11 +21,11 @@ class CommandList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing commands');
+        intro('Listing Commands');
 
         $commands = spin(
             fn () => $this->client->listCommands($this->argument('environment')),
-            'Fetching commands...'
+            'Fetching commands...',
         );
 
         if ($this->option('json')) {
@@ -58,7 +58,7 @@ class CommandList extends BaseCommand
                 $cmd->status,
                 $cmd->exitCode ?? 'N/A',
                 $cmd->startedAt?->format('Y-m-d H:i:s') ?? 'N/A',
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

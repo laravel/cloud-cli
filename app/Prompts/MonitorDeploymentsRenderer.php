@@ -49,7 +49,7 @@ class MonitorDeploymentsRenderer extends Renderer
 
             $message = $this->dim(
                 'Checking in for new deployment in '.
-                    CarbonInterval::seconds($checkingIn)->format('%I:%S')
+                    CarbonInterval::seconds($checkingIn)->format('%I:%S'),
             );
 
             $frame = $this->frames[$monitor->count % count($this->frames)];
@@ -81,7 +81,7 @@ class MonitorDeploymentsRenderer extends Renderer
 
             if ($monitor->autoExitAt->isFuture()) {
                 $this->lineWithBorder(
-                    $this->dim('Auto-exiting in '.$monitor->autoExitAt->diff(CarbonImmutable::now())->format('%I:%S'))
+                    $this->dim('Auto-exiting in '.$monitor->autoExitAt->diff(CarbonImmutable::now())->format('%I:%S')),
                 );
             } else {
                 $this->lineWithBorder($this->dim('Auto-exiting after deployment'));

@@ -21,11 +21,11 @@ class BackgroundProcessList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing background processes');
+        intro('Listing Background Processes');
 
         $processes = spin(
             fn () => $this->client->listBackgroundProcesses($this->argument('instance')),
-            'Fetching background processes...'
+            'Fetching background processes...',
         );
 
         if ($this->option('json')) {
@@ -56,7 +56,7 @@ class BackgroundProcessList extends BaseCommand
                 substr($process->command, 0, 50),
                 $process->type,
                 $process->instances,
-            ])->toArray()
+            ])->toArray(),
         );
     }
 }

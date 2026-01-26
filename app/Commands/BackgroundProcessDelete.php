@@ -23,14 +23,14 @@ class BackgroundProcessDelete extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Deleting background process');
+        intro('Deleting Background Process');
 
         $processId = $this->argument('process');
 
         if (! $this->option('force')) {
             $process = spin(
                 fn () => $this->client->getBackgroundProcess($processId),
-                'Fetching background process...'
+                'Fetching background process...',
             );
 
             if (! confirm("Delete background process '{$process->command}'?")) {
@@ -43,7 +43,7 @@ class BackgroundProcessDelete extends BaseCommand
         try {
             spin(
                 fn () => $this->client->deleteBackgroundProcess($processId),
-                'Deleting background process...'
+                'Deleting background process...',
             );
 
             success('Background process deleted.');

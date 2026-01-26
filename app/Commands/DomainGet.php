@@ -24,7 +24,7 @@ class DomainGet extends BaseCommand
 
         $domain = spin(
             fn () => $this->client->getDomain($this->argument('domain')),
-            'Fetching domain...'
+            'Fetching domain...',
         );
 
         if ($this->option('json')) {
