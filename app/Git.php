@@ -133,6 +133,17 @@ class Git
         return 'main';
     }
 
+    public function currentBranch(): string
+    {
+        $result = $this->run(['git', 'rev-parse', '--abbrev-ref', 'HEAD']);
+
+        if ($result->successful()) {
+            return trim($result->output());
+        }
+
+        return $this->getDefaultBranch();
+    }
+
     public static function commitUrl(string $repositoryFullName, string $commitHash): string
     {
         return sprintf('https://github.com/%s/commit/%s', $repositoryFullName, $commitHash);

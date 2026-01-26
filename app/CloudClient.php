@@ -30,7 +30,7 @@ class CloudClient
 
     public function __construct(
         #[SensitiveParameter]
-        protected string $apiKey
+        protected string $apiKey,
     ) {
         $this->client = Http::withToken($this->apiKey)
             ->baseUrl('https://cloud.laravel.com/api')
@@ -162,7 +162,7 @@ class CloudClient
 
         $logs = array_map(
             fn ($item) => EnvironmentLog::fromApiResponse($responseData, $item),
-            $responseData['data'] ?? []
+            $responseData['data'] ?? [],
         );
 
         $meta = $responseData['meta'] ?? [];
@@ -233,13 +233,10 @@ class CloudClient
 
     public function createEnvironment(string $applicationId, string $name, ?string $branch = null): Environment
     {
-        $response = $this->client->post(
-            "/applications/{$applicationId}/environments",
-            array_filter([
-                'name' => $name,
-                'branch' => $branch,
-            ])
-        );
+        $response = $this->client->post("/applications/{$applicationId}/environments", [
+            'name' => $name,
+            'branch' => $branch,
+        ]);
 
         return Environment::fromApiResponse($response->json());
     }

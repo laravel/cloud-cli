@@ -3,8 +3,9 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
-use App\Dto\ValidationErrors;
+use App\Git;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -14,19 +15,16 @@ use function Laravel\Prompts\text;
 class EnvironmentCreate extends BaseCommand
 {
     use HasAClient;
+    use RequiresApplication;
     use Validates;
 
     protected $signature = 'environment:create
-                            {application : The application ID}
+                            {application? : The application ID}
                             {--name= : Environment name}
                             {--branch= : Git branch}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a new environment';
-
-    protected ?string $environmentName = null;
-
-    protected ?string $branch = null;
 
     public function handle()
     {
@@ -34,49 +32,46 @@ class EnvironmentCreate extends BaseCommand
 
         intro('Creating environment');
 
-        $applicationId = $this->argument('application');
+        $application = $this->getCloudApplication();
 
         $environment = $this->loopUntilValid(
-            fn (ValidationErrors $errors) => $this->createEnvironment($applicationId, $errors)
+            fn () => $this->createEnvironment($application->id),
         );
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'id' => $environment->id,
-                'name' => $environment->name,
-                'branch' => $environment->branch,
-                'created_at' => $environment->createdAt?->toIso8601String(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($environment);
 
         outro("Environment created: {$environment->name}");
     }
 
-    protected function createEnvironment(string $applicationId, ValidationErrors $errors)
+    protected function createEnvironment(string $applicationId)
     {
-        if (! $this->environmentName || $errors->has('name')) {
-            $this->environmentName = $this->option('name') ?: text(
-                label: 'Environment name',
-                required: true,
-            );
-        }
+        $currentBranch = app(Git::class)->currentBranch();
 
-        if (! $this->branch || $errors->has('branch')) {
-            $this->branch = $this->option('branch') ?: text(
-                label: 'Git branch',
-                required: false,
-            );
-        }
+        $this->addParam(
+            'name',
+            fn ($resolver) => $resolver->fromInput(fn ($value) => text(
+                label: 'Name',
+                default: $this->getParam('name') ?? $currentBranch,
+                required: true,
+            )),
+        );
+
+        $this->addParam(
+            'branch',
+            fn ($resolver) => $resolver->fromInput(fn ($value) => text(
+                label: 'Branch',
+                default: $this->getParam('branch') ?? $currentBranch,
+                required: true,
+            )),
+        );
 
         return spin(
             fn () => $this->client->createEnvironment(
                 $applicationId,
-                $this->environmentName,
-                $this->branch ?: null
+                $this->getParam('name'),
+                $this->getParam('branch'),
             ),
-            'Creating environment...'
+            'Creating environment...',
         );
     }
 }
