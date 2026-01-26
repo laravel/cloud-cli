@@ -18,7 +18,8 @@ trait RequiresApplication
      */
     protected function getCloudApplication(?Collection $apps = null, $showPrompt = true): Application
     {
-        $defaultApplicationId = $this->argument('application') ?? app(LocalConfig::class)->get('application_id');
+        $applicationArg = $this->hasArgument('application') ? $this->argument('application') : null;
+        $defaultApplicationId = $applicationArg ?? app(LocalConfig::class)->get('application_id');
 
         if ($defaultApplicationId) {
             $identifier = $defaultApplicationId;
