@@ -3,6 +3,7 @@
 use App\Prompts\Answered;
 use App\Prompts\DataList;
 use App\Prompts\DynamicSpinner;
+use App\Prompts\NumberPrompt;
 use App\Prompts\SlideIn;
 use Laravel\Prompts\Note;
 
@@ -38,5 +39,21 @@ if (! function_exists('dataList')) {
     function dataList(array $data): void
     {
         (new DataList(data: $data))->display();
+    }
+}
+
+if (! function_exists('number')) {
+    function number(
+        string $label,
+        string $placeholder = '',
+        string $default = '',
+        bool|string $required = false,
+        mixed $validate = null,
+        string $hint = '',
+        ?Closure $transform = null,
+        ?int $min = null,
+        ?int $max = null,
+    ): mixed {
+        return (new NumberPrompt(...get_defined_vars()))->prompt();
     }
 }

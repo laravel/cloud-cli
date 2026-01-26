@@ -44,7 +44,11 @@ abstract class BaseCommand extends Command
 
     protected function getParams(): array
     {
-        return array_map(fn ($resolver) => $resolver->value(), $this->paramCollectors);
+        return collect($this->paramCollectors)->mapWithKeys(
+            fn (ValueResolver $resolver) => [
+                $resolver->key() => $resolver->value(),
+            ],
+        )->toArray();
     }
 
     protected function intro(string $title, ?string $suffix = null): void

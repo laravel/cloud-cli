@@ -15,13 +15,27 @@ class ValueResolver
 
     protected $shouldPromptOnce = false;
 
+    protected ?string $key = null;
+
     public function __construct(
         protected string $argumentName,
         protected bool $isInteractive,
-        protected ?string $value = null,
+        protected mixed $value = null,
         protected string $resolveFromType = 'argument',
     ) {
         //
+    }
+
+    public function paramKey(string $key): self
+    {
+        $this->key = $key;
+
+        return $this;
+    }
+
+    public function key(): string
+    {
+        return $this->key ?? $this->argumentName;
     }
 
     public function fromInput(callable $input): self
@@ -45,17 +59,17 @@ class ValueResolver
         return $this;
     }
 
-    public function value(): ?string
+    public function value(): mixed
     {
         return $this->value;
     }
 
-    public function retrieve(): ?string
+    public function retrieve(): mixed
     {
         return $this->value = $this->retrieveValue();
     }
 
-    protected function retrieveValue(): ?string
+    protected function retrieveValue(): mixed
     {
         $this->errors ??= new ValidationErrors;
 
@@ -65,15 +79,15 @@ class ValueResolver
             return ($this->fromInputCallback)($this->value);
         }
 
-        if ($this->value && ! $this->errors->has($this->argumentName)) {
+        if ($this->value !== null && ! $this->errors->has($this->key())) {
             return $this->value;
         }
 
-        if ($this->isInteractive && (! $this->value || $this->errors->has($this->argumentName))) {
+        if ($this->isInteractive && $this->fromInputCallback && ($this->value === null || $this->errors->has($this->key()))) {
             return ($this->fromInputCallback)($this->value);
         }
 
-        if ($this->value) {
+        if ($this->value !== null) {
             return $this->value;
         }
 
