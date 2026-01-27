@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\DatabaseSnapshots\CreateDatabaseSnapshotRequest;
 use App\Client\Resources\DatabaseSnapshots\DeleteDatabaseSnapshotRequest;
 use App\Client\Resources\DatabaseSnapshots\GetDatabaseSnapshotRequest;

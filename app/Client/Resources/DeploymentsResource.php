@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Deployment;
 use App\Dto\Paginated;
 

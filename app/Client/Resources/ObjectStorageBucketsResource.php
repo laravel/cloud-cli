@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\ObjectStorageBuckets\CreateObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\DeleteObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\WebSocketApplications\CreateWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\DeleteWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;

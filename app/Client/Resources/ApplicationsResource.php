@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Applications\UpdateApplicationRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Application;
 use App\Dto\Paginated;
 

@@ -1,12 +1,14 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\BackgroundProcesses\CreateBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\DeleteBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\GetBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\ListBackgroundProcessesRequest;
 use App\Client\Resources\BackgroundProcesses\UpdateBackgroundProcessRequest;
+use App\Client\ResponseMapper;
 use App\Dto\BackgroundProcess;
 use App\Dto\Paginated;
 

@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\DedicatedClusters\ListDedicatedClustersRequest;
 
 class DedicatedClustersResource

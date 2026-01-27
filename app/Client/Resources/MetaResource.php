@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListIpAddressesRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Organization;
 
 class MetaResource

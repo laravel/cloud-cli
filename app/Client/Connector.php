@@ -2,6 +2,24 @@
 
 namespace App\Client;
 
+use App\Client\Resources\ApplicationsResource;
+use App\Client\Resources\BackgroundProcessesResource;
+use App\Client\Resources\BucketKeysResource;
+use App\Client\Resources\CachesResource;
+use App\Client\Resources\CommandsResource;
+use App\Client\Resources\DatabaseClustersResource;
+use App\Client\Resources\DatabaseRestoresResource;
+use App\Client\Resources\DatabaseSnapshotsResource;
+use App\Client\Resources\DatabasesResource;
+use App\Client\Resources\DedicatedClustersResource;
+use App\Client\Resources\DeploymentsResource;
+use App\Client\Resources\DomainsResource;
+use App\Client\Resources\EnvironmentsResource;
+use App\Client\Resources\InstancesResource;
+use App\Client\Resources\MetaResource;
+use App\Client\Resources\ObjectStorageBucketsResource;
+use App\Client\Resources\WebSocketApplicationsResource;
+use App\Client\Resources\WebSocketClustersResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
 use SensitiveParameter;

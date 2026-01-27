@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\BucketKeys\CreateBucketKeyRequest;
 use App\Client\Resources\BucketKeys\DeleteBucketKeyRequest;
 use App\Client\Resources\BucketKeys\GetBucketKeyRequest;

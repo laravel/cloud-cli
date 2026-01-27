@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\WebSocketClusters\CreateWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\DeleteWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;

@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Domains\CreateDomainRequest;
 use App\Client\Resources\Domains\DeleteDomainRequest;
 use App\Client\Resources\Domains\GetDomainRequest;
 use App\Client\Resources\Domains\ListDomainsRequest;
 use App\Client\Resources\Domains\UpdateDomainRequest;
 use App\Client\Resources\Domains\VerifyDomainRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Domain;
 use App\Dto\Paginated;
 

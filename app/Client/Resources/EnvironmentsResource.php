@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
@@ -12,6 +13,7 @@ use App\Client\Resources\Environments\ReplaceEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Environment;
 use App\Dto\EnvironmentLog;
 use App\Dto\Paginated;

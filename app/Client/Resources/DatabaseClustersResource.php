@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\DeleteDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
 use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
+use App\Client\ResponseMapper;
 use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Paginated;

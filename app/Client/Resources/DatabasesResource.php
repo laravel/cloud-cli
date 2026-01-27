@@ -1,11 +1,13 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Databases\CreateDatabaseRequest;
 use App\Client\Resources\Databases\DeleteDatabaseRequest;
 use App\Client\Resources\Databases\GetDatabaseRequest;
 use App\Client\Resources\Databases\ListDatabasesRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Database;
 use App\Dto\Paginated;
 

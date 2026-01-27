@@ -1,10 +1,12 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Commands\GetCommandRequest;
 use App\Client\Resources\Commands\ListCommandsRequest;
 use App\Client\Resources\Commands\RunCommandRequest;
+use App\Client\ResponseMapper;
 use App\Dto\Command;
 use App\Dto\Paginated;
 

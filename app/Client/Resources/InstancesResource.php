@@ -1,13 +1,15 @@
 <?php
 
-namespace App\Client;
+namespace App\Client\Resources;
 
+use App\Client\Connector;
 use App\Client\Resources\Instances\CreateInstanceRequest;
 use App\Client\Resources\Instances\DeleteInstanceRequest;
 use App\Client\Resources\Instances\GetInstanceRequest;
 use App\Client\Resources\Instances\ListInstanceSizesRequest;
 use App\Client\Resources\Instances\ListInstancesRequest;
 use App\Client\Resources\Instances\UpdateInstanceRequest;
+use App\Client\ResponseMapper;
 use App\Dto\EnvironmentInstance;
 use App\Dto\Paginated;
 
