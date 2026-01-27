@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Instances;
 
+use App\Dto\EnvironmentInstance;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateInstanceRequest extends Request implements HasBody
@@ -28,5 +30,10 @@ class CreateInstanceRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return $this->data;
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return EnvironmentInstance::createFromResponse($response->json());
     }
 }

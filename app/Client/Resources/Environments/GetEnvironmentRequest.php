@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Dto\Environment;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetEnvironmentRequest extends Request
 {
@@ -26,5 +28,10 @@ class GetEnvironmentRequest extends Request
         return array_filter([
             'include' => $this->include,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Environment::createFromResponse($response->json());
     }
 }

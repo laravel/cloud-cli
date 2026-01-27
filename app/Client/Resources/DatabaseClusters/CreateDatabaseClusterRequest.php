@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\DatabaseClusters;
 
+use App\Dto\DatabaseCluster;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateDatabaseClusterRequest extends Request implements HasBody
@@ -37,5 +39,10 @@ class CreateDatabaseClusterRequest extends Request implements HasBody
             'config' => $this->config,
             'cluster_id' => $this->clusterId,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return DatabaseCluster::createFromResponse($response->json());
     }
 }

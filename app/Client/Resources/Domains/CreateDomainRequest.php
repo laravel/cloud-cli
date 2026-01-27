@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Domains;
 
+use App\Dto\Domain;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateDomainRequest extends Request implements HasBody
@@ -30,5 +32,10 @@ class CreateDomainRequest extends Request implements HasBody
         return [
             'domain' => $this->domain,
         ];
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Domain::createFromResponse($response->json());
     }
 }

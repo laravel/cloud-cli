@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\ObjectStorageBuckets;
 
+use App\Dto\ObjectStorageBucket;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateObjectStorageBucketRequest extends Request implements HasBody
@@ -41,5 +43,10 @@ class CreateObjectStorageBucketRequest extends Request implements HasBody
             'key_name' => $this->keyName,
             'key_permission' => $this->keyPermission,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return ObjectStorageBucket::createFromResponse($response->json());
     }
 }

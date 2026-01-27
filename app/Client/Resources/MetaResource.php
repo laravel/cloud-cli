@@ -19,9 +19,11 @@ class MetaResource
 
     public function organization(): Organization
     {
-        $response = $this->connector->send(new GetOrganizationRequest);
+        $request = new GetOrganizationRequest;
 
-        return Organization::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function regions(): array

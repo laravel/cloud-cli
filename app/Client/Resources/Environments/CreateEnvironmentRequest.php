@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Environments;
 
+use App\Dto\Environment;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateEnvironmentRequest extends Request implements HasBody
@@ -32,5 +34,10 @@ class CreateEnvironmentRequest extends Request implements HasBody
             'name' => $this->name,
             'branch' => $this->branch,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Environment::createFromResponse($response->json());
     }
 }

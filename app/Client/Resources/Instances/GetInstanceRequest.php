@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\Instances;
 
+use App\Dto\EnvironmentInstance;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetInstanceRequest extends Request
 {
@@ -18,5 +20,10 @@ class GetInstanceRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/instances/{$this->instanceId}";
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return EnvironmentInstance::createFromResponse($response->json());
     }
 }

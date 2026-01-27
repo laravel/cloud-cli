@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Applications;
 
+use App\Dto\Application;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateApplicationRequest extends Request implements HasBody
@@ -33,5 +35,10 @@ class CreateApplicationRequest extends Request implements HasBody
             'name' => $this->name,
             'region' => $this->region,
         ];
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Application::createFromResponse($response->json());
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\BackgroundProcesses;
 
+use App\Dto\BackgroundProcess;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetBackgroundProcessRequest extends Request
 {
@@ -18,5 +20,10 @@ class GetBackgroundProcessRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/background-processes/{$this->backgroundProcessId}";
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return BackgroundProcess::createFromResponse($response->json());
     }
 }

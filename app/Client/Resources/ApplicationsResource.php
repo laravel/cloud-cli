@@ -36,23 +36,27 @@ class ApplicationsResource
 
     public function get(string $applicationId): Application
     {
-        $response = $this->connector->send(new GetApplicationRequest(
+        $request = new GetApplicationRequest(
             applicationId: $applicationId,
             include: $this->getIncludesString(),
-        ));
+        );
 
-        return Application::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $repository, string $name, string $region): Application
     {
-        $response = $this->connector->send(new CreateApplicationRequest(
+        $request = new CreateApplicationRequest(
             repository: $repository,
             name: $name,
             region: $region,
-        ));
+        );
 
-        return Application::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $applicationId, array $data): Application
@@ -67,7 +71,7 @@ class ApplicationsResource
             unset($data['avatar']);
         }
 
-        $response = $this->connector->send(new UpdateApplicationRequest(
+        $request = new UpdateApplicationRequest(
             applicationId: $applicationId,
             name: $data['name'] ?? null,
             slug: $data['slug'] ?? null,
@@ -75,8 +79,10 @@ class ApplicationsResource
             repository: $data['repository'] ?? null,
             slackChannel: $data['slack_channel'] ?? null,
             avatar: $avatar,
-        ));
+        );
 
-        return Application::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }

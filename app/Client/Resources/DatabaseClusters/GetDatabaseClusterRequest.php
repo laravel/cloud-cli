@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\DatabaseClusters;
 
+use App\Dto\DatabaseCluster;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetDatabaseClusterRequest extends Request
 {
@@ -26,5 +28,10 @@ class GetDatabaseClusterRequest extends Request
         return array_filter([
             'include' => $this->include,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return DatabaseCluster::createFromResponse($response->json());
     }
 }

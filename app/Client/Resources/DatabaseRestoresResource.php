@@ -16,12 +16,14 @@ class DatabaseRestoresResource
 
     public function create(string $clusterId, ?string $snapshotId = null, ?string $pointInTime = null): DatabaseCluster
     {
-        $response = $this->connector->send(new CreateDatabaseRestoreRequest(
+        $request = new CreateDatabaseRestoreRequest(
             clusterId: $clusterId,
             snapshotId: $snapshotId,
             pointInTime: $pointInTime,
-        ));
+        );
 
-        return DatabaseCluster::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }

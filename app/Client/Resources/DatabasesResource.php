@@ -22,27 +22,31 @@ class DatabasesResource
     {
         $request = new ListDatabasesRequest($clusterId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Database::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $clusterId, string $databaseId): Database
     {
-        $response = $this->connector->send(new GetDatabaseRequest(
+        $request = new GetDatabaseRequest(
             clusterId: $clusterId,
             databaseId: $databaseId,
-        ));
+        );
 
-        return Database::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $clusterId, string $name): Database
     {
-        $response = $this->connector->send(new CreateDatabaseRequest(
+        $request = new CreateDatabaseRequest(
             clusterId: $clusterId,
             name: $name,
-        ));
+        );
 
-        return Database::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $clusterId, string $databaseId): void

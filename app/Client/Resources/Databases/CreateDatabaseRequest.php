@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources\Databases;
 
+use App\Dto\Database;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\Traits\Body\HasJsonBody;
 
 class CreateDatabaseRequest extends Request implements HasBody
@@ -30,5 +32,10 @@ class CreateDatabaseRequest extends Request implements HasBody
         return [
             'name' => $this->name,
         ];
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Database::createFromResponse($response->json());
     }
 }

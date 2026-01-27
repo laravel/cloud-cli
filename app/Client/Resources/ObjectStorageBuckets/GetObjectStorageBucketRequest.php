@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\ObjectStorageBuckets;
 
+use App\Dto\ObjectStorageBucket;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetObjectStorageBucketRequest extends Request
 {
@@ -26,5 +28,10 @@ class GetObjectStorageBucketRequest extends Request
         return array_filter([
             'include' => $this->include,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return ObjectStorageBucket::createFromResponse($response->json());
     }
 }

@@ -23,34 +23,40 @@ class BackgroundProcessesResource
     {
         $request = new ListBackgroundProcessesRequest($instanceId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => BackgroundProcess::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $backgroundProcessId): BackgroundProcess
     {
-        $response = $this->connector->send(new GetBackgroundProcessRequest($backgroundProcessId));
+        $request = new GetBackgroundProcessRequest($backgroundProcessId);
 
-        return BackgroundProcess::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $instanceId, array $data): BackgroundProcess
     {
-        $response = $this->connector->send(new CreateBackgroundProcessRequest(
+        $request = new CreateBackgroundProcessRequest(
             instanceId: $instanceId,
             data: $data,
-        ));
+        );
 
-        return BackgroundProcess::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $backgroundProcessId, array $data): BackgroundProcess
     {
-        $response = $this->connector->send(new UpdateBackgroundProcessRequest(
+        $request = new UpdateBackgroundProcessRequest(
             backgroundProcessId: $backgroundProcessId,
             data: $data,
-        ));
+        );
 
-        return BackgroundProcess::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $backgroundProcessId): void

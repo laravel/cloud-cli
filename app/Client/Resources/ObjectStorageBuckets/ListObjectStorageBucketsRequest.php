@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\ObjectStorageBuckets;
 
+use App\Dto\ObjectStorageBucket;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListObjectStorageBucketsRequest extends Request implements Paginatable
@@ -32,5 +34,13 @@ class ListObjectStorageBucketsRequest extends Request implements Paginatable
             'filter[status]' => $this->status,
             'filter[visibility]' => $this->visibility,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return array_map(fn ($bucket) => ObjectStorageBucket::createFromResponse([
+            'data' => $bucket,
+            'included' => $response->json('included', []),
+        ]), $response->json('data'));
     }
 }

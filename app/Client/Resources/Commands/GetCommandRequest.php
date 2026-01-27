@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\Commands;
 
+use App\Dto\Command;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetCommandRequest extends Request
 {
@@ -18,5 +20,10 @@ class GetCommandRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/commands/{$this->commandId}";
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Command::createFromResponse($response->json());
     }
 }

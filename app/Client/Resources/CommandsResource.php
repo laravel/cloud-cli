@@ -21,23 +21,27 @@ class CommandsResource
     {
         $request = new ListCommandsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Command::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $commandId): Command
     {
-        $response = $this->connector->send(new GetCommandRequest($commandId));
+        $request = new GetCommandRequest($commandId);
 
-        return Command::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function run(string $environmentId, string $command): Command
     {
-        $response = $this->connector->send(new RunCommandRequest(
+        $request = new RunCommandRequest(
             environmentId: $environmentId,
             command: $command,
-        ));
+        );
 
-        return Command::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }

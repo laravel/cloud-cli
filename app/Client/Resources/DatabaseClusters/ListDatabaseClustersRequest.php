@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\DatabaseClusters;
 
+use App\Dto\DatabaseCluster;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\Paginatable;
 
 class ListDatabaseClustersRequest extends Request implements Paginatable
@@ -26,5 +28,13 @@ class ListDatabaseClustersRequest extends Request implements Paginatable
         return array_filter([
             'include' => $this->include,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return array_map(fn ($cluster) => DatabaseCluster::createFromResponse([
+            'data' => $cluster,
+            'included' => $response->json('included', []),
+        ]), $response->json('data'));
     }
 }

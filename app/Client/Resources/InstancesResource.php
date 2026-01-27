@@ -24,34 +24,40 @@ class InstancesResource
     {
         $request = new ListInstancesRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => EnvironmentInstance::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $instanceId): EnvironmentInstance
     {
-        $response = $this->connector->send(new GetInstanceRequest($instanceId));
+        $request = new GetInstanceRequest($instanceId);
 
-        return EnvironmentInstance::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $environmentId, array $data): EnvironmentInstance
     {
-        $response = $this->connector->send(new CreateInstanceRequest(
+        $request = new CreateInstanceRequest(
             environmentId: $environmentId,
             data: $data,
-        ));
+        );
 
-        return EnvironmentInstance::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $instanceId, array $data): EnvironmentInstance
     {
-        $response = $this->connector->send(new UpdateInstanceRequest(
+        $request = new UpdateInstanceRequest(
             instanceId: $instanceId,
             data: $data,
-        ));
+        );
 
-        return EnvironmentInstance::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $instanceId): void

@@ -32,38 +32,44 @@ class EnvironmentsResource
     {
         $request = new ListEnvironmentsRequest($applicationId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Environment::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $environmentId): Environment
     {
-        $response = $this->connector->send(new GetEnvironmentRequest(
+        $request = new GetEnvironmentRequest(
             environmentId: $environmentId,
             include: $this->getIncludesString(),
-        ));
+        );
 
-        return Environment::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $applicationId, string $name, ?string $branch = null): Environment
     {
-        $response = $this->connector->send(new CreateEnvironmentRequest(
+        $request = new CreateEnvironmentRequest(
             applicationId: $applicationId,
             name: $name,
             branch: $branch,
-        ));
+        );
 
-        return Environment::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $environmentId, array $data): Environment
     {
-        $response = $this->connector->send(new UpdateEnvironmentRequest(
+        $request = new UpdateEnvironmentRequest(
             environmentId: $environmentId,
             data: $data,
-        ));
+        );
 
-        return Environment::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $environmentId): void

@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\Applications;
 
+use App\Dto\Application;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetApplicationRequest extends Request
 {
@@ -26,5 +28,10 @@ class GetApplicationRequest extends Request
         return array_filter([
             'include' => $this->include,
         ]);
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Application::createFromResponse($response->json());
     }
 }

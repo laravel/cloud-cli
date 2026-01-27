@@ -21,20 +21,24 @@ class DeploymentsResource
     {
         $request = new ListDeploymentsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Deployment::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $deploymentId): Deployment
     {
-        $response = $this->connector->send(new GetDeploymentRequest($deploymentId));
+        $request = new GetDeploymentRequest($deploymentId);
 
-        return Deployment::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function initiate(string $environmentId): Deployment
     {
-        $response = $this->connector->send(new InitiateDeploymentRequest($environmentId));
+        $request = new InitiateDeploymentRequest($environmentId);
 
-        return Deployment::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }

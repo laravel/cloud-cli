@@ -28,40 +28,46 @@ class DatabaseClustersResource
     {
         $request = new ListDatabaseClustersRequest(include: $this->getIncludesString());
 
-        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => DatabaseCluster::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]));
+        return $this->connector->paginate($request);
     }
 
     public function get(string $clusterId): DatabaseCluster
     {
-        $response = $this->connector->send(new GetDatabaseClusterRequest(
+        $request = new GetDatabaseClusterRequest(
             clusterId: $clusterId,
             include: $this->getIncludesString(),
-        ));
+        );
 
-        return DatabaseCluster::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function create(string $type, string $name, string $region, array $config, ?int $clusterId = null): DatabaseCluster
     {
-        $response = $this->connector->send(new CreateDatabaseClusterRequest(
+        $request = new CreateDatabaseClusterRequest(
             type: $type,
             name: $name,
             region: $region,
             config: $config,
             clusterId: $clusterId,
-        ));
+        );
 
-        return DatabaseCluster::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function update(string $clusterId, array $data): DatabaseCluster
     {
-        $response = $this->connector->send(new UpdateDatabaseClusterRequest(
+        $request = new UpdateDatabaseClusterRequest(
             clusterId: $clusterId,
             data: $data,
-        ));
+        );
 
-        return DatabaseCluster::createFromResponse($response->json());
+        $response = $this->connector->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function delete(string $clusterId): void

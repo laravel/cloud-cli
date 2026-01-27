@@ -2,8 +2,10 @@
 
 namespace App\Client\Resources\Deployments;
 
+use App\Dto\Deployment;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class InitiateDeploymentRequest extends Request
 {
@@ -18,5 +20,10 @@ class InitiateDeploymentRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/environments/{$this->environmentId}/deployments";
+    }
+
+    public function createDtoFromResponse(Response $response): mixed
+    {
+        return Deployment::createFromResponse($response->json());
     }
 }
