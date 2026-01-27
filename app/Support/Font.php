@@ -6,6 +6,14 @@ use Exception;
 
 /**
  * @see https://www.asciiart.eu/text-to-ascii-art
+ *
+ * 3x5
+ * amc 3 line
+ * thick
+ * efti font
+ * small
+ * 4max
+ * basic
  */
 class Font
 {
