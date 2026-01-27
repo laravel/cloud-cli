@@ -22,9 +22,7 @@ class DatabasesResource
     {
         $request = new ListDatabasesRequest($clusterId);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return Database::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Database::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $clusterId, string $databaseId): Database

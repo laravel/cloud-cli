@@ -25,9 +25,7 @@ class DatabaseClustersResource
     {
         $request = new ListDatabaseClustersRequest(include: $include);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return DatabaseCluster::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => DatabaseCluster::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $clusterId, ?string $include = null): DatabaseCluster

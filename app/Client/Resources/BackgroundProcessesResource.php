@@ -23,9 +23,7 @@ class BackgroundProcessesResource
     {
         $request = new ListBackgroundProcessesRequest($instanceId);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return BackgroundProcess::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => BackgroundProcess::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $backgroundProcessId): BackgroundProcess

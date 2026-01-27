@@ -24,9 +24,7 @@ class InstancesResource
     {
         $request = new ListInstancesRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return EnvironmentInstance::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => EnvironmentInstance::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $instanceId): EnvironmentInstance

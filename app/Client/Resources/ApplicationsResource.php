@@ -27,9 +27,9 @@ class ApplicationsResource
             slug: $slug,
         );
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return Application::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(
+            fn ($responseData, $item) => Application::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]),
+        );
     }
 
     public function get(string $applicationId, ?string $include = null): Application

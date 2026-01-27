@@ -21,9 +21,7 @@ class DeploymentsResource
     {
         $request = new ListDeploymentsRequest($environmentId);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return Deployment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Deployment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $deploymentId): Deployment

@@ -29,9 +29,7 @@ class EnvironmentsResource
     {
         $request = new ListEnvironmentsRequest($applicationId);
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return Environment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => Environment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $environmentId, ?string $include = null): Environment

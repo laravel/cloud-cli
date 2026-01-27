@@ -28,9 +28,7 @@ class ObjectStorageBucketsResource
             visibility: $visibility,
         );
 
-        return $this->connector->paginate($request)->transform(function ($responseData, $item) {
-            return ObjectStorageBucket::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]);
-        });
+        return $this->connector->paginate($request)->transform(fn ($responseData, $item) => ObjectStorageBucket::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]));
     }
 
     public function get(string $bucketId, ?string $include = null): ObjectStorageBucket
