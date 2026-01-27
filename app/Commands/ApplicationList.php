@@ -24,7 +24,7 @@ class ApplicationList extends BaseCommand
         intro('Applications');
 
         $applications = spin(
-            fn () => $this->client->applications()->include(['organization', 'environments', 'defaultEnvironment'])->list(),
+            fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list(),
             'Fetching applications...',
         );
 
