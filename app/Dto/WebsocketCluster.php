@@ -7,59 +7,55 @@ use App\Enums\WebsocketServerMaxConnection;
 use App\Enums\WebsocketServerStatus;
 use App\Enums\WebsocketServerType;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Casts\EnumCast;
+use Spatie\LaravelData\Data;
 
 class WebsocketCluster extends Data
 {
     public function __construct(
         public readonly string $id,
         public readonly string $name,
+        #[WithCast(EnumCast::class)]
         public readonly WebsocketServerType $type,
         public readonly string $region,
+        #[WithCast(EnumCast::class)]
         public readonly WebsocketServerStatus $status,
+        #[WithCast(EnumCast::class)]
         public readonly WebsocketServerMaxConnection $maxConnections,
+        #[WithCast(EnumCast::class)]
         public readonly WebsocketServerConnectionDistributionStrategy $connectionDistributionStrategy,
         public readonly string $hostname,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly array $applicationIds = [],
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
 
-        $applicationIds = array_column($relationships['applications']['data'] ?? [], 'id');
-
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            type: WebsocketServerType::from($attributes['type']),
-            region: $attributes['region'],
-            status: WebsocketServerStatus::from($attributes['status']),
-            maxConnections: WebsocketServerMaxConnection::from($attributes['max_connections']),
-            connectionDistributionStrategy: WebsocketServerConnectionDistributionStrategy::from($attributes['connection_distribution_strategy']),
-            hostname: $attributes['hostname'],
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-            applicationIds: $applicationIds,
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'type' => $this->type->value,
-            'region' => $this->region,
-            'status' => $this->status->value,
-            'max_connections' => $this->maxConnections->value,
-            'connection_distribution_strategy' => $this->connectionDistributionStrategy->value,
-            'hostname' => $this->hostname,
-            'created_at' => $this->createdAt?->toIso8601String(),
-            'application_ids' => $this->applicationIds,
+        $transformed = [
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'type' => $attributes['type'],
+            'region' => $attributes['region'],
+            'status' => $attributes['status'],
+            'maxConnections' => $attributes['max_connections'],
+            'connectionDistributionStrategy' => $attributes['connection_distribution_strategy'],
+            'hostname' => $attributes['hostname'],
+            'createdAt' => $attributes['created_at'] ?? null,
         ];
+
+        if (isset($relationships['applications']['data'])) {
+            $transformed['applicationIds'] = array_column($relationships['applications']['data'], 'id');
+        }
+
+        return self::from($transformed);
     }
 }

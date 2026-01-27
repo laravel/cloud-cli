@@ -102,9 +102,9 @@ class DeployMonitor extends BaseCommand
             return $deployment;
         }
 
-        $deployments = $this->client->deployments()->list($environment->id);
+        $deployments = collect($this->client->deployments()->list($environment->id)->items());
 
-        if (count($deployments->data) === 0) {
+        if ($deployments->isEmpty()) {
             return null;
         }
 

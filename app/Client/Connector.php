@@ -22,9 +22,12 @@ use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
+use Saloon\Http\Request;
+use Saloon\PaginationPlugin\Contracts\HasPagination;
+use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
 use SensitiveParameter;
 
-class Connector extends SaloonConnector
+class Connector extends SaloonConnector implements HasPagination
 {
     public function __construct(
         #[SensitiveParameter]
@@ -139,5 +142,10 @@ class Connector extends SaloonConnector
     public function dedicatedClusters(): DedicatedClustersResource
     {
         return new DedicatedClustersResource($this);
+    }
+
+    public function paginate(Request $request): SaloonPaginator
+    {
+        return new \App\Client\JsonApiPaginator($this, $request);
     }
 }

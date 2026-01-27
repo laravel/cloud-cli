@@ -3,6 +3,10 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Data;
 
 class Application extends Data
 {
@@ -16,86 +20,95 @@ class Application extends Data
         public readonly ?string $repositoryFullName = null,
         public readonly ?string $repositoryBranch = null,
         public readonly ?string $slackChannel = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $repositoryId = null,
         public readonly ?string $organizationId = null,
         public readonly ?string $defaultEnvironmentId = null,
         public readonly ?Organization $organization = null,
+        #[DataCollectionOf(Environment::class)]
         public readonly array $environments = [],
+        #[DataCollectionOf(Deployment::class)]
         public readonly array $deployments = [],
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'];
+        $data = $response['data'];
         $included = $response['included'] ?? [];
-
         $attributes = $data['attributes'];
-        $repository = $attributes['repository'] ?? null;
         $relationships = $data['relationships'] ?? [];
 
-        $organizationId = $relationships['organization']['data']['id'] ?? null;
-        $environmentIds = array_column($relationships['environments']['data'] ?? [], 'id');
-        $deploymentIds = array_column($relationships['deployments']['data'] ?? [], 'id');
+        $transformed = [
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'slug' => $attributes['slug'],
+            'region' => $attributes['region'],
+            'slackChannel' => $attributes['slack_channel'] ?? null,
+            'createdAt' => $attributes['created_at'] ?? null,
+        ];
 
-        $organization = null;
+        if (isset($attributes['repository'])) {
+            $transformed['repositoryFullName'] = $attributes['repository']['full_name'] ?? null;
+            $transformed['repositoryBranch'] = $attributes['repository']['default_branch'] ?? null;
+        }
 
-        if ($organizationId) {
-            $orgData = collect($included)->first(fn ($item) => $item['type'] === 'organizations' && $item['id'] === $organizationId);
+        if (isset($relationships['repository']['data']['id'])) {
+            $transformed['repositoryId'] = $relationships['repository']['data']['id'];
+        }
+
+        if (isset($relationships['organization']['data']['id'])) {
+            $transformed['organizationId'] = $relationships['organization']['data']['id'];
+            $orgData = self::resolveIncluded($included, $relationships['organization'], 'organizations');
             if ($orgData) {
-                $organization = Organization::fromApiResponse(['data' => $orgData], $orgData);
+                $transformed['organization'] = Organization::fromJsonApi(['data' => $orgData, 'included' => $included])->toArray();
             }
         }
 
-        $environments = collect($included)
-            ->filter(fn ($item) => $item['type'] === 'environments' && in_array($item['id'], $environmentIds))
-            ->map(fn ($item) => Environment::fromApiResponse(['data' => $item], $item))
-            ->values()
-            ->toArray();
+        if (isset($relationships['environments']['data'])) {
+            $transformed['environmentIds'] = array_column($relationships['environments']['data'], 'id');
+            $envData = self::resolveIncludedCollection($included, $relationships['environments'], 'environments');
+            $transformed['environments'] = collect($envData)->map(fn ($item) => Environment::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+        }
 
-        $deployments = collect($included)
-            ->filter(fn ($item) => $item['type'] === 'deployments' && in_array($item['id'], $deploymentIds))
-            ->map(fn ($item) => Deployment::fromApiResponse(['data' => $item], $item))
-            ->values()
-            ->toArray();
+        if (isset($relationships['deployments']['data'])) {
+            $transformed['deploymentIds'] = array_column($relationships['deployments']['data'], 'id');
+            $deployData = self::resolveIncludedCollection($included, $relationships['deployments'], 'deployments');
+            $transformed['deployments'] = collect($deployData)->map(fn ($item) => Deployment::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+        }
 
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            slug: $attributes['slug'],
-            region: $attributes['region'],
-            repositoryFullName: $repository ? ($repository['full_name'] ?? null) : null,
-            repositoryBranch: $repository ? ($repository['default_branch'] ?? null) : null,
-            slackChannel: $attributes['slack_channel'] ?? null,
-            createdAt: $attributes['created_at'] ? CarbonImmutable::parse($attributes['created_at']) : null,
-            repositoryId: $relationships['repository']['data']['id'] ?? null,
-            organizationId: $organizationId,
-            environmentIds: $environmentIds,
-            deploymentIds: $deploymentIds,
-            defaultEnvironmentId: $relationships['defaultEnvironment']['data']['id'] ?? null,
-            organization: $organization,
-            environments: $environments,
-            deployments: $deployments,
-        );
+        if (isset($relationships['defaultEnvironment']['data']['id'])) {
+            $transformed['defaultEnvironmentId'] = $relationships['defaultEnvironment']['data']['id'];
+        }
+
+        return self::from($transformed);
     }
 
-    public function toArray(): array
+    protected static function resolveIncluded(array $included, ?array $relationship, string $type): ?array
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-            'region' => $this->region,
-            'repository' => [
-                'full_name' => $this->repositoryFullName,
-                'default_branch' => $this->repositoryBranch,
-            ],
-            'slack_channel' => $this->slackChannel,
-            'environment_ids' => $this->environmentIds,
-            'default_environment_id' => $this->defaultEnvironmentId,
-            'created_at' => $this->createdAt?->toIso8601String(),
-        ];
+        if (! $relationship || ! isset($relationship['data']['id'])) {
+            return null;
+        }
+
+        $id = $relationship['data']['id'];
+
+        return collect($included)
+            ->first(fn ($item) => $item['type'] === $type && $item['id'] === $id);
+    }
+
+    protected static function resolveIncludedCollection(array $included, ?array $relationship, string $type): array
+    {
+        if (! $relationship || ! isset($relationship['data']) || ! is_array($relationship['data'])) {
+            return [];
+        }
+
+        $ids = array_column($relationship['data'], 'id');
+
+        return collect($included)
+            ->filter(fn ($item) => $item['type'] === $type && in_array($item['id'], $ids))
+            ->values()
+            ->toArray();
     }
 }

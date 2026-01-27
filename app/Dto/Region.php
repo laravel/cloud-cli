@@ -2,6 +2,8 @@
 
 namespace App\Dto;
 
+use Spatie\LaravelData\Data;
+
 class Region extends Data
 {
     public function __construct(
@@ -12,23 +14,14 @@ class Region extends Data
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
 
-        return new self(
-            value: $data['region'],
-            label: $data['label'],
-            flag: $data['flag'],
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'value' => $this->value,
-            'label' => $this->label,
-            'flag' => $this->flag,
-        ];
+        return self::from([
+            'value' => $data['region'],
+            'label' => $data['label'],
+            'flag' => $data['flag'],
+        ]);
     }
 }

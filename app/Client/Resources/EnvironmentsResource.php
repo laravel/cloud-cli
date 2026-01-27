@@ -13,10 +13,9 @@ use App\Client\Resources\Environments\ReplaceEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Environment;
 use App\Dto\EnvironmentLog;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class EnvironmentsResource
 {
@@ -26,11 +25,15 @@ class EnvironmentsResource
         //
     }
 
-    public function list(string $applicationId): Paginated
+    public function list(string $applicationId): Paginator
     {
-        $response = $this->connector->send(new ListEnvironmentsRequest($applicationId));
+        $request = new ListEnvironmentsRequest($applicationId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapEnvironment($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => Environment::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $environmentId, ?string $include = null): Environment
@@ -40,7 +43,7 @@ class EnvironmentsResource
             include: $include,
         ));
 
-        return ResponseMapper::mapEnvironment($response->json());
+        return Environment::fromJsonApi($response->json());
     }
 
     public function create(string $applicationId, string $name, ?string $branch = null): Environment
@@ -51,7 +54,7 @@ class EnvironmentsResource
             branch: $branch,
         ));
 
-        return ResponseMapper::mapEnvironment($response->json());
+        return Environment::fromJsonApi($response->json());
     }
 
     public function update(string $environmentId, array $data): Environment
@@ -61,7 +64,7 @@ class EnvironmentsResource
             data: $data,
         ));
 
-        return ResponseMapper::mapEnvironment($response->json());
+        return Environment::fromJsonApi($response->json());
     }
 
     public function delete(string $environmentId): void
@@ -69,7 +72,7 @@ class EnvironmentsResource
         $this->connector->send(new DeleteEnvironmentRequest($environmentId));
     }
 
-    public function logs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): Paginated
+    public function logs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): array
     {
         $response = $this->connector->send(new ListEnvironmentLogsRequest(
             environmentId: $environmentId,
@@ -81,21 +84,8 @@ class EnvironmentsResource
         ));
 
         $responseData = $response->json();
-        $logs = collect($responseData['data'] ?? [])->map(fn ($item) => new EnvironmentLog(
-            message: $item['message'] ?? '',
-            level: \App\Enums\LogLevel::from($item['level'] ?? 'info'),
-            type: \App\Enums\LogType::from($item['type'] ?? 'application'),
-            loggedAt: isset($item['logged_at']) ? \Carbon\CarbonImmutable::parse($item['logged_at']) : \Carbon\CarbonImmutable::now(),
-            data: $item['data'] ?? null,
-        ))->toArray();
 
-        $meta = $responseData['meta'] ?? [];
-        $links = [];
-        if (isset($meta['cursor'])) {
-            $links['next'] = $meta['cursor'];
-        }
-
-        return new Paginated(data: $logs, links: $links);
+        return collect($responseData['data'] ?? [])->map(fn ($item) => EnvironmentLog::fromJsonApi($item))->toArray();
     }
 
     public function addVariables(string $environmentId, array $variables): void

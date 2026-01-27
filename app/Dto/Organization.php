@@ -2,6 +2,8 @@
 
 namespace App\Dto;
 
+use Spatie\LaravelData\Data;
+
 class Organization extends Data
 {
     public function __construct(
@@ -12,24 +14,15 @@ class Organization extends Data
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'];
+        $data = $response['data'];
         $attributes = $data['attributes'];
 
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            slug: $attributes['slug'],
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'slug' => $this->slug,
-        ];
+        return self::from([
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'slug' => $attributes['slug'],
+        ]);
     }
 }

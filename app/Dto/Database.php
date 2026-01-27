@@ -3,35 +3,30 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Data;
 
 class Database extends Data
 {
     public function __construct(
         public readonly string $id,
         public readonly string $name,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
 
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'created_at' => $this->createdAt?->toIso8601String(),
-        ];
+        return self::from([
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'createdAt' => $attributes['created_at'] ?? null,
+        ]);
     }
 }

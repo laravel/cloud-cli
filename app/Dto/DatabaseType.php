@@ -2,39 +2,30 @@
 
 namespace App\Dto;
 
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
+
 class DatabaseType extends Data
 {
     public function __construct(
         public readonly string $type,
         public readonly string $label,
         public readonly array $regions,
+        #[DataCollectionOf(ConfigSchema::class)]
         public readonly array $configSchema,
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
 
-        return new self(
-            type: $data['type'],
-            label: $data['label'],
-            regions: $data['regions'] ?? [],
-            configSchema: array_map(
-                fn (array $schema) => ConfigSchema::fromApiResponse($schema),
-                $data['config_schema'] ?? [],
-            ),
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'type' => $this->type,
-            'label' => $this->label,
-            'regions' => $this->regions,
-            'config_schema' => array_map(fn (ConfigSchema $schema) => $schema->toArray(), $this->configSchema),
-        ];
+        return self::from([
+            'type' => $data['type'],
+            'label' => $data['label'],
+            'regions' => $data['regions'] ?? [],
+            'configSchema' => collect($data['config_schema'] ?? [])->map(fn (array $schema) => ConfigSchema::from($schema)->toArray())->toArray(),
+        ]);
     }
 }

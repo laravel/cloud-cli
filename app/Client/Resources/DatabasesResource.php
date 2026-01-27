@@ -7,9 +7,8 @@ use App\Client\Resources\Databases\CreateDatabaseRequest;
 use App\Client\Resources\Databases\DeleteDatabaseRequest;
 use App\Client\Resources\Databases\GetDatabaseRequest;
 use App\Client\Resources\Databases\ListDatabasesRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Database;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class DatabasesResource
 {
@@ -19,11 +18,15 @@ class DatabasesResource
         //
     }
 
-    public function list(string $clusterId): Paginated
+    public function list(string $clusterId): Paginator
     {
-        $response = $this->connector->send(new ListDatabasesRequest($clusterId));
+        $request = new ListDatabasesRequest($clusterId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapDatabase($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => Database::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $clusterId, string $databaseId): Database
@@ -33,7 +36,7 @@ class DatabasesResource
             databaseId: $databaseId,
         ));
 
-        return ResponseMapper::mapDatabase($response->json());
+        return Database::fromJsonApi($response->json());
     }
 
     public function create(string $clusterId, string $name): Database
@@ -43,7 +46,7 @@ class DatabasesResource
             name: $name,
         ));
 
-        return ResponseMapper::mapDatabase($response->json());
+        return Database::fromJsonApi($response->json());
     }
 
     public function delete(string $clusterId, string $databaseId): void

@@ -5,18 +5,27 @@ namespace App\Dto;
 use App\Enums\DeploymentStatus;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Casts\EnumCast;
+use Spatie\LaravelData\Data;
 
 class Deployment extends Data
 {
     public function __construct(
         public readonly string $id,
+        #[WithCast(EnumCast::class)]
         public readonly DeploymentStatus $status,
         public readonly ?string $commitHash = null,
         public readonly ?string $commitMessage = null,
         public readonly ?string $commitAuthor = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $startedAt = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $finishedAt = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $updatedAt = null,
         public readonly ?string $failureReason = null,
         public readonly string $branchName = '',
@@ -29,37 +38,6 @@ class Deployment extends Data
         public readonly ?string $initiatorId = null,
     ) {
         //
-    }
-
-    public static function fromApiResponse(array $response, ?array $item = null): self
-    {
-        $data = $item ?? $response['data'] ?? [];
-        $included = $response['included'] ?? [];
-
-        $attributes = $data['attributes'] ?? [];
-        $relationships = $data['relationships'] ?? [];
-        $commit = $attributes['commit'] ?? [];
-
-        return new self(
-            id: $data['id'],
-            status: DeploymentStatus::from($attributes['status'] ?? 'pending'),
-            commitHash: $commit['hash'] ?? $attributes['commit_hash'] ?? null,
-            commitMessage: $commit['message'] ?? $attributes['commit_message'] ?? null,
-            commitAuthor: $commit['author'] ?? $attributes['commit_author'] ?? null,
-            startedAt: isset($attributes['started_at']) ? CarbonImmutable::parse($attributes['started_at']) : null,
-            finishedAt: isset($attributes['finished_at']) ? CarbonImmutable::parse($attributes['finished_at']) : null,
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-            updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
-            failureReason: $attributes['failure_reason'] ?? null,
-            branchName: $attributes['branch_name'] ?? '',
-            phpMajorVersion: $attributes['php_major_version'] ?? '',
-            buildCommand: $attributes['build_command'] ?? null,
-            nodeVersion: $attributes['node_version'] ?? null,
-            usesOctane: $attributes['uses_octane'] ?? false,
-            usesHibernation: $attributes['uses_hibernation'] ?? false,
-            environmentId: $relationships['environment']['data']['id'] ?? null,
-            initiatorId: $relationships['initiator']['data']['id'] ?? null,
-        );
     }
 
     public function totalTime(): CarbonInterval
@@ -120,28 +98,40 @@ class Deployment extends Data
         return ! $this->isFinished();
     }
 
-    public function toArray(): array
+    public static function fromJsonApi(array $response): self
     {
-        return [
-            'id' => $this->id,
-            'status' => $this->status->value,
-            'branch_name' => $this->branchName,
-            'commit_hash' => $this->commitHash,
-            'commit_message' => $this->commitMessage,
-            'commit_author' => $this->commitAuthor,
-            'started_at' => $this->startedAt?->toIso8601String(),
-            'finished_at' => $this->finishedAt?->toIso8601String(),
-            'failure_reason' => $this->failureReason,
-            'total_time' => $this->totalTime()->format('%H:%I:%S'),
-            'environment_id' => $this->environmentId,
-            'initiator_id' => $this->initiatorId,
-            'created_at' => $this->createdAt?->toIso8601String(),
-            'updated_at' => $this->updatedAt?->toIso8601String(),
-            'php_major_version' => $this->phpMajorVersion,
-            'build_command' => $this->buildCommand,
-            'node_version' => $this->nodeVersion,
-            'uses_octane' => $this->usesOctane,
-            'uses_hibernation' => $this->usesHibernation,
+        $data = $response['data'] ?? [];
+        $attributes = $data['attributes'] ?? [];
+        $relationships = $data['relationships'] ?? [];
+        $commit = $attributes['commit'] ?? [];
+
+        $transformed = [
+            'id' => $data['id'],
+            'status' => $attributes['status'] ?? 'pending',
+            'commitHash' => $commit['hash'] ?? $attributes['commit_hash'] ?? null,
+            'commitMessage' => $commit['message'] ?? $attributes['commit_message'] ?? null,
+            'commitAuthor' => $commit['author'] ?? $attributes['commit_author'] ?? null,
+            'startedAt' => $attributes['started_at'] ?? null,
+            'finishedAt' => $attributes['finished_at'] ?? null,
+            'createdAt' => $attributes['created_at'] ?? null,
+            'updatedAt' => $attributes['updated_at'] ?? null,
+            'failureReason' => $attributes['failure_reason'] ?? null,
+            'branchName' => $attributes['branch_name'] ?? '',
+            'phpMajorVersion' => $attributes['php_major_version'] ?? '',
+            'buildCommand' => $attributes['build_command'] ?? null,
+            'nodeVersion' => $attributes['node_version'] ?? null,
+            'usesOctane' => $attributes['uses_octane'] ?? false,
+            'usesHibernation' => $attributes['uses_hibernation'] ?? false,
         ];
+
+        if (isset($relationships['environment']['data']['id'])) {
+            $transformed['environmentId'] = $relationships['environment']['data']['id'];
+        }
+
+        if (isset($relationships['initiator']['data']['id'])) {
+            $transformed['initiatorId'] = $relationships['initiator']['data']['id'];
+        }
+
+        return self::from($transformed);
     }
 }

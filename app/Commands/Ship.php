@@ -331,9 +331,9 @@ class Ship extends BaseCommand
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databases = $this->client->databaseClusters()->list('schemas');
+        $databases = collect($this->client->databaseClusters()->list('schemas')->items());
 
-        if (count($databases->data) === 0) {
+        if ($databases->isEmpty()) {
             info('No databases found!');
 
             $createDatabase = confirm('Do you want to create a new database?');

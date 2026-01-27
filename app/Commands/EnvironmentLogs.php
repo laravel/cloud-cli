@@ -39,32 +39,30 @@ class EnvironmentLogs extends BaseCommand
 
         $app = $this->getCloudApplication();
         $environments = spin(
-            fn () => $this->client->environments()->list($app->id),
+            fn () => collect($this->client->environments()->list($app->id)->items()),
             'Fetching environments...',
         );
-        $environment = $this->getEnvironment(collect($environments->data));
+        $environment = $this->getEnvironment($environments);
 
         $from = $this->option('from') ?? now()->subDays(1)->toIso8601String();
         $to = $this->option('to') ?? now()->toIso8601String();
 
-        $logsResponse = spin(
+        $logs = spin(
             fn () => $this->client->environments()->logs($environment->id, $from, $to),
             'Fetching logs...',
         );
 
         if ($this->option('json')) {
-            $this->line($logsResponse->toJson());
+            $this->line(json_encode($logs, JSON_PRETTY_PRINT));
 
             return;
         }
 
-        if (empty($logsResponse->data)) {
+        if (empty($logs)) {
             info('No logs found.');
 
             return;
         }
-
-        $logs = $logsResponse->data;
         $tail = $this->option('tail');
 
         if ($tail && is_numeric($tail)) {
@@ -89,8 +87,7 @@ class EnvironmentLogs extends BaseCommand
         while (true) {
             Sleep::for(CarbonInterval::seconds(3));
 
-            $logsResponse = $this->client->environments()->logs($environmentId, $from, $to);
-            $logs = $logsResponse->data;
+            $logs = $this->client->environments()->logs($environmentId, $from, $to);
 
             foreach ($logs as $log) {
                 $timestamp = $log->loggedAt->format('Y-m-d H:i:s');

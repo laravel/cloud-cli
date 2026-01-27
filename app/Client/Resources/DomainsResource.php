@@ -9,9 +9,8 @@ use App\Client\Resources\Domains\GetDomainRequest;
 use App\Client\Resources\Domains\ListDomainsRequest;
 use App\Client\Resources\Domains\UpdateDomainRequest;
 use App\Client\Resources\Domains\VerifyDomainRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Domain;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class DomainsResource
 {
@@ -21,18 +20,22 @@ class DomainsResource
         //
     }
 
-    public function list(string $environmentId): Paginated
+    public function list(string $environmentId): Paginator
     {
-        $response = $this->connector->send(new ListDomainsRequest($environmentId));
+        $request = new ListDomainsRequest($environmentId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapDomain($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => Domain::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $domainId): Domain
     {
         $response = $this->connector->send(new GetDomainRequest($domainId));
 
-        return ResponseMapper::mapDomain($response->json());
+        return Domain::fromJsonApi($response->json());
     }
 
     public function create(string $environmentId, string $domain): Domain
@@ -42,7 +45,7 @@ class DomainsResource
             domain: $domain,
         ));
 
-        return ResponseMapper::mapDomain($response->json());
+        return Domain::fromJsonApi($response->json());
     }
 
     public function update(string $domainId, array $data): Domain
@@ -52,7 +55,7 @@ class DomainsResource
             data: $data,
         ));
 
-        return ResponseMapper::mapDomain($response->json());
+        return Domain::fromJsonApi($response->json());
     }
 
     public function delete(string $domainId): void

@@ -7,62 +7,57 @@ use App\Enums\FilesystemStatus;
 use App\Enums\FilesystemType;
 use App\Enums\FilesystemVisibility;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Casts\EnumCast;
+use Spatie\LaravelData\Data;
 
 class ObjectStorageBucket extends Data
 {
     public function __construct(
         public readonly string $id,
         public readonly string $name,
+        #[WithCast(EnumCast::class)]
         public readonly FilesystemType $type,
+        #[WithCast(EnumCast::class)]
         public readonly FilesystemStatus $status,
+        #[WithCast(EnumCast::class)]
         public readonly FilesystemVisibility $visibility,
+        #[WithCast(EnumCast::class)]
         public readonly FilesystemJurisdiction $jurisdiction,
         public readonly ?string $endpoint = null,
         public readonly ?string $url = null,
         public readonly ?array $allowedOrigins = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly array $keyIds = [],
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
 
-        $keyIds = array_column($relationships['keys']['data'] ?? [], 'id');
-
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            type: FilesystemType::from($attributes['type']),
-            status: FilesystemStatus::from($attributes['status']),
-            visibility: FilesystemVisibility::from($attributes['visibility']),
-            jurisdiction: FilesystemJurisdiction::from($attributes['jurisdiction']),
-            endpoint: $attributes['endpoint'] ?? null,
-            url: $attributes['url'] ?? null,
-            allowedOrigins: $attributes['allowed_origins'] ?? null,
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-            keyIds: $keyIds,
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'type' => $this->type->value,
-            'status' => $this->status->value,
-            'visibility' => $this->visibility->value,
-            'jurisdiction' => $this->jurisdiction->value,
-            'endpoint' => $this->endpoint,
-            'url' => $this->url,
-            'allowed_origins' => $this->allowedOrigins,
-            'created_at' => $this->createdAt?->toIso8601String(),
-            'key_ids' => $this->keyIds,
+        $transformed = [
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'type' => $attributes['type'],
+            'status' => $attributes['status'],
+            'visibility' => $attributes['visibility'],
+            'jurisdiction' => $attributes['jurisdiction'],
+            'endpoint' => $attributes['endpoint'] ?? null,
+            'url' => $attributes['url'] ?? null,
+            'allowedOrigins' => $attributes['allowed_origins'] ?? null,
+            'createdAt' => $attributes['created_at'] ?? null,
         ];
+
+        if (isset($relationships['keys']['data'])) {
+            $transformed['keyIds'] = array_column($relationships['keys']['data'], 'id');
+        }
+
+        return self::from($transformed);
     }
 }

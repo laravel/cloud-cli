@@ -9,9 +9,8 @@ use App\Client\Resources\Instances\GetInstanceRequest;
 use App\Client\Resources\Instances\ListInstanceSizesRequest;
 use App\Client\Resources\Instances\ListInstancesRequest;
 use App\Client\Resources\Instances\UpdateInstanceRequest;
-use App\Client\ResponseMapper;
 use App\Dto\EnvironmentInstance;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class InstancesResource
 {
@@ -21,18 +20,22 @@ class InstancesResource
         //
     }
 
-    public function list(string $environmentId): Paginated
+    public function list(string $environmentId): Paginator
     {
-        $response = $this->connector->send(new ListInstancesRequest($environmentId));
+        $request = new ListInstancesRequest($environmentId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapEnvironmentInstance($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => EnvironmentInstance::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $instanceId): EnvironmentInstance
     {
         $response = $this->connector->send(new GetInstanceRequest($instanceId));
 
-        return ResponseMapper::mapEnvironmentInstance($response->json());
+        return EnvironmentInstance::fromJsonApi($response->json());
     }
 
     public function create(string $environmentId, array $data): EnvironmentInstance
@@ -42,7 +45,7 @@ class InstancesResource
             data: $data,
         ));
 
-        return ResponseMapper::mapEnvironmentInstance($response->json());
+        return EnvironmentInstance::fromJsonApi($response->json());
     }
 
     public function update(string $instanceId, array $data): EnvironmentInstance
@@ -52,7 +55,7 @@ class InstancesResource
             data: $data,
         ));
 
-        return ResponseMapper::mapEnvironmentInstance($response->json());
+        return EnvironmentInstance::fromJsonApi($response->json());
     }
 
     public function delete(string $instanceId): void

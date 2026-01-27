@@ -4,8 +4,9 @@ namespace App\Client\Resources\DatabaseClusters;
 
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListDatabaseClustersRequest extends Request
+class ListDatabaseClustersRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 

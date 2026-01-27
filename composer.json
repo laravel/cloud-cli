@@ -25,7 +25,9 @@
         "php": "^8.2",
         "illuminate/http": "^12.17",
         "laravel-zero/framework": "^12.0.2",
-        "saloonphp/saloon": "^3.0"
+        "saloonphp/pagination-plugin": "^2.0",
+        "saloonphp/saloon": "^3.0",
+        "spatie/laravel-data": "^4.19"
     },
     "require-dev": {
         "laravel/pint": "^1.25.1",

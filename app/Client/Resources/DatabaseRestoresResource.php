@@ -4,7 +4,6 @@ namespace App\Client\Resources;
 
 use App\Client\Connector;
 use App\Client\Resources\DatabaseRestores\CreateDatabaseRestoreRequest;
-use App\Client\ResponseMapper;
 use App\Dto\DatabaseCluster;
 
 class DatabaseRestoresResource
@@ -23,6 +22,6 @@ class DatabaseRestoresResource
             pointInTime: $pointInTime,
         ));
 
-        return ResponseMapper::mapDatabaseCluster($response->json());
+        return DatabaseCluster::fromJsonApi($response->json());
     }
 }

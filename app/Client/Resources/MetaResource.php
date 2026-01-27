@@ -6,8 +6,8 @@ use App\Client\Connector;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListIpAddressesRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Organization;
+use App\Dto\Region;
 
 class MetaResource
 {
@@ -21,14 +21,16 @@ class MetaResource
     {
         $response = $this->connector->send(new GetOrganizationRequest);
 
-        return ResponseMapper::mapOrganization($response->json());
+        return Organization::fromJsonApi($response->json());
     }
 
     public function regions(): array
     {
         $response = $this->connector->send(new ListRegionsRequest);
 
-        return collect($response->json()['data'] ?? [])->map(fn ($item) => ResponseMapper::mapRegion($response->json(), $item))->toArray();
+        $responseData = $response->json();
+
+        return collect($responseData['data'] ?? [])->map(fn ($item) => Region::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
     }
 
     public function ipAddresses(): array

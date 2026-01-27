@@ -77,9 +77,9 @@ class DeploymentGet extends BaseCommand
 
         $deployments = collect(
             spin(
-                fn () => $this->client->deployments()->list($environment->id),
+                fn () => $this->client->deployments()->list($environment->id)->items(),
                 'Fetching deployments...',
-            )->data,
+            ),
         );
 
         if (! $deployments->containsManyItems()) {

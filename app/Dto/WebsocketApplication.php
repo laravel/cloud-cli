@@ -3,6 +3,9 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Data;
 
 class WebsocketApplication extends Data
 {
@@ -17,6 +20,7 @@ class WebsocketApplication extends Data
         public readonly int $maxConnections,
         public readonly string $key,
         public readonly string $secret,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $serverId = null,
         public readonly ?WebsocketCluster $server = null,
@@ -24,58 +28,47 @@ class WebsocketApplication extends Data
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
         $included = $response['included'] ?? [];
-
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
 
-        $serverIdentifier = $relationships['server']['data'] ?? null;
-        $serverId = $serverIdentifier ? ($serverIdentifier['id'] ?? null) : null;
+        $transformed = [
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'appId' => $attributes['app_id'],
+            'allowedOrigins' => $attributes['allowed_origins'] ?? [],
+            'pingInterval' => $attributes['ping_interval'],
+            'activityTimeout' => $attributes['activity_timeout'],
+            'maxMessageSize' => $attributes['max_message_size'],
+            'maxConnections' => $attributes['max_connections'],
+            'key' => $attributes['key'],
+            'secret' => $attributes['secret'],
+            'createdAt' => $attributes['created_at'] ?? null,
+        ];
 
-        $server = null;
-
-        if ($serverId) {
-            $serverData = collect($included)->first(fn ($item) => $item['type'] === 'websocketServers' && $item['id'] === $serverId);
+        if (isset($relationships['server']['data']['id'])) {
+            $transformed['serverId'] = $relationships['server']['data']['id'];
+            $serverData = self::resolveIncluded($included, $relationships['server'], 'websocketServers');
             if ($serverData) {
-                $server = WebsocketCluster::fromApiResponse(['data' => $serverData], $serverData);
+                $transformed['server'] = WebsocketCluster::fromJsonApi(['data' => $serverData, 'included' => $included])->toArray();
             }
         }
 
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            appId: $attributes['app_id'],
-            allowedOrigins: $attributes['allowed_origins'] ?? [],
-            pingInterval: $attributes['ping_interval'],
-            activityTimeout: $attributes['activity_timeout'],
-            maxMessageSize: $attributes['max_message_size'],
-            maxConnections: $attributes['max_connections'],
-            key: $attributes['key'],
-            secret: $attributes['secret'],
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-            serverId: $serverId,
-            server: $server,
-        );
+        return self::from($transformed);
     }
 
-    public function toArray(): array
+    protected static function resolveIncluded(array $included, ?array $relationship, string $type): ?array
     {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'app_id' => $this->appId,
-            'allowed_origins' => $this->allowedOrigins,
-            'ping_interval' => $this->pingInterval,
-            'activity_timeout' => $this->activityTimeout,
-            'max_message_size' => $this->maxMessageSize,
-            'max_connections' => $this->maxConnections,
-            'key' => $this->key,
-            'secret' => $this->secret,
-            'created_at' => $this->createdAt?->toIso8601String(),
-            'server_id' => $this->serverId,
-        ];
+        if (! $relationship || ! isset($relationship['data']['id'])) {
+            return null;
+        }
+
+        $id = $relationship['data']['id'];
+
+        return collect($included)
+            ->first(fn ($item) => $item['type'] === $type && $item['id'] === $id);
     }
 }

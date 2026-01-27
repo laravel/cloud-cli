@@ -4,8 +4,9 @@ namespace App\Client\Resources\Deployments;
 
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListDeploymentsRequest extends Request
+class ListDeploymentsRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 

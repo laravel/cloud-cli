@@ -7,9 +7,8 @@ use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Applications\GetApplicationRequest;
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Applications\UpdateApplicationRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Application;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class ApplicationsResource
 {
@@ -19,16 +18,20 @@ class ApplicationsResource
         //
     }
 
-    public function list(?string $include = null, ?string $name = null, ?string $region = null, ?string $slug = null): Paginated
+    public function list(?string $include = null, ?string $name = null, ?string $region = null, ?string $slug = null): Paginator
     {
-        $response = $this->connector->send(new ListApplicationsRequest(
+        $request = new ListApplicationsRequest(
             include: $include,
             name: $name,
             region: $region,
             slug: $slug,
-        ));
+        );
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapApplication($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => Application::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $applicationId, ?string $include = null): Application
@@ -38,7 +41,7 @@ class ApplicationsResource
             include: $include,
         ));
 
-        return ResponseMapper::mapApplication($response->json());
+        return Application::fromJsonApi($response->json());
     }
 
     public function create(string $repository, string $name, string $region): Application
@@ -49,7 +52,7 @@ class ApplicationsResource
             region: $region,
         ));
 
-        return ResponseMapper::mapApplication($response->json());
+        return Application::fromJsonApi($response->json());
     }
 
     public function update(string $applicationId, array $data): Application
@@ -74,6 +77,6 @@ class ApplicationsResource
             avatar: $avatar,
         ));
 
-        return ResponseMapper::mapApplication($response->json());
+        return Application::fromJsonApi($response->json());
     }
 }

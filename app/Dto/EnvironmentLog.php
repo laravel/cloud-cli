@@ -5,30 +5,24 @@ namespace App\Dto;
 use App\Enums\LogLevel;
 use App\Enums\LogType;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Casts\EnumCast;
+use Spatie\LaravelData\Data;
 
 class EnvironmentLog extends Data
 {
     public function __construct(
         public readonly string $message,
+        #[WithCast(EnumCast::class)]
         public readonly LogLevel $level,
+        #[WithCast(EnumCast::class)]
         public readonly LogType $type,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly CarbonImmutable $loggedAt,
         public readonly ?array $data = null,
     ) {
         //
-    }
-
-    public static function fromApiResponse(array $response, ?array $item = null): self
-    {
-        $data = $item ?? $response;
-
-        return new self(
-            message: $data['message'] ?? '',
-            level: LogLevel::from($data['level'] ?? 'info'),
-            type: LogType::from($data['type'] ?? 'application'),
-            loggedAt: isset($data['logged_at']) ? CarbonImmutable::parse($data['logged_at']) : CarbonImmutable::now(),
-            data: $data['data'] ?? null,
-        );
     }
 
     public function isAccessLog(): bool
@@ -96,17 +90,6 @@ class EnvironmentLog extends Data
         ];
     }
 
-    public function toArray(): array
-    {
-        return [
-            'message' => $this->message,
-            'level' => $this->level->value,
-            'type' => $this->type->value,
-            'logged_at' => $this->loggedAt->toIso8601String(),
-            'data' => $this->data,
-        ];
-    }
-
     public function __toString(): string
     {
         $timestamp = $this->loggedAt->format('Y-m-d H:i:s');
@@ -127,5 +110,18 @@ class EnvironmentLog extends Data
         }
 
         return $output;
+    }
+
+    public static function fromJsonApi(array $response): self
+    {
+        $data = $response;
+
+        return self::from([
+            'message' => $data['message'] ?? '',
+            'level' => $data['level'] ?? 'info',
+            'type' => $data['type'] ?? 'application',
+            'loggedAt' => $data['logged_at'] ?? null,
+            'data' => $data['data'] ?? null,
+        ]);
     }
 }

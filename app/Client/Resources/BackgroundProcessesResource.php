@@ -8,9 +8,8 @@ use App\Client\Resources\BackgroundProcesses\DeleteBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\GetBackgroundProcessRequest;
 use App\Client\Resources\BackgroundProcesses\ListBackgroundProcessesRequest;
 use App\Client\Resources\BackgroundProcesses\UpdateBackgroundProcessRequest;
-use App\Client\ResponseMapper;
 use App\Dto\BackgroundProcess;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class BackgroundProcessesResource
 {
@@ -20,18 +19,22 @@ class BackgroundProcessesResource
         //
     }
 
-    public function list(string $instanceId): Paginated
+    public function list(string $instanceId): Paginator
     {
-        $response = $this->connector->send(new ListBackgroundProcessesRequest($instanceId));
+        $request = new ListBackgroundProcessesRequest($instanceId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapBackgroundProcess($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => BackgroundProcess::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $backgroundProcessId): BackgroundProcess
     {
         $response = $this->connector->send(new GetBackgroundProcessRequest($backgroundProcessId));
 
-        return ResponseMapper::mapBackgroundProcess($response->json());
+        return BackgroundProcess::fromJsonApi($response->json());
     }
 
     public function create(string $instanceId, array $data): BackgroundProcess
@@ -41,7 +44,7 @@ class BackgroundProcessesResource
             data: $data,
         ));
 
-        return ResponseMapper::mapBackgroundProcess($response->json());
+        return BackgroundProcess::fromJsonApi($response->json());
     }
 
     public function update(string $backgroundProcessId, array $data): BackgroundProcess
@@ -51,7 +54,7 @@ class BackgroundProcessesResource
             data: $data,
         ));
 
-        return ResponseMapper::mapBackgroundProcess($response->json());
+        return BackgroundProcess::fromJsonApi($response->json());
     }
 
     public function delete(string $backgroundProcessId): void

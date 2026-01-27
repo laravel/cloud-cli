@@ -4,8 +4,9 @@ namespace App\Client\Resources\ObjectStorageBuckets;
 
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListObjectStorageBucketsRequest extends Request
+class ListObjectStorageBucketsRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 

@@ -9,10 +9,9 @@ use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
 use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
-use App\Client\ResponseMapper;
 use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class DatabaseClustersResource
 {
@@ -22,11 +21,15 @@ class DatabaseClustersResource
         //
     }
 
-    public function list(?string $include = null): Paginated
+    public function list(?string $include = null): Paginator
     {
-        $response = $this->connector->send(new ListDatabaseClustersRequest(include: $include));
+        $request = new ListDatabaseClustersRequest(include: $include);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapDatabaseCluster($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => DatabaseCluster::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $clusterId, ?string $include = null): DatabaseCluster
@@ -36,7 +39,7 @@ class DatabaseClustersResource
             include: $include,
         ));
 
-        return ResponseMapper::mapDatabaseCluster($response->json());
+        return DatabaseCluster::fromJsonApi($response->json());
     }
 
     public function create(string $type, string $name, string $region, array $config, ?int $clusterId = null): DatabaseCluster
@@ -49,7 +52,7 @@ class DatabaseClustersResource
             clusterId: $clusterId,
         ));
 
-        return ResponseMapper::mapDatabaseCluster($response->json());
+        return DatabaseCluster::fromJsonApi($response->json());
     }
 
     public function update(string $clusterId, array $data): DatabaseCluster
@@ -59,7 +62,7 @@ class DatabaseClustersResource
             data: $data,
         ));
 
-        return ResponseMapper::mapDatabaseCluster($response->json());
+        return DatabaseCluster::fromJsonApi($response->json());
     }
 
     public function delete(string $clusterId): void
@@ -72,14 +75,6 @@ class DatabaseClustersResource
         $response = $this->connector->send(new ListDatabaseTypesRequest);
         $responseData = $response->json();
 
-        return collect($responseData['data'] ?? [])->map(fn ($item) => new DatabaseType(
-            type: $item['type'],
-            label: $item['label'],
-            regions: $item['regions'] ?? [],
-            configSchema: array_map(
-                fn (array $schema) => \App\Dto\ConfigSchema::fromApiResponse($schema),
-                $item['config_schema'] ?? [],
-            ),
-        ))->toArray();
+        return collect($responseData['data'] ?? [])->map(fn ($item) => DatabaseType::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
     }
 }

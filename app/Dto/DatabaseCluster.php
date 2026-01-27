@@ -3,6 +3,10 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
+use Spatie\LaravelData\Data;
 
 class DatabaseCluster extends Data
 {
@@ -14,45 +18,40 @@ class DatabaseCluster extends Data
         public readonly string $region,
         public readonly array $config,
         public readonly array $connection,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $updatedAt = null,
+        #[DataCollectionOf(Database::class)]
         public readonly array $schemas = [],
     ) {
         //
     }
 
-    public static function fromApiResponse(array $response, ?array $item = null): self
+    public static function fromJsonApi(array $response): self
     {
-        $data = $item ?? $response['data'] ?? [];
+        $data = $response['data'] ?? [];
         $included = $response['included'] ?? [];
         $attributes = $data['attributes'] ?? [];
 
-        return new self(
-            id: $data['id'],
-            name: $attributes['name'],
-            type: $attributes['type'],
-            status: $attributes['status'],
-            region: $attributes['region'],
-            config: $attributes['config'] ?? [],
-            connection: $attributes['connection'] ?? [],
-            createdAt: isset($attributes['created_at']) ? CarbonImmutable::parse($attributes['created_at']) : null,
-            updatedAt: isset($attributes['updated_at']) ? CarbonImmutable::parse($attributes['updated_at']) : null,
-            schemas: collect($included)
-                ->filter(fn ($item) => $item['type'] === 'databaseSchemas')
-                ->map(fn ($item) => Database::fromApiResponse(['data' => $item]))
-                ->values()
-                ->toArray(),
-        );
-    }
-
-    public function toArray(): array
-    {
-        return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'type' => $this->type,
-            'status' => $this->status,
-            'region' => $this->region,
+        $transformed = [
+            'id' => $data['id'],
+            'name' => $attributes['name'],
+            'type' => $attributes['type'],
+            'status' => $attributes['status'],
+            'region' => $attributes['region'],
+            'config' => $attributes['config'] ?? [],
+            'connection' => $attributes['connection'] ?? [],
+            'createdAt' => $attributes['created_at'] ?? null,
+            'updatedAt' => $attributes['updated_at'] ?? null,
         ];
+
+        $schemaData = collect($included)
+            ->filter(fn ($item) => $item['type'] === 'databaseSchemas')
+            ->values()
+            ->toArray();
+        $transformed['schemas'] = collect($schemaData)->map(fn ($item) => Database::fromJsonApi(['data' => $item, 'included' => $included])->toArray())->toArray();
+
+        return self::from($transformed);
     }
 }

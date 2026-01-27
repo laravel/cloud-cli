@@ -9,7 +9,7 @@ use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\ListObjectStorageBucketsRequest;
 use App\Client\Resources\ObjectStorageBuckets\UpdateObjectStorageBucketRequest;
 use App\Dto\ObjectStorageBucket;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class ObjectStorageBucketsResource
 {
@@ -19,31 +19,20 @@ class ObjectStorageBucketsResource
         //
     }
 
-    public function list(?string $include = null, ?string $type = null, ?string $status = null, ?string $visibility = null): Paginated
+    public function list(?string $include = null, ?string $type = null, ?string $status = null, ?string $visibility = null): Paginator
     {
-        $response = $this->connector->send(new ListObjectStorageBucketsRequest(
+        $request = new ListObjectStorageBucketsRequest(
             include: $include,
             type: $type,
             status: $status,
             visibility: $visibility,
-        ));
+        );
 
-        $responseData = $response->json();
-        $buckets = collect($responseData['data'] ?? [])->map(fn ($item) => new ObjectStorageBucket(
-            id: $item['id'],
-            name: $item['attributes']['name'],
-            type: \App\Enums\FilesystemType::from($item['attributes']['type']),
-            status: \App\Enums\FilesystemStatus::from($item['attributes']['status']),
-            visibility: \App\Enums\FilesystemVisibility::from($item['attributes']['visibility']),
-            jurisdiction: \App\Enums\FilesystemJurisdiction::from($item['attributes']['jurisdiction']),
-            endpoint: $item['attributes']['endpoint'] ?? null,
-            url: $item['attributes']['url'] ?? null,
-            allowedOrigins: $item['attributes']['allowed_origins'] ?? null,
-            createdAt: isset($item['attributes']['created_at']) ? \Carbon\CarbonImmutable::parse($item['attributes']['created_at']) : null,
-            keyIds: array_column($item['relationships']['keys']['data'] ?? [], 'id'),
-        ))->toArray();
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
 
-        return new Paginated(data: $buckets, links: $responseData['links'] ?? []);
+            return collect($responseData['data'] ?? [])->map(fn ($item) => ObjectStorageBucket::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $bucketId, ?string $include = null): ObjectStorageBucket

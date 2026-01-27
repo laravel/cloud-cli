@@ -6,9 +6,8 @@ use App\Client\Connector;
 use App\Client\Resources\Commands\GetCommandRequest;
 use App\Client\Resources\Commands\ListCommandsRequest;
 use App\Client\Resources\Commands\RunCommandRequest;
-use App\Client\ResponseMapper;
 use App\Dto\Command;
-use App\Dto\Paginated;
+use Saloon\PaginationPlugin\Paginator;
 
 class CommandsResource
 {
@@ -18,18 +17,22 @@ class CommandsResource
         //
     }
 
-    public function list(string $environmentId): Paginated
+    public function list(string $environmentId): Paginator
     {
-        $response = $this->connector->send(new ListCommandsRequest($environmentId));
+        $request = new ListCommandsRequest($environmentId);
 
-        return ResponseMapper::mapPaginated($response->json(), fn ($response, $item) => ResponseMapper::mapCommand($response, $item));
+        return $this->connector->paginate($request)->transform(function ($response) {
+            $responseData = $response->json();
+
+            return collect($responseData['data'] ?? [])->map(fn ($item) => Command::fromJsonApi(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        });
     }
 
     public function get(string $commandId): Command
     {
         $response = $this->connector->send(new GetCommandRequest($commandId));
 
-        return ResponseMapper::mapCommand($response->json());
+        return Command::fromJsonApi($response->json());
     }
 
     public function run(string $environmentId, string $command): Command
@@ -39,6 +42,6 @@ class CommandsResource
             command: $command,
         ));
 
-        return ResponseMapper::mapCommand($response->json());
+        return Command::fromJsonApi($response->json());
     }
 }
