@@ -6,6 +6,7 @@ use App\Dto\Application;
 use App\LocalConfig;
 use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 use RuntimeException;
 
 use function Laravel\Prompts\select;
@@ -16,7 +17,7 @@ trait RequiresApplication
     /**
      * @param  Collection<Application>  $apps
      */
-    protected function getCloudApplication(?Collection $apps = null, $showPrompt = true): Application
+    protected function getCloudApplication(null|Collection|LazyCollection $apps = null, $showPrompt = true): Application
     {
         $applicationArg = $this->hasArgument('application') ? $this->argument('application') : null;
         $defaultApplicationId = $applicationArg ?? app(LocalConfig::class)->get('application_id');
@@ -70,7 +71,7 @@ trait RequiresApplication
         return $apps->firstWhere('id', $selectedApp);
     }
 
-    protected function getByNameOrId(string $identifier, ?Collection $apps = null): Application
+    protected function getByNameOrId(string $identifier, null|Collection|LazyCollection $apps = null): Application
     {
         $apps ??= $this->fetchApplications();
 
@@ -85,7 +86,7 @@ trait RequiresApplication
         }
     }
 
-    protected function fetchApplications(): Collection
+    protected function fetchApplications(): Collection|LazyCollection
     {
         return collect(spin(
             fn () => $this->client->applications()->include('organization', 'environments', 'defaultEnvironment')->list()->items(),

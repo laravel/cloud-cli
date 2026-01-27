@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Dto\Environment;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 
 use function Laravel\Prompts\select;
 
@@ -12,7 +13,7 @@ trait RequiresEnvironment
     /**
      * @param  Collection<Environment>  $environments
      */
-    protected function getEnvironment(Collection $environments): Environment
+    protected function getEnvironment(Collection|LazyCollection $environments): Environment
     {
         $environmentArg = $this->hasArgument('environment') ? $this->argument('environment') : null;
 
@@ -32,7 +33,7 @@ trait RequiresEnvironment
 
         $selection = select(
             label: 'Environment',
-            options: $environments->mapWithKeys(fn ($env) => [$env->id => $env->name]),
+            options: $environments->mapWithKeys(fn ($env) => [$env->id => $env->name])->toArray(),
         );
 
         return $environments->firstWhere('id', $selection);

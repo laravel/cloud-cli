@@ -21,10 +21,8 @@ use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
 use Illuminate\Support\Facades\Cache;
-use Saloon\CachePlugin\Contracts\Cacheable;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
-use Saloon\CachePlugin\Traits\HasCaching;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
 use Saloon\Http\Request;
@@ -35,10 +33,9 @@ use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use SensitiveParameter;
 
-class Connector extends SaloonConnector implements Cacheable, HasPagination
+class Connector extends SaloonConnector implements HasPagination
 {
     use AlwaysThrowOnErrors;
-    use HasCaching;
 
     public function resolveCacheDriver(): Driver
     {
