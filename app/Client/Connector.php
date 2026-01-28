@@ -62,7 +62,7 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function resolveBaseUrl(): string
     {
-        return 'https://app.dev-laravel.cloud/api';
+        return config('app.base_url').'/api';
     }
 
     protected function defaultAuth(): TokenAuthenticator
