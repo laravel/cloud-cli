@@ -9,6 +9,7 @@ use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -31,6 +32,7 @@ class ApplicationUpdate extends BaseCommand
                             {--repository= : Repository URL}
                             {--avatar= : Avatar URL or full path to a file}
                             {--default-environment= : Default environment ID or name}
+                            {--force : Force update without confirmation}
                             {--json : Output as JSON}';
 
     protected $description = 'Update an application';
@@ -59,32 +61,57 @@ class ApplicationUpdate extends BaseCommand
             }
         }
 
-        if (! empty($data) || ! $this->isInteractive()) {
-            if (empty($data)) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
+        $updatedApplication = $this->resolveUpdatedApplication($application, $fields, $data);
 
-                return self::FAILURE;
-            }
-
-            spin(
-                fn () => $this->client->applications()->update($application->id, $data),
-                'Updating application...',
-            );
-
-            $updatedApplication = $this->client->applications()->get($application->id);
-
-            $this->outputJsonIfWanted($updatedApplication);
-        } else {
-            $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($fields, $application),
-            );
-        }
-
-        $updatedApplication ??= $this->client->applications()->get($application->id);
+        $this->outputJsonIfWanted($updatedApplication);
 
         success('Application updated');
 
         outro($updatedApplication->url());
+    }
+
+    protected function resolveUpdatedApplication(Application $application, array $fields, array $data): Application
+    {
+        if (! $this->isInteractive()) {
+            if (empty($data)) {
+                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
+
+                exit(self::FAILURE);
+            }
+
+            return $this->updateApplication($application, $data);
+        }
+
+        if (empty($data)) {
+            return $this->loopUntilValid(
+                fn () => $this->collectDataAndUpdate($fields, $application),
+            );
+        }
+
+        if (! $this->shouldRunUpdateFromOptions()) {
+            exit(self::FAILURE);
+        }
+
+        return $this->updateApplication($application, $data);
+    }
+
+    protected function updateApplication(Application $application, array $data): Application
+    {
+        spin(
+            fn () => $this->client->applications()->update($application->id, $data),
+            'Updating application...',
+        );
+
+        return $this->client->applications()->get($application->id);
+    }
+
+    protected function shouldRunUpdateFromOptions(): bool
+    {
+        if ($this->option('force')) {
+            return true;
+        }
+
+        return confirm('Update the application?');
     }
 
     protected function getFieldDefinitions(Application $application): array
@@ -149,10 +176,7 @@ class ApplicationUpdate extends BaseCommand
             ));
         }
 
-        return spin(
-            fn () => $this->client->applications()->update($application->id, $this->getParams()),
-            'Updating application...',
-        );
+        return $this->updateApplication($application, $this->getParams());
     }
 
     protected function reportChange(string $field, string $oldValue, string $newValue): void
