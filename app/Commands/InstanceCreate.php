@@ -9,6 +9,7 @@ use App\Enums\InstanceSize;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\select;
