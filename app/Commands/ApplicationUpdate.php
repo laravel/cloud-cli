@@ -8,6 +8,7 @@ use App\Concerns\RequiresApplication;
 use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
+use App\Support\UpdateFields;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -119,41 +120,16 @@ class ApplicationUpdate extends BaseCommand
 
     protected function getFieldDefinitions(Application $application): array
     {
-        return collect([
-            'name' => [
-                'current' => $application->name,
-                'prompt' => fn ($value) => $this->getNewName($value),
-            ],
-            'slug' => [
-                'current' => $application->slug,
-                'prompt' => fn ($value) => $this->getNewSlug($value),
-            ],
-            'repository' => [
-                'current' => $application->repositoryFullName ?? '',
-                'prompt' => fn ($value) => $this->getNewRepository($value),
-            ],
-            'avatar' => [
-                'current' => 'N/A',
-                'prompt' => fn () => $this->getNewAvatar(),
-            ],
-            'default-environment' => [
-                'key' => 'default_environment_id',
-                'current' => $application->defaultEnvironmentId ?? '',
-                'prompt' => fn () => $this->getNewDefaultEnvironmentId($application),
-            ],
-            'slack-channel' => [
-                'key' => 'slack_channel',
-                'current' => $application->slackChannel ?? '',
-                'prompt' => fn ($value) => $this->getNewSlackChannel($value),
-            ],
-        ])
-            ->mapWithKeys(fn ($field, $key) => [
-                $key => array_merge($field, [
-                    'label' => $field['label'] ?? str($key)->replace('-', ' ')->ucfirst()->toString(),
-                    'key' => $field['key'] ?? $key,
-                ]),
-            ])
-            ->toArray();
+        $fields = new UpdateFields;
+
+        $fields->add('name', fn ($value) => $this->getNewName($value))->currentValue($application->name);
+        $fields->add('slug', fn ($value) => $this->getNewSlug($value))->currentValue($application->slug);
+        $fields->add('repository', fn ($value) => $this->getNewRepository($value))->currentValue($application->repositoryFullName ?? '');
+        $fields->add('avatar', fn ($value) => $this->getNewAvatar());
+        $fields->add('default-environment', fn ($value) => $this->getNewDefaultEnvironmentId($application))->currentValue($application->defaultEnvironmentId)->dataKey('default_environment_id');
+        $fields->add('slack-channel', fn ($value) => $this->getNewSlackChannel($value))->currentValue($application->slackChannel)->dataKey('slack_channel');
+
+        return $fields->get();
     }
 
     protected function collectDataAndUpdate(array $fields, Application $application): Application
