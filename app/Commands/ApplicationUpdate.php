@@ -10,6 +10,7 @@ use App\Dto\Application;
 use App\Git;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -89,6 +90,8 @@ class ApplicationUpdate extends BaseCommand
         }
 
         if (! $this->shouldRunUpdateFromOptions()) {
+            error('Update cancelled');
+
             exit(self::FAILURE);
         }
 
