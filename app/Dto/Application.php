@@ -87,6 +87,13 @@ class Application extends Data
         return self::from($transformed);
     }
 
+    public function url()
+    {
+        $environment = collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
+
+        return sprintf('https://cloud.laravel.com/%s/%s/%s', $this->organization->slug, $this->slug, $environment->name);
+    }
+
     protected static function resolveIncluded(array $included, ?array $relationship, string $type): ?array
     {
         if (! $relationship || ! isset($relationship['data']['id'])) {

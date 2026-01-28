@@ -94,7 +94,7 @@ class DatabaseOpen extends BaseCommand
             throw new RuntimeException('No databases found.');
         }
 
-        if ($databases->containsOneItem()) {
+        if ($databases->hasSole()) {
             return $databases->first();
         }
 

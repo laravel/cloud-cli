@@ -48,7 +48,7 @@ trait RequiresDatabaseCluster
 
         $databases ??= $this->fetchDatabases();
 
-        if ($databases->containsOneItem()) {
+        if ($databases->hasSole()) {
             $database = $databases->first();
 
             $this->displayDatabase($database, $showPrompt);

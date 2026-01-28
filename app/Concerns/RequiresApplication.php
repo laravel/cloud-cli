@@ -53,7 +53,7 @@ trait RequiresApplication
 
         $apps ??= $this->fetchApplications();
 
-        if ($apps->containsOneItem()) {
+        if ($apps->hasSole()) {
             $app = $apps->first();
 
             $this->displayApplication($app, $showPrompt);

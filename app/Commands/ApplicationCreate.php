@@ -43,9 +43,8 @@ class ApplicationCreate extends BaseCommand
         success('Application created');
 
         $application = $this->client->applications()->include('organization', 'defaultEnvironment')->get($application->id);
-        $environment = $this->client->environments()->get($application->defaultEnvironmentId);
 
-        outro(sprintf('https://cloud.laravel.com/%s/%s/%s', $application->organization->slug, $application->slug, $environment->name));
+        outro($application->url());
     }
 
     protected function createApplication()

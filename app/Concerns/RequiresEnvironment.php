@@ -24,7 +24,7 @@ trait RequiresEnvironment
             return $environment;
         }
 
-        if ($environments->containsOneItem()) {
+        if ($environments->hasSole()) {
             $environment = $environments->first();
             answered(label: 'Environment', answer: "{$environment->name}");
 

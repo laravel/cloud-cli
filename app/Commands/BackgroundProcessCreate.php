@@ -264,7 +264,7 @@ class BackgroundProcessCreate extends BaseCommand
             throw new RuntimeException('No instances found for environment '.$environment->name);
         }
 
-        if ($instances->containsOneItem()) {
+        if ($instances->hasSole()) {
             answered(label: 'Instance', answer: $instances->first());
 
             return $instances->first();

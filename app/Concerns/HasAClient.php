@@ -38,7 +38,7 @@ trait HasAClient
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
 
-        if ($apiTokens->containsOneItem()) {
+        if ($apiTokens->hasSole()) {
             return $apiTokens->first();
         }
 

@@ -117,9 +117,7 @@ class Ship extends BaseCommand
             fn () => $this->collectOptionsToEnable($environment),
         );
 
-        $organization = $this->client->meta()->organization();
-
-        outro(sprintf('https://cloud.laravel.com/%s/%s/%s', $organization->slug, $application->slug, $environment->name));
+        outro($application->url());
 
         if (! confirm('Do you want to deploy the application?')) {
             return;

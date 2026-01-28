@@ -87,7 +87,7 @@ class RepoConfig extends BaseCommand
             return null;
         }
 
-        if ($applications->containsOneItem()) {
+        if ($applications->hasSole()) {
             $app = $applications->first();
 
             answered(label: 'Application', answer: $app->name);

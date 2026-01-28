@@ -78,7 +78,7 @@ class IpAddresses extends BaseCommand
 
     protected function copyToClipboard(Collection $addresses): void
     {
-        if ($addresses->containsOneItem()) {
+        if ($addresses->hasSole()) {
             $regionToCopy = $addresses->keys()->first();
         } else {
             $regionToCopy = select(
