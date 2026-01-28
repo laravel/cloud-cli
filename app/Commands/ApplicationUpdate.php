@@ -26,6 +26,7 @@ class ApplicationUpdate extends BaseCommand
     protected $signature = 'application:update
                             {application? : The application ID or name}
                             {--name= : Application name}
+                            {--slug= : Application slug}
                             {--slack-channel= : Slack channel for notifications}
                             {--repository= : Repository URL}
                             {--avatar= : Avatar URL or full path to a file}
@@ -42,48 +43,18 @@ class ApplicationUpdate extends BaseCommand
 
         $application = $this->getCloudApplication(showPrompt: false);
 
-        $dataOptions = [
-            'name' => [
-                'label' => 'Name',
-                'current' => $application->name,
-            ],
-            'slack-channel' => [
-                'label' => 'Slack channel',
-                'current' => $application->slackChannel ?? 'N/A',
-                'key' => 'slack_channel',
-            ],
-            'repository' => [
-                'label' => 'Repository',
-                'current' => $application->repositoryFullName ?? 'N/A',
-            ],
-            'avatar' => [
-                'label' => 'Avatar',
-                'current' => 'N/A',
-            ],
-            'default-environment' => [
-                'label' => 'Default environment',
-                'current' => $application->defaultEnvironmentId ?? 'N/A',
-                'key' => 'default_environment_id',
-            ],
-        ];
-
-        $dataOptions = collect($dataOptions)->mapWithKeys(fn ($option, $key) => [
-            $key => [
-                ...$option,
-                'key' => $option['key'] ?? $key,
-            ],
-        ])->toArray();
+        $fields = $this->getFieldDefinitions($application);
 
         $data = [];
 
-        foreach ($dataOptions as $key => $option) {
-            if ($this->option($key)) {
-                $data[$option['key']] = $this->option($key);
+        foreach ($fields as $optionName => $field) {
+            if ($this->option($optionName)) {
+                $data[$field['key']] = $this->option($optionName);
 
                 $this->reportChange(
-                    $option['label'],
-                    $option['current'],
-                    $this->option($key),
+                    $field['label'],
+                    $field['current'],
+                    $this->option($optionName),
                 );
             }
         }
@@ -107,19 +78,60 @@ class ApplicationUpdate extends BaseCommand
             return self::SUCCESS;
         }
 
-        $application = $this->loopUntilValid(
-            fn () => $this->collectDataAndUpdate($dataOptions, $application),
+        $this->loopUntilValid(
+            fn () => $this->collectDataAndUpdate($fields, $application),
         );
 
-        outro('Application updated');
+        success('Application updated');
+
+        outro($application->url());
     }
 
-    protected function collectDataAndUpdate(array $dataOptions, Application $application): Application
+    protected function getFieldDefinitions(Application $application): array
+    {
+        return collect([
+            'name' => [
+                'current' => $application->name,
+                'prompt' => fn ($value) => $this->getNewName($value),
+            ],
+            'slug' => [
+                'current' => $application->slug,
+                'prompt' => fn ($value) => $this->getNewSlug($value),
+            ],
+            'repository' => [
+                'current' => $application->repositoryFullName ?? '',
+                'prompt' => fn ($value) => $this->getNewRepository($value),
+            ],
+            'avatar' => [
+                'current' => 'N/A',
+                'prompt' => fn () => $this->getNewAvatar(),
+            ],
+            'default-environment' => [
+                'key' => 'default_environment_id',
+                'current' => $application->defaultEnvironmentId ?? '',
+                'prompt' => fn () => $this->getNewDefaultEnvironmentId($application),
+            ],
+            'slack-channel' => [
+                'key' => 'slack_channel',
+                'current' => $application->slackChannel ?? '',
+                'prompt' => fn ($value) => $this->getNewSlackChannel($value),
+            ],
+        ])
+            ->mapWithKeys(fn ($field, $key) => [
+                $key => array_merge($field, [
+                    'label' => $field['label'] ?? str($key)->replace('-', ' ')->ucfirst()->toString(),
+                    'key' => $field['key'] ?? $key,
+                ]),
+            ])
+            ->toArray();
+    }
+
+    protected function collectDataAndUpdate(array $fields, Application $application): Application
     {
         $selection = multiselect(
             label: 'What do you want to update?',
-            options: collect($dataOptions)->mapWithKeys(fn ($option, $key) => [
-                $key => $option['label'],
+            options: collect($fields)->mapWithKeys(fn ($field, $key) => [
+                $key => $field['label'],
             ])->toArray(),
         );
 
@@ -129,31 +141,12 @@ class ApplicationUpdate extends BaseCommand
             exit(self::FAILURE);
         }
 
-        foreach ($selection as $key) {
-            $apiParamKey = $dataOptions[$key]['key'];
+        foreach ($selection as $optionName) {
+            $field = $fields[$optionName];
 
-            $resolver = match ($key) {
-                'name' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewName($value ?? $application->name),
-                ),
-                'slug' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewSlug($value ?? $application->slug),
-                ),
-                'repository' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewRepository($value ?? $application->repositoryFullName),
-                ),
-                'avatar' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewAvatar($value ?? $application->avatar),
-                ),
-                'default-environment' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewDefaultEnvironmentId($value ?? $application->defaultEnvironmentId),
-                ),
-                'slack-channel' => fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->getNewSlackChannel($value ?? $application->slackChannel),
-                ),
-            };
-
-            $this->addParam($apiParamKey, $resolver);
+            $this->addParam($field['key'], fn ($resolver) => $resolver->fromInput(
+                fn ($value) => ($field['prompt'])($value ?? $field['current']),
+            ));
         }
 
         return spin(
@@ -251,7 +244,7 @@ class ApplicationUpdate extends BaseCommand
 
         return [
             file_get_contents($path),
-            pathinfo($selected, PATHINFO_EXTENSION),
+            pathinfo($path, PATHINFO_EXTENSION),
         ];
     }
 
