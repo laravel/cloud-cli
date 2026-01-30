@@ -4,7 +4,6 @@ namespace App\Resolvers;
 
 use App\Dto\BackgroundProcess;
 use App\Resolvers\Concerns\HasAnApplication;
-use Throwable;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -29,18 +28,13 @@ class BackgroundProcessResolver extends Resolver
 
     public function fromIdentifier(string $identifier): ?BackgroundProcess
     {
-        if (str_starts_with($identifier, 'process-')) {
-            try {
-                return spin(
-                    fn () => $this->client->backgroundProcesses()->get($identifier),
-                    'Fetching background process...',
-                );
-            } catch (Throwable $e) {
-                return null;
-            }
-        }
-
-        return null;
+        return $this->resolveFromIdentifier(
+            $identifier,
+            fn () => spin(
+                fn () => $this->client->backgroundProcesses()->get($identifier),
+                'Fetching background process...',
+            ),
+        );
     }
 
     public function fromInput(): ?BackgroundProcess
@@ -73,5 +67,10 @@ class BackgroundProcessResolver extends Resolver
         $this->displayResolved = false;
 
         return $backgroundProcesses->firstWhere('id', $selected);
+    }
+
+    protected function idPrefix(): string
+    {
+        return 'process-';
     }
 }

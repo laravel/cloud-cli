@@ -6,7 +6,6 @@ use App\Dto\Application;
 use App\Git;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use Throwable;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -37,24 +36,14 @@ class ApplicationResolver extends Resolver
 
     public function fromIdentifier(string $identifier): ?Application
     {
-        if (str_starts_with($identifier, 'app-')) {
-            try {
-                return spin(
-                    fn () => $this->client->applications()->withDefaultIncludes()->get($identifier),
-                    'Fetching application...',
-                );
-            } catch (Throwable $e) {
-                return $this->fetchAndFind($identifier);
-            }
-        }
-
-        $app = $this->fetchAndFind($identifier);
-
-        if (! $app) {
-            return null;
-        }
-
-        return $app;
+        return $this->resolveFromIdentifier(
+            $identifier,
+            fn () => spin(
+                fn () => $this->client->applications()->withDefaultIncludes()->get($identifier),
+                'Fetching application...',
+            ),
+            fn () => $this->fetchAndFind($identifier),
+        );
     }
 
     public function fromRepo(): ?Application
@@ -104,5 +93,10 @@ class ApplicationResolver extends Resolver
             fn () => $this->client->applications()->withDefaultIncludes()->list()->items(),
             'Fetching applications...',
         ));
+    }
+
+    protected function idPrefix(): string
+    {
+        return 'app-';
     }
 }

@@ -4,7 +4,6 @@ namespace App\Resolvers;
 
 use App\Dto\EnvironmentInstance;
 use App\Resolvers\Concerns\HasAnApplication;
-use Throwable;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -34,18 +33,13 @@ class InstanceResolver extends Resolver
 
     public function fromIdentifier(string $identifier): ?EnvironmentInstance
     {
-        if (str_starts_with($identifier, 'inst-')) {
-            try {
-                return spin(
-                    fn () => $this->client->instances()->get($identifier),
-                    'Fetching instance...',
-                );
-            } catch (Throwable $e) {
-                return null;
-            }
-        }
-
-        return null;
+        return $this->resolveFromIdentifier(
+            $identifier,
+            fn () => spin(
+                fn () => $this->client->instances()->get($identifier),
+                'Fetching instance...',
+            ),
+        );
     }
 
     public function fromInput(): ?EnvironmentInstance
@@ -80,5 +74,10 @@ class InstanceResolver extends Resolver
         $this->displayResolved = false;
 
         return $instances->firstWhere('id', $selected);
+    }
+
+    protected function idPrefix(): string
+    {
+        return 'inst-';
     }
 }

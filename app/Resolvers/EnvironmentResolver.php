@@ -5,7 +5,6 @@ namespace App\Resolvers;
 use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Environment;
 use App\Resolvers\Concerns\HasAnApplication;
-use Throwable;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -43,18 +42,14 @@ class EnvironmentResolver extends Resolver
 
     public function fromIdentifier(string $identifier): ?Environment
     {
-        if (str_starts_with($identifier, 'env-')) {
-            try {
-                return spin(
-                    fn () => $this->fetch($identifier),
-                    'Fetching environment...',
-                );
-            } catch (Throwable $e) {
-                return $this->resolveFromApplication($identifier);
-            }
-        }
-
-        return $this->resolveFromApplication($identifier);
+        return $this->resolveFromIdentifier(
+            $identifier,
+            fn () => spin(
+                fn () => $this->fetch($identifier),
+                'Fetching environment...',
+            ),
+            fn () => $this->resolveFromApplication($identifier),
+        );
     }
 
     public function resolveFromApplication(string $identifier): ?Environment
@@ -90,5 +85,10 @@ class EnvironmentResolver extends Resolver
         $this->fetched = true;
 
         return $this->client->environments()->include(...($this->includes ?? []))->get($identifier);
+    }
+
+    protected function idPrefix(): string
+    {
+        return 'env-';
     }
 }

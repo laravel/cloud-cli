@@ -6,6 +6,7 @@ use App\Client\Connector;
 use App\LocalConfig;
 use Illuminate\Console\Command;
 use RuntimeException;
+use Throwable;
 
 use function Laravel\Prompts\error;
 
@@ -19,6 +20,23 @@ abstract class Resolver
         protected bool $isInteractive,
     ) {
         //
+    }
+
+    abstract protected function idPrefix(): string;
+
+    protected function resolveFromIdentifier(string $identifier, callable $ifIdCallback, ?callable $ifNotIdCallback = null): mixed
+    {
+        $ifNotIdCallback = $ifNotIdCallback ?? fn () => null;
+
+        if (! str_starts_with($identifier, $this->idPrefix())) {
+            return $ifNotIdCallback();
+        }
+
+        try {
+            return $ifIdCallback();
+        } catch (Throwable $e) {
+            return $ifNotIdCallback();
+        }
     }
 
     public function shouldDisplayResolved(bool $displayResolved = true): self
