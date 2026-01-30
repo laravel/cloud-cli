@@ -21,7 +21,7 @@ class BackgroundProcessList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing Background Processes');
+        intro('Background Processes');
 
         $processes = spin(
             fn () => $this->client->backgroundProcesses()->list($this->argument('instance')),
@@ -30,19 +30,7 @@ class BackgroundProcessList extends BaseCommand
 
         $items = $processes->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($process) => [
-                    'id' => $process->id,
-                    'command' => $process->command,
-                    'type' => $process->type,
-                    'instances' => $process->instances,
-                    'created_at' => $process->createdAt?->toIso8601String(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No background processes found.');
