@@ -21,7 +21,7 @@ class InstanceList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing Instances');
+        intro('Instances');
 
         $instances = spin(
             fn () => $this->client->instances()->list($this->argument('environment')),
@@ -30,22 +30,7 @@ class InstanceList extends BaseCommand
 
         $items = $instances->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($instance) => [
-                    'id' => $instance->id,
-                    'name' => $instance->name,
-                    'type' => $instance->type,
-                    'size' => $instance->size,
-                    'scaling_type' => $instance->scalingType,
-                    'min_replicas' => $instance->minReplicas,
-                    'max_replicas' => $instance->maxReplicas,
-                    'created_at' => $instance->createdAt?->toIso8601String(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No instances found.');

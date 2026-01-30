@@ -21,7 +21,7 @@ class DeploymentList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing Deployments');
+        intro('Deployments');
 
         $deployments = spin(
             fn () => $this->client->deployments()->list($this->argument('environment')),
@@ -30,21 +30,7 @@ class DeploymentList extends BaseCommand
 
         $items = $deployments->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($deployment) => [
-                    'id' => $deployment->id,
-                    'status' => $deployment->status->value,
-                    'branch' => $deployment->branchName,
-                    'commit_hash' => $deployment->commitHash,
-                    'commit_message' => $deployment->commitMessage,
-                    'started_at' => $deployment->startedAt?->toIso8601String(),
-                    'finished_at' => $deployment->finishedAt?->toIso8601String(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No deployments found.');

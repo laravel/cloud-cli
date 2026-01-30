@@ -21,7 +21,7 @@ class DomainList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing Domains');
+        intro('Domains');
 
         $domains = spin(
             fn () => $this->client->domains()->list($this->argument('environment')),
@@ -30,20 +30,7 @@ class DomainList extends BaseCommand
 
         $items = $domains->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($domain) => [
-                    'id' => $domain->id,
-                    'domain' => $domain->domain,
-                    'status' => $domain->status,
-                    'is_primary' => $domain->isPrimary,
-                    'verification_status' => $domain->verificationStatus,
-                    'created_at' => $domain->createdAt?->toIso8601String(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No domains found.');

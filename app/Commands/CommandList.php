@@ -21,7 +21,7 @@ class CommandList extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Listing Commands');
+        intro('Commands');
 
         $commands = spin(
             fn () => $this->client->commands()->list($this->argument('environment')),
@@ -30,20 +30,7 @@ class CommandList extends BaseCommand
 
         $items = $commands->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($cmd) => [
-                    'id' => $cmd->id,
-                    'command' => $cmd->command,
-                    'status' => $cmd->status,
-                    'exit_code' => $cmd->exitCode,
-                    'started_at' => $cmd->startedAt?->toIso8601String(),
-                    'finished_at' => $cmd->finishedAt?->toIso8601String(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No commands found.');

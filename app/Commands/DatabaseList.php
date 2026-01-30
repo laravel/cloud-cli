@@ -21,9 +21,7 @@ class DatabaseList extends BaseCommand
     {
         $this->ensureClient();
 
-        if (! $this->option('json')) {
-            intro('Database Clusters');
-        }
+        intro('Database Clusters');
 
         $databases = spin(
             fn () => $this->client->databaseClusters()->include('schemas')->list(),
@@ -32,20 +30,7 @@ class DatabaseList extends BaseCommand
 
         $items = $databases->collect();
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'data' => $items->map(fn ($db) => [
-                    'id' => $db->id,
-                    'name' => $db->name,
-                    'type' => $db->type,
-                    'status' => $db->status,
-                    'region' => $db->region,
-                    'schemas' => collect($db->schemas)->pluck('name')->toArray(),
-                ])->toArray(),
-            ], JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($items);
 
         if ($items->isEmpty()) {
             info('No databases found.');
