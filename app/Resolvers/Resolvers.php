@@ -25,6 +25,11 @@ class Resolvers
         return $this->make(EnvironmentResolver::class);
     }
 
+    public function instance(): InstanceResolver
+    {
+        return $this->make(InstanceResolver::class);
+    }
+
     protected function make(string $resolver): Resolver
     {
         return new $resolver($this->client, $this->localConfig, $this->isInteractive);

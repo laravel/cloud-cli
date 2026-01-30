@@ -6,7 +6,6 @@ use App\Dto\Application;
 use App\Git;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use RuntimeException;
 use Throwable;
 
 use function Laravel\Prompts\select;
@@ -31,6 +30,8 @@ class ApplicationResolver extends Resolver
             $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name as an argument.'));
         }
 
+        $this->displayResolved('Application', $app->name);
+
         return $app;
     }
 
@@ -50,10 +51,8 @@ class ApplicationResolver extends Resolver
         $app = $this->fetchAndFind($identifier);
 
         if (! $app) {
-            throw new RuntimeException("Application '{$identifier}' not found.");
+            return null;
         }
-
-        $this->displayResolved('Application', $app->name);
 
         return $app;
     }
@@ -73,8 +72,6 @@ class ApplicationResolver extends Resolver
         if ($apps->hasSole()) {
             $app = $apps->first();
 
-            $this->displayResolved('Application', $app->name);
-
             return $app;
         }
 
@@ -84,6 +81,9 @@ class ApplicationResolver extends Resolver
             label: 'Application',
             options: $apps->mapWithKeys(fn ($app) => [$app->id => $app->name]),
         );
+
+        // No need to display the resolved application name, it will be displayed from the select above
+        $this->displayResolved = false;
 
         return $apps->fromCollection($apps, $selectedApp);
     }
