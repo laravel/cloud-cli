@@ -7,6 +7,7 @@ use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 use RuntimeException;
+use Throwable;
 
 class DynamicSpinner extends Prompt
 {
@@ -64,7 +65,7 @@ class DynamicSpinner extends Prompt
      *
      * @template TReturn of mixed
      *
-     * @param  \Closure(callable(string): void): TReturn  $callback
+     * @param  Closure(callable(string): void): TReturn  $callback
      * @return TReturn
      */
     public function spin(Closure $callback): mixed
@@ -124,7 +125,7 @@ class DynamicSpinner extends Prompt
 
                 return $result;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->resetTerminal($originalAsync);
 
             throw $e;
@@ -226,7 +227,7 @@ class DynamicSpinner extends Prompt
      *
      * @template TReturn of mixed
      *
-     * @param  \Closure(callable(string): void): TReturn  $callback
+     * @param  Closure(callable(string): void): TReturn  $callback
      * @return TReturn
      */
     protected function renderStatically(Closure $callback): mixed
@@ -252,7 +253,7 @@ class DynamicSpinner extends Prompt
     /**
      * Disable prompting for input.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function prompt(): never
     {

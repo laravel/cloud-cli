@@ -1,5 +1,7 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+
 return [
 
     /*
@@ -54,7 +56,7 @@ return [
     */
 
     'providers' => [
-        App\Providers\AppServiceProvider::class,
+        AppServiceProvider::class,
     ],
 
     'base_url' => rtrim(env('CLOUD_BASE_URL', 'https://cloud.laravel.com'), '/'),

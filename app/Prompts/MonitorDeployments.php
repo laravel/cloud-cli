@@ -87,7 +87,7 @@ class MonitorDeployments extends Prompt
      *
      * @template TReturn of mixed
      *
-     * @param  \Closure(callable(string): void): TReturn  $callback
+     * @param  Closure(callable(string): void): TReturn  $callback
      * @return TReturn
      */
     public function display(): void
@@ -162,7 +162,7 @@ class MonitorDeployments extends Prompt
     /**
      * Disable prompting for input.
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public function prompt(): never
     {

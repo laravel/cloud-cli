@@ -7,6 +7,7 @@ use App\Concerns\Validates;
 use App\Dto\Application;
 use App\Git;
 use App\Support\UpdateFields;
+use Imagick;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -216,7 +217,7 @@ class ApplicationUpdate extends BaseCommand
                     return [file_get_contents($selected), $extension];
                 }
 
-                $imagick = new \Imagick;
+                $imagick = new Imagick;
                 $imagick->readImage($selected);
                 $imagick->setImageFormat('png');
 

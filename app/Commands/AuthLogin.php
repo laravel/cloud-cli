@@ -7,6 +7,7 @@ use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Facades\Process;
 use Saloon\Exceptions\Request\RequestException as SaloonRequestException;
+use Socket;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
@@ -24,7 +25,7 @@ class AuthLogin extends BaseCommand implements NoAuthRequired
 
     protected ?int $port = null;
 
-    protected ?\Socket $serverSocket = null;
+    protected ?Socket $serverSocket = null;
 
     protected ?string $exchangeCode = null;
 
@@ -182,7 +183,7 @@ class AuthLogin extends BaseCommand implements NoAuthRequired
         socket_close($this->serverSocket);
     }
 
-    protected function handleRequest(\Socket $clientSocket): void
+    protected function handleRequest(Socket $clientSocket): void
     {
         $request = '';
 

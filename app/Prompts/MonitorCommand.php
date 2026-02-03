@@ -32,7 +32,7 @@ class MonitorCommand extends Prompt
     public ?Command $lastCommand = null;
 
     /**
-     * @param  \Closure(string): ?Command  $getCommand
+     * @param  Closure(string): ?Command  $getCommand
      */
     public function __construct(public Closure $getCommand, public ?Command $command)
     {

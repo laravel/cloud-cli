@@ -1,5 +1,11 @@
 {
     "rules": {
+        "fully_qualified_strict_types": {
+            "import_symbols": true
+        },
+        "global_namespace_import": {
+            "import_classes": true
+        },
         "blank_line_before_statement": {
             "statements": [
                 "break",
