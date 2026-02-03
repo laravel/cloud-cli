@@ -1,6 +1,6 @@
 <?php
 
-namespace Laravel\Prompts;
+namespace App\Prompts;
 
 use App\Support\KeyBindingsHelp;
 use App\Support\KeyPressListener;
@@ -8,6 +8,7 @@ use Carbon\CarbonInterval;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Concerns\TypedValue;
+use Laravel\Prompts\Prompt;
 use Throwable;
 
 class DataTable extends Prompt

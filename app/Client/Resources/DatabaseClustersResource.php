@@ -11,7 +11,6 @@ use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
 use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
 use App\Dto\DatabaseCluster;
-use App\Dto\DatabaseType;
 use Saloon\PaginationPlugin\Paginator;
 
 class DatabaseClustersResource
@@ -43,13 +42,13 @@ class DatabaseClustersResource
         return $request->createDtoFromResponse($response);
     }
 
-    public function create(string $type, string $name, string $region, array $config, ?int $clusterId = null): DatabaseCluster
+    public function create(string $type, string $name, string $region, array $clusterConfig, ?int $clusterId = null): DatabaseCluster
     {
         $request = new CreateDatabaseClusterRequest(
             type: $type,
             name: $name,
             region: $region,
-            config: $config,
+            clusterConfig: $clusterConfig,
             clusterId: $clusterId,
         );
 
@@ -77,9 +76,9 @@ class DatabaseClustersResource
 
     public function types(): array
     {
-        $response = $this->connector->send(new ListDatabaseTypesRequest);
-        $responseData = $response->json();
+        $request = new ListDatabaseTypesRequest;
+        $response = $this->connector->send($request);
 
-        return collect($responseData['data'] ?? [])->map(fn ($item) => DatabaseType::createFromResponse(['data' => $item, 'included' => $responseData['included'] ?? []]))->toArray();
+        return $request->createDtoFromResponse($response);
     }
 }

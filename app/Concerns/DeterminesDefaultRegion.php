@@ -10,10 +10,11 @@ trait DeterminesDefaultRegion
 
     protected function getDefaultRegion(): ?string
     {
-        if ($this->defaultRegion) {
-            return $this->defaultRegion;
-        }
+        return $this->defaultRegion ??= $this->fetchDefaultRegion();
+    }
 
+    protected function fetchDefaultRegion(): ?string
+    {
         $applications = spin(
             fn () => $this->client->applications()->list(),
             'Fetching applications...',
@@ -26,8 +27,6 @@ trait DeterminesDefaultRegion
             ->keys()
             ->first();
 
-        $this->defaultRegion = $mostUsedRegion ?? 'us-east-2';
-
-        return $this->defaultRegion;
+        return $mostUsedRegion ?? 'us-east-2';
     }
 }

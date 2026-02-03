@@ -19,7 +19,7 @@ class CreateDatabaseClusterRequest extends Request implements HasBody
         protected string $type,
         protected string $name,
         protected string $region,
-        protected array $config,
+        protected array $clusterConfig,
         protected ?int $clusterId = null,
     ) {
         //
@@ -36,7 +36,7 @@ class CreateDatabaseClusterRequest extends Request implements HasBody
             'type' => $this->type,
             'name' => $this->name,
             'region' => $this->region,
-            'config' => $this->config,
+            'config' => $this->clusterConfig,
             'cluster_id' => $this->clusterId,
         ]);
     }
