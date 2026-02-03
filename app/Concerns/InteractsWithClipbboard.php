@@ -8,6 +8,6 @@ trait InteractsWithClipbboard
 {
     protected function copyToClipboard(string $text): void
     {
-        Process::run(sprintf('echo "%s" | pbcopy', $text));
+        Process::run(sprintf('echo %s | pbcopy', escapeshellarg($text)));
     }
 }
