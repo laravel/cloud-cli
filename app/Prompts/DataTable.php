@@ -1,0 +1,284 @@
+<?php
+
+namespace Laravel\Prompts;
+
+use App\Support\KeyBindingsHelp;
+use App\Support\KeyPressListener;
+use Carbon\CarbonInterval;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Sleep;
+use Laravel\Prompts\Concerns\TypedValue;
+use Throwable;
+
+class DataTable extends Prompt
+{
+    use TypedValue;
+
+    /**
+     * The paginated table headers.
+     *
+     * @var array<int, string|array<int, string>>
+     */
+    public array $headers;
+
+    /**
+     * The paginated table rows.
+     *
+     * @var array<int, array<int, string>>
+     */
+    public array $rows;
+
+    public KeyBindingsHelp $keyBindingsHelp;
+
+    public bool $keepLooping = true;
+
+    public int $page = 1;
+
+    public int $perPage = 10;
+
+    public int $index = 0;
+
+    public string $query = '';
+
+    public int $totalPages;
+
+    public string $jumpToPage = '';
+
+    protected KeyPressListener $listener;
+
+    /**
+     * Create a new PaginatedTable instance.
+     *
+     * @param  array<int, string|array<int, string>>|Collection<int, string|array<int, string>>  $headers
+     * @param  array<int, array<int, string>>|Collection<int, array<int, string>>  $rows
+     * @param  array<string, array<callable, string>>  $actions
+     *
+     * @phpstan-param ($rows is null ? list<list<string>>|Collection<int, list<string>> : list<string|list<string>>|Collection<int, string|list<string>>) $headers
+     */
+    public function __construct(array|Collection $headers = [], array|Collection|null $rows = null, protected array $actions = [])
+    {
+        if ($rows === null) {
+            $rows = $headers;
+            $headers = [];
+        }
+
+        $this->headers = $headers instanceof Collection ? $headers->all() : $headers;
+        $this->rows = $rows instanceof Collection ? $rows->all() : $rows;
+        $this->keyBindingsHelp = new KeyBindingsHelp;
+        $this->totalPages = $this->getTotalPages($rows);
+        $this->listener = KeyPressListener::for($this);
+    }
+
+    protected function getTotalPages(array $records): int
+    {
+        return (int) ceil(count($records) / $this->perPage);
+    }
+
+    public function visible(): array
+    {
+        if ($this->query === '') {
+            $this->totalPages = $this->getTotalPages($this->rows);
+
+            return array_slice($this->rows, ($this->page - 1) * $this->perPage, $this->perPage);
+        }
+
+        $filtered = array_filter(
+            $this->rows,
+            fn ($row) => str_contains(
+                mb_strtolower(implode(' ', $row)),
+                mb_strtolower($this->query),
+            ),
+        );
+
+        $this->totalPages = $this->getTotalPages($filtered);
+
+        $results = array_slice($filtered, 0, $this->perPage);
+
+        if (count($results) > 0) {
+            return $results;
+        }
+
+        return [];
+    }
+
+    public function valueWithCursor(int $maxWidth): string
+    {
+        return $this->getValueWithCursor($this->query, $maxWidth);
+    }
+
+    public function jumpValueWithCursor(int $maxWidth): string
+    {
+        return $this->getValueWithCursor($this->jumpToPage, $maxWidth);
+    }
+
+    protected function getValueWithCursor(string $value, int $maxWidth): string
+    {
+        if ($value === '') {
+            return $this->dim($this->addCursor('', 0, $maxWidth));
+        }
+
+        return $this->addCursor($value, $this->cursorPosition, $maxWidth);
+    }
+
+    /**
+     * Display the table.
+     */
+    public function display(): bool
+    {
+        $this->capturePreviousNewLines();
+        $this->hideCursor();
+
+        try {
+            static::terminal()->setTty('-icanon -isig -echo');
+        } catch (Throwable $e) {
+            //
+        }
+
+        $this->browse();
+
+        while ($this->keepLooping) {
+            $this->listener->once();
+            $this->addDefaultKeyBindings();
+            $this->render();
+            Sleep::for(CarbonInterval::milliseconds(100));
+        }
+
+        return true;
+    }
+
+    protected function browse(): void
+    {
+        $this->state = 'browse';
+
+        $this->listener
+            ->clearExisting()
+            ->listenForQuit()
+            ->on(
+                [Key::UP, Key::UP_ARROW],
+                fn () => $this->index = max(0, $this->index - 1),
+            )
+            ->on(
+                [Key::DOWN, Key::DOWN_ARROW],
+                fn () => $this->index = min($this->perPage - 1, count($this->visible()) - 1, $this->index + 1),
+            )
+            ->on(
+                [Key::RIGHT, Key::RIGHT_ARROW],
+                function () {
+                    $this->page = min($this->totalPages, $this->page + 1);
+                    $this->index = 0;
+                },
+            )
+            ->on(
+                [Key::LEFT, Key::LEFT_ARROW],
+                function () {
+                    $this->page = max(1, $this->page - 1);
+                    $this->index = 0;
+                },
+            )
+            ->on(Key::ENTER, $this->submit(...))
+            ->on('/', $this->search(...))
+            ->on('j', $this->jump(...))
+            ->listen();
+    }
+
+    protected function addCustomKeyBindings(): void
+    {
+        foreach ($this->actions as $key => [$action, $description]) {
+            $this->listener->on($key, fn () => $this->runCustomAction($action));
+            $this->keyBindingsHelp->add($key, $description);
+        }
+    }
+
+    protected function addDefaultKeyBindings(): void
+    {
+        $this->keyBindingsHelp->clear();
+
+        if ($this->state === 'search') {
+            $this->keyBindingsHelp->add('Enter', 'Submit');
+        } elseif ($this->state === 'jump') {
+            $this->keyBindingsHelp->add('Enter', 'Jump to page');
+        } else {
+            $upArrow = $this->index === 0 ? $this->dim('↑') : '↑';
+            $downArrow = $this->index === count($this->visible()) - 1 ? $this->dim('↓') : '↓';
+            $leftArrow = $this->page === 1 ? $this->dim('←') : '←';
+            $rightArrow = $this->page === $this->totalPages ? $this->dim('→') : '→';
+
+            $this->keyBindingsHelp->add($upArrow.' '.$downArrow, 'Row');
+            $this->keyBindingsHelp->add($leftArrow.' '.$rightArrow, 'Page');
+            $this->keyBindingsHelp->add('/', 'Search');
+            $this->keyBindingsHelp->add('j', 'Jump to page');
+            $this->addCustomKeyBindings();
+        }
+    }
+
+    protected function search(): void
+    {
+        $this->state = 'search';
+        $this->index = 0;
+        $this->page = 1;
+
+        $this->listener
+            ->clearExisting()
+            ->listenForQuit()
+            ->listenToInput($this->query, $this->cursorPosition)
+            ->on(
+                Key::ENTER,
+                function () {
+                    if (count($this->visible()) === 0) {
+                        return;
+                    }
+
+                    $this->browse();
+                },
+            )
+            ->listen();
+    }
+
+    protected function jump(): void
+    {
+        $this->state = 'jump';
+        $this->index = 0;
+
+        $this->listener
+            ->clearExisting()
+            ->listenForQuit()
+            ->listenToInput($this->jumpToPage, $this->cursorPosition)
+            ->on(
+                Key::ENTER,
+                function () {
+                    if ($this->jumpToPage === '') {
+                        $this->browse();
+
+                        return;
+                    }
+
+                    if (! is_numeric($this->jumpToPage)) {
+                        return;
+                    }
+
+                    if ($this->jumpToPage < 1 || $this->jumpToPage > $this->totalPages) {
+                        return;
+                    }
+
+                    $this->page = (int) $this->jumpToPage;
+                    $this->jumpToPage = '';
+                    $this->browse();
+                },
+            )
+            ->listen();
+    }
+
+    public function runCustomAction(callable $action): void
+    {
+        $this->keepLooping = false;
+        $action($this->rows[$this->index]);
+    }
+
+    /**
+     * Get the value of the prompt.
+     */
+    public function value(): bool
+    {
+        return true;
+    }
+}

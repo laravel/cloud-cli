@@ -21,9 +21,9 @@ class TableRenderer extends Renderer
             ->setCellRowFormat('<fg=default>%s</>');
 
         if (empty($table->headers)) {
-            $tableStyle->setCrossingChars('┼', '', '', '', '┤', '┘</>', '┴', '└', '├', '<fg=gray>┌', '┬', '┐');
+            $tableStyle->setCrossingChars('┼', '', '', '', '┤', '┘</>', '┴', '└', '├', '<fg=gray>╭', '┬', '╮');
         } else {
-            $tableStyle->setCrossingChars('┼', '<fg=gray>┌', '┬', '┐', '┤', '┘</>', '┴', '└', '├');
+            $tableStyle->setCrossingChars('┼', '<fg=gray>╭', '┬', '╮', '┤', '╯</>', '┴', '╰', '├');
         }
 
         $buffered = new BufferedConsoleOutput;

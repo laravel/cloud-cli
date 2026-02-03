@@ -59,9 +59,7 @@ class ApplicationResolver extends Resolver
         $apps = $this->fetchAll();
 
         if ($apps->hasSole()) {
-            $app = $apps->first();
-
-            return $app;
+            return $apps->first();
         }
 
         $this->ensureInteractive('Please provide an application ID or name.');

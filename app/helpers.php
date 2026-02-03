@@ -5,6 +5,7 @@ use App\Prompts\DataList;
 use App\Prompts\DynamicSpinner;
 use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SlideIn;
+use Laravel\Prompts\DataTable;
 use Laravel\Prompts\Note;
 
 if (! function_exists('answered')) {
@@ -46,5 +47,12 @@ if (! function_exists('dataList')) {
     function dataList(array $data): void
     {
         (new DataList(data: $data))->display();
+    }
+}
+
+if (! function_exists('dataTable')) {
+    function dataTable(array $headers, array $rows, array $actions = []): void
+    {
+        (new DataTable(headers: $headers, rows: $rows, actions: $actions))->display();
     }
 }

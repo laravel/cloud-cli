@@ -3,17 +3,16 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use Illuminate\Support\Facades\Process;
+use Laravel\Prompts\Key;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 
 class CommandList extends BaseCommand
 {
     use HasAClient;
 
-    protected $signature = 'command:list {environment : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'command:list {environment? : The environment ID} {--json : Output as JSON}';
 
     protected $description = 'List all commands for an environment';
 
@@ -23,30 +22,31 @@ class CommandList extends BaseCommand
 
         intro('Commands');
 
-        $commands = spin(
-            fn () => $this->client->commands()->list($this->argument('environment')),
-            'Fetching commands...',
-        );
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
+        $commands = $this->client->commands()->list($environment->id)->collect();
 
-        $items = $commands->collect();
+        $this->outputJsonIfWanted($commands);
 
-        $this->outputJsonIfWanted($items);
-
-        if ($items->isEmpty()) {
-            info('No commands found.');
-
-            return;
-        }
-
-        table(
+        dataTable(
             ['ID', 'Command', 'Status', 'Exit Code', 'Started'],
-            $items->map(fn ($cmd) => [
+            $commands->map(fn ($cmd) => [
                 $cmd->id,
                 substr($cmd->command, 0, 50),
-                $cmd->status,
-                $cmd->exitCode ?? 'N/A',
-                $cmd->startedAt?->format('Y-m-d H:i:s') ?? 'N/A',
+                $cmd->status->label(),
+                $cmd->exitCode ?? '—',
+                $cmd->startedAt?->format('Y-m-d H:i:s') ?? '—',
             ])->toArray(),
+            [
+                Key::ENTER => [
+                    // TODO: Correct url...
+                    fn ($row) => Process::run('open '.$environment->url),
+                    'Open in browser',
+                ],
+                'o' => [
+                    fn ($row) => $this->call('command:get', ['commandId' => $row[0]]),
+                    'Open in terminal',
+                ],
+            ],
         );
     }
 }

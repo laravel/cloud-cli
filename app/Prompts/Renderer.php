@@ -9,6 +9,8 @@ abstract class Renderer extends BaseRenderer
 {
     public static bool $suppressOutput = false;
 
+    protected $skipTopBorder = false;
+
     protected function lineWithBorder(string $message): self
     {
         return $this->line(TimelineSymbol::LINE->value.'  '.$message);
@@ -63,8 +65,16 @@ abstract class Renderer extends BaseRenderer
             return '';
         }
 
-        return str_repeat(TimelineSymbol::LINE->value.PHP_EOL, max(2 - $this->prompt->newLinesWritten(), 0))
-            .$this->output
-            .(in_array($this->prompt->state, ['submit', 'cancel']) ? TimelineSymbol::LINE->value.PHP_EOL : '');
+        $toWrite = $this->skipTopBorder ? '' : TimelineSymbol::LINE->value;
+
+        return str_repeat($toWrite.PHP_EOL, max(2 - $this->prompt->newLinesWritten(), 0))
+            .rtrim($this->output, PHP_EOL)
+            .PHP_EOL
+            .(
+                in_array($this->prompt->state, ['submit'])
+                ? TimelineSymbol::LINE->value
+                : $this->dim('╰')
+            )
+            .PHP_EOL;
     }
 }

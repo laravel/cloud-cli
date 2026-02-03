@@ -13,7 +13,6 @@ class NoteRenderer extends Renderer
     public function __invoke(Note $note): string
     {
         $lines = explode(PHP_EOL, $note->message);
-
         $spacer = str_repeat(' ', 2);
 
         switch ($note->type) {
@@ -22,9 +21,18 @@ class NoteRenderer extends Renderer
                 $lines = array_map(fn ($line) => "{$line} ", $lines);
                 $longest = max(array_map(fn ($line) => strlen($line), $lines));
 
+                if ($note->type === 'intro') {
+                    $this->skipTopBorder = true;
+                    $this->line($this->dim('╭'));
+                }
+
                 foreach ($lines as $line) {
                     $line = str_pad($line, $longest, ' ');
                     $this->line($this->cyan(TimelineSymbol::DOT->value.$spacer.$line));
+                }
+
+                if ($note->type === 'outro') {
+                    $this->prompt->state = 'initial';
                 }
 
                 return $this;

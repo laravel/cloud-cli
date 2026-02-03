@@ -18,6 +18,15 @@ trait DrawsThemeBoxes
 
         $this->parentBox($title, $body, $footer, $color, $info);
 
+        $replace = [
+            '┌' => '╭',
+            '└' => '╰',
+            '┐' => '╮',
+            '┘' => '╯',
+        ];
+
+        $this->output = str_replace(array_keys($replace), array_values($replace), $this->output);
+
         $newOutput = collect(explode(PHP_EOL, $this->output))
             ->map(function ($line, $index) use ($symbol) {
                 if (! strlen($line)) {

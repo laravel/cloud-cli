@@ -3,20 +3,22 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Illuminate\Http\Client\RequestException;
+use App\Dto\Command;
+use App\Prompts\MonitorCommand;
+use App\Support\ValueResolver;
 
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
 
 class CommandRun extends BaseCommand
 {
     use HasAClient;
 
     protected $signature = 'command:run
-                            {environment : The environment ID}
-                            {command : The command to run}
+                            {environment? : The environment ID}
+                            {--command= : The command to run}
+                            {--monitor : Monitor the command in real-time}
                             {--json : Output as JSON}';
 
     protected $description = 'Run a command on an environment';
@@ -27,38 +29,40 @@ class CommandRun extends BaseCommand
 
         intro('Running Command');
 
-        try {
-            $cmd = spin(
-                fn () => $this->client->commands()->run(
-                    $this->argument('environment'),
-                    $this->argument('command'),
-                ),
-                'Running command...',
-            );
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
+        $command = $this->loopUntilValid(fn () => $this->runCommandOnEnvironment($environment->id));
 
-            if ($this->option('json')) {
-                $this->line(json_encode([
-                    'id' => $cmd->id,
-                    'command' => $cmd->command,
-                    'status' => $cmd->status,
-                    'started_at' => $cmd->startedAt?->toIso8601String(),
-                ], JSON_PRETTY_PRINT));
+        $this->outputJsonIfWanted($command);
 
-                return;
-            }
-
-            outro("Command started: {$cmd->id}\nUse 'command:get {$cmd->id}' to check status and output");
-        } catch (RequestException $e) {
-            if ($e->response?->status() === 422) {
-                $errors = $e->response->json()['errors'] ?? [];
-                foreach ($errors as $field => $messages) {
-                    error(ucwords($field).': '.implode(', ', $messages));
-                }
-            } else {
-                error('Failed to run command: '.$e->getMessage());
-            }
-
-            return 1;
+        if ($this->option('monitor')) {
+            (new MonitorCommand(
+                fn (string $id) => $this->client->commands()->get($id),
+                $command,
+            ))->display();
         }
+
+        outro('Command queued');
+    }
+
+    protected function runCommandOnEnvironment(string $environmentId): Command
+    {
+        $this->addParam(
+            'command',
+            fn (ValueResolver $resolver) => $resolver->fromInput(
+                fn ($value) => text(
+                    label: 'Command',
+                    default: $value ?? 'php artisan ',
+                    required: true,
+                ),
+            ),
+        );
+
+        return dynamicSpinner(
+            fn () => $this->client->commands()->run(
+                $environmentId,
+                $this->getParam('command'),
+            ),
+            'Running command...',
+        );
     }
 }
