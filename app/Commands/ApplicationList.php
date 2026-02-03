@@ -40,14 +40,14 @@ class ApplicationList extends BaseCommand
         }
 
         dataTable(
-            ['ID', 'Name', 'Region', 'Repository'],
-            $applications->map(fn (Application $app) => [
+            headers: ['ID', 'Name', 'Region', 'Repository'],
+            rows: $applications->map(fn (Application $app) => [
                 $app->id,
                 $app->name,
                 $app->region,
-                $app->repositoryFullName ?? 'N/A',
+                $app->repositoryFullName ?? '—',
             ])->toArray(),
-            [
+            actions: [
                 Key::ENTER => [
                     fn ($row) => $this->call('application:get', ['application' => $row[0]]),
                     'View',

@@ -27,15 +27,15 @@ class CommandList extends BaseCommand
         $this->outputJsonIfWanted($commands);
 
         dataTable(
-            ['ID', 'Command', 'Status', 'Exit Code', 'Started'],
-            $commands->map(fn ($cmd) => [
+            headers: ['ID', 'Command', 'Status', 'Exit Code', 'Started'],
+            rows: $commands->map(fn ($cmd) => [
                 $cmd->id,
                 substr($cmd->command, 0, 50),
                 $cmd->status->label(),
                 $cmd->exitCode ?? '—',
                 $cmd->startedAt?->format('Y-m-d H:i:s') ?? '—',
             ])->toArray(),
-            [
+            actions: [
                 Key::ENTER => [
                     fn ($row) => $this->call('command:get', ['commandId' => $row[0]]),
                     'View',
