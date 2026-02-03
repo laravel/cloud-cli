@@ -19,10 +19,14 @@ class DataListRenderer extends Renderer
                 $this->lineWithBorder($this->dim($key));
             }
 
-            $value = is_array($value) ? $value : explode(PHP_EOL, $value);
+            $value = match (true) {
+                is_array($value) => $value,
+                $value === null, $value === '' => ['—'],
+                default => explode(PHP_EOL, $value),
+            };
 
             foreach ($value as $item) {
-                $this->lineWithBorder($this->green(trim($item ?? '—')));
+                $this->lineWithBorder($this->green(trim($item)));
             }
 
             $this->lineWithBorder('');

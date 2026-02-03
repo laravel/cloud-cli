@@ -21,8 +21,8 @@ trait HasDescriptiveArray
 
     protected function processDescriptionItem(string $key, mixed $value): array
     {
-        if ($value = $this->overrideDescriptionItem($key, $value)) {
-            return $value;
+        if ($newValue = $this->overrideDescriptionItem($key, $value)) {
+            return $newValue;
         }
 
         return [

@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -38,13 +37,8 @@ class CommandList extends BaseCommand
             ])->toArray(),
             [
                 Key::ENTER => [
-                    // TODO: Correct url...
-                    fn ($row) => Process::run('open '.$environment->url),
-                    'Open in browser',
-                ],
-                'o' => [
                     fn ($row) => $this->call('command:get', ['commandId' => $row[0]]),
-                    'Open in terminal',
+                    'View',
                 ],
             ],
         );

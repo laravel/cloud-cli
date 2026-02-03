@@ -271,7 +271,7 @@ class DataTable extends Prompt
     public function runCustomAction(callable $action): void
     {
         $this->keepLooping = false;
-        $action($this->rows[$this->index]);
+        $action($this->visible()[$this->index]);
     }
 
     /**

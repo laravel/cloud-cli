@@ -30,8 +30,9 @@ class Command extends Data
         public readonly ?CarbonImmutable $createdAt = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $updatedAt = null,
-        public readonly ?string $environmentId = null,
-        public readonly ?string $instanceId = null,
+        public readonly ?Environment $environment = null,
+        public readonly ?EnvironmentInstance $instance = null,
+        public readonly ?User $initiator = null,
     ) {
         //
     }
@@ -63,7 +64,6 @@ class Command extends Data
     {
         $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
-        $relationships = $data['relationships'] ?? [];
 
         $transformed = [
             'id' => $data['id'],
@@ -77,14 +77,45 @@ class Command extends Data
             'updatedAt' => $attributes['updated_at'] ?? null,
         ];
 
-        if (isset($relationships['environment']['data']['id'])) {
-            $transformed['environmentId'] = $relationships['environment']['data']['id'];
-        }
+        $included = collect($response['included'] ?? []);
 
-        if (isset($relationships['instance']['data']['id'])) {
-            $transformed['instanceId'] = $relationships['instance']['data']['id'];
-        }
+        $environment = $included->firstWhere('type', 'environments');
+        $instance = $included->firstWhere('type', 'instances');
+        $initiator = $included->firstWhere('type', 'users');
+
+        $transformed['environment'] = $environment ? Environment::createFromResponse(['data' => $environment, 'included' => $included]) : null;
+        $transformed['instance'] = $instance ? EnvironmentInstance::createFromResponse(['data' => $instance, 'included' => $included]) : null;
+        $transformed['initiator'] = $initiator ? User::createFromResponse(['data' => $initiator, 'included' => $included]) : null;
 
         return self::from($transformed);
+    }
+
+    protected function overrideDescriptionItem(string $key, mixed $value): ?array
+    {
+        if ($key === 'status') {
+            return [
+                'Status' => $value->label(),
+            ];
+        }
+
+        if ($key === 'environment' && $value) {
+            return [
+                'Environment' => $value['name'] ?? null,
+            ];
+        }
+
+        if ($key === 'instance' && $value) {
+            return [
+                'Instance' => $value['name'] ?? null,
+            ];
+        }
+
+        if ($key === 'initiator' && $value) {
+            return [
+                'Initiator' => $value['name'],
+            ];
+        }
+
+        return null;
     }
 }

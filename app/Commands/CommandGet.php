@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
 
 class CommandGet extends BaseCommand
 {
@@ -25,5 +26,7 @@ class CommandGet extends BaseCommand
         $this->outputJsonIfWanted($cmd);
 
         dataList($cmd->descriptiveArray());
+
+        outro('');
     }
 }

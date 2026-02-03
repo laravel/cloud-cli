@@ -14,6 +14,7 @@ class ListCommandsRequest extends Request implements Paginatable
 
     public function __construct(
         protected string $environmentId,
+        protected ?string $includes = null,
     ) {
         //
     }
@@ -21,6 +22,13 @@ class ListCommandsRequest extends Request implements Paginatable
     public function resolveEndpoint(): string
     {
         return "/environments/{$this->environmentId}/commands";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'include' => $this->includes,
+        ]);
     }
 
     public function createDtoFromResponse(Response $response): mixed

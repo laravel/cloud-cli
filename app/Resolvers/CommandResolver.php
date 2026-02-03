@@ -38,7 +38,7 @@ class CommandResolver extends Resolver
         return $this->resolveFromIdentifier(
             $identifier,
             fn () => spin(
-                fn () => $this->client->commands()->get($identifier),
+                fn () => $this->client->commands()->include('environment', 'deployment', 'initiator')->get($identifier),
                 'Fetching command...',
             ),
         );
@@ -50,7 +50,7 @@ class CommandResolver extends Resolver
             ->environment()
             ->withApplication($this->application())
             ->resolve();
-        $commands = $this->client->commands()->list($environment->id)->collect();
+        $commands = $this->client->commands()->include('environment', 'deployment', 'initiator')->list($environment->id)->collect();
 
         if ($commands->hasSole()) {
             return $commands->first();

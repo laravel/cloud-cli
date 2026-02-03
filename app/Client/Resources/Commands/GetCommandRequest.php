@@ -13,6 +13,7 @@ class GetCommandRequest extends Request
 
     public function __construct(
         protected string $commandId,
+        protected ?string $includes = null,
     ) {
         //
     }
@@ -20,6 +21,13 @@ class GetCommandRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/commands/{$this->commandId}";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'include' => $this->includes,
+        ]);
     }
 
     public function createDtoFromResponse(Response $response): mixed
