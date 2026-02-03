@@ -2,7 +2,9 @@
 
 namespace App\Commands;
 
+use Carbon\CarbonInterval;
 use Illuminate\Http\Client\RequestException;
+use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -28,17 +30,55 @@ class DatabaseDelete extends BaseCommand
 
         $database = $this->resolvers()->databaseCluster()->from($this->argument('database'));
         $dontConfirm = $this->option('force') && $this->argument('database');
+        $schemas = spin(
+            fn () => $this->client->databaseClusters()->include('schemas')->get($database->id)->schemas,
+            'Fetching database cluster schemas...',
+        );
 
-        if (! $dontConfirm && ! confirm('Delete database cluster?')) {
+        $schemaSuffix = '';
+
+        if (count($schemas) > 0) {
+            dataList([
+                'Schemas' => collect($schemas)->pluck('name')->implode(PHP_EOL),
+            ]);
+            $schemaSuffix = ' and schemas';
+        }
+
+        if (! $dontConfirm && ! confirm('Delete database cluster'.$schemaSuffix.'?')) {
             error('Cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            spin(
-                fn () => $this->client->databaseClusters()->delete($database->id),
-                'Deleting database cluster...',
+            foreach ($schemas as $schema) {
+                $this->loopUntilValid(
+                    function ($errors) use ($database, $schema) {
+                        if ($errors->messageContains('global', 'please wait')) {
+                            info('Waiting a few seconds...');
+                            Sleep::for(CarbonInterval::seconds(5));
+                        }
+
+                        return spin(
+                            fn () => $this->client->databases()->delete($database->id, $schema->id),
+                            'Deleting schema '.$schema->name.'...',
+                        );
+                    },
+                );
+            }
+
+            $this->loopUntilValid(
+                function ($errors) use ($database) {
+                    if ($errors->messageContains('global', 'please wait')) {
+                        info('Waiting a few seconds...');
+                        Sleep::for(CarbonInterval::seconds(5));
+                    }
+
+                    return spin(
+                        fn () => $this->client->databaseClusters()->delete($database->id),
+                        'Deleting database cluster...',
+                    );
+                },
             );
 
             $this->outputJsonIfWanted('Database cluster deleted.');
