@@ -6,6 +6,7 @@ use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -20,6 +21,7 @@ class Auth extends BaseCommand implements NoAuthRequired
     protected $signature = 'auth
                             {--add : Add a new API token}
                             {--remove : Remove an API token}
+                            {--reveal : Reveal the config file in Finder}
                             {--list : List API tokens}';
 
     protected $description = 'Manage Laravel Cloud API tokens';
@@ -47,6 +49,14 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         if ($this->option('list')) {
             $this->listTokens($tokens);
+
+            return;
+        }
+
+        if ($this->option('reveal')) {
+            Process::run('open '.$this->config->path().' -R');
+
+            outro('Revealed '.$this->config->path().' in Finder');
 
             return;
         }

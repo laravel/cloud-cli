@@ -51,7 +51,20 @@ class ApplicationResolver extends Resolver
         $repository = app(Git::class)->remoteRepo();
         $apps = $this->fetchAll();
 
-        return $apps->firstWhere('repositoryFullName', $repository);
+        $repoApps = $apps->where('repositoryFullName', $repository);
+
+        if ($repoApps->hasSole()) {
+            return $repoApps->first();
+        }
+
+        $this->ensureInteractive('Please provide an application ID or name.');
+
+        $selectedApp = selectWithContext(
+            label: 'Application',
+            options: $repoApps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray(),
+        );
+
+        return $repoApps->firstWhere('id', $selectedApp);
     }
 
     public function fromInput(): ?Application

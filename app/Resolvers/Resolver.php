@@ -5,7 +5,6 @@ namespace App\Resolvers;
 use App\Client\Connector;
 use App\LocalConfig;
 use Illuminate\Console\Command;
-use RuntimeException;
 use Throwable;
 
 use function Laravel\Prompts\error;
@@ -65,7 +64,9 @@ abstract class Resolver
     protected function ensureInteractive(string $message): void
     {
         if (! $this->isInteractive) {
-            throw new RuntimeException($message);
+            echo json_encode(['message' => $message]).PHP_EOL;
+
+            exit(Command::FAILURE);
         }
     }
 
