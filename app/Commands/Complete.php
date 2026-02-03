@@ -5,6 +5,8 @@ namespace App\Commands;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Facades\File;
 use Symfony\Component\Console\Command\DumpCompletionCommand;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
@@ -236,12 +238,12 @@ class Complete extends BaseCommand implements NoAuthRequired
         $command = new DumpCompletionCommand;
         $command->setApplication($this->getApplication());
 
-        $input = new \Symfony\Component\Console\Input\ArrayInput([
+        $input = new ArrayInput([
             'shell' => $shell,
             '--' => [],
         ]);
 
-        $output = new \Symfony\Component\Console\Output\BufferedOutput;
+        $output = new BufferedOutput;
 
         $command->run($input, $output);
 
