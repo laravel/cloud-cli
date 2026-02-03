@@ -74,6 +74,13 @@ abstract class BaseCommand extends Command
         }
     }
 
+    protected function reportChange(string $field, string $oldValue, string $newValue): void
+    {
+        dataList([
+            $field => $this->dim($this->yellow($oldValue).' →').' '.$this->green($newValue),
+        ]);
+    }
+
     protected function isInteractive(): bool
     {
         if ($this->option('no-interaction')) {

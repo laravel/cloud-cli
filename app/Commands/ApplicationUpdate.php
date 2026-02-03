@@ -154,13 +154,6 @@ class ApplicationUpdate extends BaseCommand
         return $this->updateApplication($application, $this->getParams());
     }
 
-    protected function reportChange(string $field, string $oldValue, string $newValue): void
-    {
-        dataList([
-            $field => $this->dim($this->yellow($oldValue).' →').' '.$this->green($newValue),
-        ]);
-    }
-
     protected function getNewName(string $oldName): string
     {
         return text(

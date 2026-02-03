@@ -149,13 +149,6 @@ class BackgroundProcessUpdate extends BaseCommand
         return $this->updateProcess($process, $params);
     }
 
-    protected function reportChange(string $field, string $oldValue, string $newValue): void
-    {
-        dataList([
-            $field => $this->dim($this->yellow($oldValue).' →').' '.$this->green($newValue),
-        ]);
-    }
-
     protected function getNewCommand(string $oldCommand): string
     {
         return text(
