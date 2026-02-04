@@ -16,9 +16,9 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class DatabaseUpdate extends BaseCommand
+class DatabaseClusterUpdate extends BaseCommand
 {
-    protected $signature = 'database:update
+    protected $signature = 'database-cluster:update
                             {database? : The database ID or name}
                             {--size= : Instance size}
                             {--storage= : Storage in GB}

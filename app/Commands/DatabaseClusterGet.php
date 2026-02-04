@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use function Laravel\Prompts\intro;
 
-class DatabaseGet extends BaseCommand
+class DatabaseClusterGet extends BaseCommand
 {
-    protected $signature = 'database:get {database? : The database ID or name} {--json : Output as JSON}';
+    protected $signature = 'database-cluster:get {database? : The database ID or name} {--json : Output as JSON}';
 
     protected $description = 'Get database cluster details';
 

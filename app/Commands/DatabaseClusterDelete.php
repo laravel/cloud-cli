@@ -12,9 +12,9 @@ use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
-class DatabaseDelete extends BaseCommand
+class DatabaseClusterDelete extends BaseCommand
 {
-    protected $signature = 'database:delete {database? : The database ID or name} {--force : Skip confirmation} {--json : Output as JSON}';
+    protected $signature = 'database-cluster:delete {database? : The database ID or name} {--force : Skip confirmation} {--json : Output as JSON}';
 
     protected $description = 'Delete a database cluster';
 

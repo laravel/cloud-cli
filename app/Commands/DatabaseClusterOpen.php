@@ -13,9 +13,9 @@ use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
-class DatabaseOpen extends BaseCommand
+class DatabaseClusterOpen extends BaseCommand
 {
-    protected $signature = 'database:open
+    protected $signature = 'database-cluster:open
                             {application? : The application ID or name}
                             {environment? : The name of the environment}
                             {database? : The database ID or name}';

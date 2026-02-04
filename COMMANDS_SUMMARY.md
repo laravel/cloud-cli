@@ -102,13 +102,25 @@ Note: `deploy` command already exists for initiating deployments.
 - `background-process:delete {process}` - Delete a background process
   - Options: `--force`
 
-## Databases
+## Database Clusters
 
-- `database:list` - List all database clusters
+- `database-cluster:list` - List all database clusters
   - Options: `--json`
 
-- `database:get {database}` - Get database cluster details
+- `database-cluster:get {database}` - Get database cluster details
   - Options: `--json`
+
+- `database-cluster:create` - Create a new database cluster
+  - Options: `--name=`, `--type=`, `--region=`, `--json`
+
+- `database-cluster:update {database}` - Update a database cluster
+  - Options: `--size=`, `--storage=`, `--retention-days=`, `--force`, `--json`
+
+- `database-cluster:delete {database}` - Delete a database cluster
+  - Options: `--force`, `--json`
+
+- `database-cluster:open` - Open database cluster in TablePlus
+  - Arguments: `{application?}`, `{environment?}`, `{database?}`
 
 ## Network
 

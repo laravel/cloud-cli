@@ -16,12 +16,12 @@ use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
-class DatabaseCreate extends BaseCommand
+class DatabaseClusterCreate extends BaseCommand
 {
     use DeterminesDefaultRegion;
     use Validates;
 
-    protected $signature = 'database:create
+    protected $signature = 'database-cluster:create
                             {--name= : Database cluster name}
                             {--type= : Database type}
                             {--region= : Database region}
