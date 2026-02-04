@@ -11,7 +11,7 @@ class Domain extends Data
 {
     public function __construct(
         public readonly string $id,
-        public readonly string $domain,
+        public readonly string $name,
         public readonly string $status,
         public readonly bool $isPrimary,
         public readonly ?string $verificationStatus = null,
@@ -32,7 +32,7 @@ class Domain extends Data
 
         $transformed = [
             'id' => $data['id'],
-            'domain' => $attributes['domain'] ?? '',
+            'name' => $attributes['name'] ?? '',
             'status' => $attributes['status'] ?? '',
             'isPrimary' => $attributes['is_primary'] ?? false,
             'verificationStatus' => $attributes['verification_status'] ?? null,

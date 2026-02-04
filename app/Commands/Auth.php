@@ -128,7 +128,7 @@ class Auth extends BaseCommand implements NoAuthRequired
         if ($orgs->isEmpty()) {
             warning('No API tokens found.');
 
-            return self::FAILURE;
+            exit(self::FAILURE);
         }
 
         table(

@@ -17,7 +17,8 @@ class CreateDomainRequest extends Request implements HasBody
 
     public function __construct(
         protected string $environmentId,
-        protected string $domain,
+        protected string $name,
+        protected array $data,
     ) {
         //
     }
@@ -30,7 +31,8 @@ class CreateDomainRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return [
-            'domain' => $this->domain,
+            'name' => $this->name,
+            ...$this->data,
         ];
     }
 

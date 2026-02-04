@@ -4,8 +4,10 @@ namespace App\Commands;
 
 use App\Concerns\Validates;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -14,8 +16,11 @@ class DomainCreate extends BaseCommand
     use Validates;
 
     protected $signature = 'domain:create
-                            {--environment= : The environment ID}
-                            {--domain= : The domain name}
+                            {environment? : The environment ID or name}
+                            {--name= : The domain name}
+                            {--www-redirect= : The redirect strategy}
+                            {--wildcard-enabled= : Whether to enable wildcard}
+                            {--verification-method= : The verification method}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a new domain';
@@ -26,35 +31,72 @@ class DomainCreate extends BaseCommand
 
         intro('Creating Domain');
 
-        $environment = $this->resolvers()->environment()->from($this->option('environment'));
-
+        $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
         $domain = $this->loopUntilValid(fn () => $this->createDomain($environment->id));
 
         $this->outputJsonIfWanted($domain);
 
-        success('Domain created');
-
-        outro("Domain created: {$domain->domain}");
+        outro("Domain created: {$domain->name}");
     }
 
     protected function createDomain(string $environmentId)
     {
         $this->addParam(
-            'domain',
+            'name',
+            fn ($resolver) => $resolver->fromInput(fn (?string $value) => text(
+                label: 'Domain name',
+                default: $value ?? '',
+                required: true,
+            )),
+        );
+
+        $this->addParam(
+            'www_redirect',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
-                    label: 'Domain name',
-                    default: $value ?? '',
-                    placeholder: 'example.com',
+                ->fromInput(fn ($value) => select(
+                    label: 'Redirect strategy',
+                    options: [
+                        'www_to_root' => 'Redirect www to root',
+                        'root_to_www' => 'Redirect non-www to www',
+                    ],
                     required: true,
+                    default: $value ?? 'www_to_root',
                 ))
-                ->nonInteractively(fn () => $this->option('domain')),
+                ->nonInteractively(fn () => 'www_to_root'),
+        );
+
+        $this->addParam(
+            'wildcard_enabled',
+            fn ($resolver) => $resolver
+                ->fromInput(fn ($value) => confirm(
+                    label: 'Enable wildcard',
+                    default: $value ?? false,
+                )),
+        );
+
+        $this->addParam(
+            'verification_method',
+            fn ($resolver) => $resolver
+                ->fromInput(fn ($value) => selectWithContext(
+                    label: 'Verification method',
+                    options: [
+                        'pre_verification' => ['Pre-verification', 'TXT before the domain is pointed to the environment.'],
+                        'real_time' => ['Real-time', 'Requires domain to be pointed to the environment.'],
+                    ],
+                    default: $value ?? 'pre_verification',
+                    required: true,
+                )),
         );
 
         return spin(
             fn () => $this->client->domains()->create(
                 $environmentId,
-                $this->getParam('domain'),
+                $this->getParam('name'),
+                [
+                    'www_redirect' => $this->getParam('www_redirect'),
+                    'wildcard_enabled' => $this->getParam('wildcard_enabled'),
+                    'verification_method' => $this->getParam('verification_method'),
+                ],
             ),
             'Creating domain...',
         );

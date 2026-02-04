@@ -28,11 +28,12 @@ class DomainsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function create(string $environmentId, string $domain): Domain
+    public function create(string $environmentId, string $name, array $data): Domain
     {
         $request = new CreateDomainRequest(
             environmentId: $environmentId,
-            domain: $domain,
+            name: $name,
+            data: $data,
         );
 
         $response = $this->send($request);
