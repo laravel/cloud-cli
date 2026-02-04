@@ -12,16 +12,36 @@ class Domain extends Data
     public function __construct(
         public readonly string $id,
         public readonly string $name,
-        public readonly string $status,
-        public readonly bool $isPrimary,
-        public readonly ?string $verificationStatus = null,
+        public readonly string $type,
+        public readonly string $hostnameStatus,
+        public readonly string $sslStatus,
+        public readonly string $originStatus,
+        public readonly ?string $redirect = null,
+        public readonly array $dnsRecords = [],
+        public readonly ?array $wildcard = null,
+        public readonly ?array $www = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
+        public readonly ?CarbonImmutable $lastVerifiedAt = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
-        public readonly ?CarbonImmutable $updatedAt = null,
         public readonly ?string $environmentId = null,
     ) {
         //
+    }
+
+    public function status(): string
+    {
+        return $this->hostnameStatus;
+    }
+
+    public function isPrimary(): bool
+    {
+        return $this->type === 'root';
+    }
+
+    public function verificationStatus(): ?string
+    {
+        return $this->hostnameStatus;
     }
 
     public static function createFromResponse(array $response): self
@@ -33,11 +53,16 @@ class Domain extends Data
         $transformed = [
             'id' => $data['id'],
             'name' => $attributes['name'] ?? '',
-            'status' => $attributes['status'] ?? '',
-            'isPrimary' => $attributes['is_primary'] ?? false,
-            'verificationStatus' => $attributes['verification_status'] ?? null,
+            'type' => $attributes['type'] ?? 'root',
+            'hostnameStatus' => $attributes['hostname_status'] ?? 'pending',
+            'sslStatus' => $attributes['ssl_status'] ?? 'pending',
+            'originStatus' => $attributes['origin_status'] ?? 'pending',
+            'redirect' => $attributes['redirect'] ?? null,
+            'dnsRecords' => $attributes['dns_records'] ?? [],
+            'wildcard' => $attributes['wildcard'] ?? null,
+            'www' => $attributes['www'] ?? null,
+            'lastVerifiedAt' => $attributes['last_verified_at'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
-            'updatedAt' => $attributes['updated_at'] ?? null,
         ];
 
         if (isset($relationships['environment']['data']['id'])) {

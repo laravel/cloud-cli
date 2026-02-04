@@ -11,13 +11,12 @@ class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
 {
     use HasJsonBody;
 
-    protected Method $method = Method::POST;
+    protected Method $method = Method::PUT;
 
     public function __construct(
         protected string $environmentId,
-        protected array $variables,
-        /** @var 'append' | 'set' */
-        protected string $insertMethod = 'append',
+        protected ?string $content = null,
+        protected array $variables = [],
     ) {
         //
     }
@@ -29,12 +28,19 @@ class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        return [
-            'method' => $this->insertMethod,
-            'variables' => collect($this->variables)->map(fn ($value, $key) => [
+        $body = [];
+
+        if ($this->content !== null) {
+            $body['content'] = $this->content;
+        }
+
+        if ($this->variables !== []) {
+            $body['variables'] = collect($this->variables)->map(fn ($value, $key) => [
                 'key' => $key,
                 'value' => $value,
-            ])->values()->toArray(),
-        ];
+            ])->values()->toArray();
+        }
+
+        return $body;
     }
 }

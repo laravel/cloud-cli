@@ -42,8 +42,8 @@ class DomainList extends BaseCommand
             rows: $items->map(fn ($domain) => [
                 $domain->id,
                 $domain->name,
-                $domain->status,
-                $domain->isPrimary ? 'Yes' : 'No',
+                $domain->status(),
+                $domain->isPrimary() ? 'Yes' : 'No',
             ])->toArray(),
             actions: [
                 Key::ENTER => [

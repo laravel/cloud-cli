@@ -12,7 +12,7 @@ use function Laravel\Prompts\spin;
 class EnvironmentUpdate extends BaseCommand
 {
     protected $signature = 'environment:update
-                            {environment : The environment ID}
+                            {environment? : The environment ID or name}
                             {--branch= : Git branch}
                             {--build-command= : Build command}
                             {--deploy-command= : Deploy command}
@@ -25,6 +25,8 @@ class EnvironmentUpdate extends BaseCommand
         $this->ensureClient();
 
         intro('Updating Environment');
+
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
         $data = [];
 
@@ -43,24 +45,20 @@ class EnvironmentUpdate extends BaseCommand
         if (empty($data)) {
             error('No fields to update. Provide at least one option.');
 
-            return 1;
+            return self::FAILURE;
         }
 
         try {
             $environment = spin(
-                fn () => $this->client->environments()->update($this->argument('environment'), $data),
+                fn () => $this->client->environments()->update($environment->id, $data),
                 'Updating environment...',
             );
 
-            if ($this->option('json')) {
-                $this->line(json_encode([
-                    'id' => $environment->id,
-                    'name' => $environment->name,
-                    'updated_at' => $environment->updatedAt?->toIso8601String(),
-                ], JSON_PRETTY_PRINT));
-
-                return;
-            }
+            $this->outputJsonIfWanted([
+                'id' => $environment->id,
+                'name' => $environment->name,
+                'updated_at' => $environment->updatedAt?->toIso8601String(),
+            ]);
 
             outro("Environment updated: {$environment->name}");
         } catch (RequestException $e) {
@@ -73,7 +71,7 @@ class EnvironmentUpdate extends BaseCommand
                 error('Failed to update environment: '.$e->getMessage());
             }
 
-            return 1;
+            return self::FAILURE;
         }
     }
 }

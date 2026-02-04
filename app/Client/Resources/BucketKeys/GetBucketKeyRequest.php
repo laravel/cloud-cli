@@ -3,8 +3,10 @@
 namespace App\Client\Resources\BucketKeys;
 
 use App\Client\Resources\Concerns\AcceptsInclude;
+use App\Dto\BucketKey;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
+use Saloon\Http\Response;
 
 class GetBucketKeyRequest extends Request
 {
@@ -22,5 +24,10 @@ class GetBucketKeyRequest extends Request
     public function resolveEndpoint(): string
     {
         return "/buckets/{$this->bucketId}/keys/{$this->keyId}";
+    }
+
+    public function createDtoFromResponse(Response $response): BucketKey
+    {
+        return BucketKey::createFromResponse($response->json());
     }
 }

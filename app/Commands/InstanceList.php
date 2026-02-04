@@ -10,7 +10,9 @@ use function Laravel\Prompts\warning;
 
 class InstanceList extends BaseCommand
 {
-    protected $signature = 'instance:list {environment : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'instance:list
+                            {environment? : The environment ID or name}
+                            {--json : Output as JSON}';
 
     protected $description = 'List all instances for an environment';
 
@@ -20,8 +22,10 @@ class InstanceList extends BaseCommand
 
         intro('Instances');
 
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
+
         $instances = spin(
-            fn () => $this->client->instances()->list($this->argument('environment')),
+            fn () => $this->client->instances()->list($environment->id),
             'Fetching instances...',
         );
 

@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Commands;
+
+use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
+
+class DatabaseRestoreCreate extends BaseCommand
+{
+    protected $signature = 'database-restore:create
+                            {database-cluster? : The database cluster ID or name}
+                            {--snapshot= : Snapshot ID to restore from}
+                            {--point-in-time= : Point-in-time (ISO 8601) to restore to}
+                            {--json : Output as JSON}';
+
+    protected $description = 'Create a database restore from a snapshot or point-in-time';
+
+    public function handle()
+    {
+        $this->ensureClient();
+
+        intro('Creating Database Restore');
+
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+
+        $snapshotId = $this->option('snapshot');
+        $pointInTime = $this->option('point-in-time');
+
+        if (! $snapshotId && ! $pointInTime && $this->isInteractive()) {
+            $snapshots = spin(
+                fn () => $this->client->databaseSnapshots()->list($cluster->id),
+                'Fetching snapshots...',
+            );
+
+            if (count($snapshots) > 0) {
+                $choice = select(
+                    label: 'Restore from',
+                    options: [
+                        'snapshot' => 'Restore from snapshot',
+                        'point_in_time' => 'Restore from point-in-time',
+                    ],
+                );
+
+                if ($choice === 'snapshot') {
+                    $snapshotOptions = collect($snapshots)->mapWithKeys(fn ($s) => [$s->id => $s->name])->toArray();
+                    $snapshotId = select(
+                        label: 'Snapshot',
+                        options: $snapshotOptions,
+                    );
+                } else {
+                    $pointInTime = text(
+                        label: 'Point-in-time (ISO 8601)',
+                        required: true,
+                        placeholder: '2024-01-15T12:00:00Z',
+                    );
+                }
+            } else {
+                $pointInTime = text(
+                    label: 'Point-in-time (ISO 8601)',
+                    required: true,
+                    placeholder: '2024-01-15T12:00:00Z',
+                );
+            }
+        }
+
+        if (! $snapshotId && ! $pointInTime) {
+            $this->outputErrorOrThrow('Provide either --snapshot or --point-in-time.');
+
+            exit(self::FAILURE);
+        }
+
+        $restored = spin(
+            fn () => $this->client->databaseRestores()->create($cluster->id, $snapshotId, $pointInTime),
+            'Creating restore...',
+        );
+
+        $this->outputJsonIfWanted($restored);
+
+        success('Database restore created');
+
+        outro("Restored database cluster: {$restored->name}");
+    }
+}

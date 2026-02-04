@@ -4,11 +4,11 @@ namespace App\Commands;
 
 use App\Concerns\InteractsWithClipbboard;
 use Illuminate\Support\Collection;
+use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\table;
 use function Laravel\Prompts\warning;
 
 class IpAddresses extends BaseCommand
@@ -65,9 +65,15 @@ class IpAddresses extends BaseCommand
         $tableData->pop();
         $tableData->push($lastAddress);
 
-        table(
+        dataTable(
             ['Region', 'IPv4', 'IPv6'],
             $tableData->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $this->copyToIpsToClipboard(collect([$row['region'] => $row])),
+                    'Copy to clipboard',
+                ],
+            ],
         );
 
         if ($this->option('copy')) {
@@ -92,6 +98,11 @@ class IpAddresses extends BaseCommand
         );
 
         $ips = $addresses->first(fn ($ips, $region) => $region === $regionToCopy)[$ipTypeToCopy];
+
+        if (is_string($ips)) {
+            $ips = [$ips];
+        }
+
         $text = trim(implode(PHP_EOL, $ips));
 
         $this->copyToClipboard($text);

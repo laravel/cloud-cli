@@ -13,9 +13,13 @@ class AddEnvironmentVariablesRequest extends Request implements HasBody
 
     protected Method $method = Method::POST;
 
+    /**
+     * @param  'append'|'set'  $method
+     */
     public function __construct(
         protected string $environmentId,
         protected array $variables,
+        protected string $method = 'append',
     ) {
         //
     }
@@ -28,7 +32,7 @@ class AddEnvironmentVariablesRequest extends Request implements HasBody
     protected function defaultBody(): array
     {
         return [
-            'method' => 'append',
+            'method' => $this->method,
             'variables' => collect($this->variables)->map(fn ($value, $key) => [
                 'key' => $key,
                 'value' => $value,

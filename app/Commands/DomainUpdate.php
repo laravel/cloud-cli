@@ -127,7 +127,7 @@ class DomainUpdate extends BaseCommand
             ->dataKey('verification_method')
             ->label('Verification method');
         $fields->add('is-primary', fn ($value) => $this->getNewIsPrimary($value))
-            ->currentValue($domain->isPrimary ? 'true' : 'false')
+            ->currentValue($domain->isPrimary() ? 'true' : 'false')
             ->dataKey('is_primary')
             ->label('Primary');
 

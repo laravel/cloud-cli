@@ -23,11 +23,12 @@ class DomainGet extends BaseCommand
         dataList([
             'ID' => $domain->id,
             'Name' => $domain->name,
-            'Status' => $domain->status,
-            'Primary' => $domain->isPrimary ? 'Yes' : 'No',
-            'Verification' => $domain->verificationStatus,
+            'Type' => $domain->type,
+            'Status' => $domain->status(),
+            'Primary' => $domain->isPrimary() ? 'Yes' : 'No',
+            'Verification' => $domain->verificationStatus(),
             'Created At' => $domain->createdAt?->toIso8601String() ?? '-',
-            'Updated At' => $domain->updatedAt?->toIso8601String() ?? '-',
+            'Last Verified At' => $domain->lastVerifiedAt?->toIso8601String() ?? '-',
         ]);
     }
 }

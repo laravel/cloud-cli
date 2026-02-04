@@ -20,6 +20,7 @@ class Application extends Data
         public readonly ?string $repositoryFullName = null,
         public readonly ?string $repositoryBranch = null,
         public readonly ?string $slackChannel = null,
+        public readonly ?string $avatarUrl = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $repositoryId = null,
@@ -47,6 +48,7 @@ class Application extends Data
             'slug' => $attributes['slug'],
             'region' => $attributes['region'],
             'slackChannel' => $attributes['slack_channel'] ?? null,
+            'avatarUrl' => $attributes['avatar_url'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
         ];
 

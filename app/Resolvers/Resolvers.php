@@ -45,6 +45,11 @@ class Resolvers
         return $this->make(DatabaseClusterResolver::class);
     }
 
+    public function databaseSnapshot(): DatabaseSnapshotResolver
+    {
+        return $this->make(DatabaseSnapshotResolver::class);
+    }
+
     public function deployment(): DeploymentResolver
     {
         return $this->make(DeploymentResolver::class);
@@ -53,6 +58,31 @@ class Resolvers
     public function domain(): DomainResolver
     {
         return $this->make(DomainResolver::class);
+    }
+
+    public function cache(): CacheResolver
+    {
+        return $this->make(CacheResolver::class);
+    }
+
+    public function objectStorageBucket(): ObjectStorageBucketResolver
+    {
+        return $this->make(ObjectStorageBucketResolver::class);
+    }
+
+    public function bucketKey(): BucketKeyResolver
+    {
+        return $this->make(BucketKeyResolver::class);
+    }
+
+    public function websocketCluster(): WebSocketClusterResolver
+    {
+        return $this->make(WebSocketClusterResolver::class);
+    }
+
+    public function websocketApplication(): WebSocketApplicationResolver
+    {
+        return $this->make(WebSocketApplicationResolver::class);
     }
 
     protected function make(string $resolver): Resolver

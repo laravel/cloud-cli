@@ -8,25 +8,30 @@ use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
+use App\Dto\Cache;
 
 class CachesResource extends Resource
 {
+    /**
+     * @return array<int, Cache>
+     */
     public function list(): array
     {
         $response = $this->send(new ListCachesRequest);
+        $data = $response->json()['data'] ?? [];
 
-        return $response->json()['data'] ?? [];
+        return collect($data)->map(fn (array $item) => Cache::createFromResponse(['data' => $item]))->all();
     }
 
-    public function get(string $cacheId): array
+    public function get(string $cacheId): Cache
     {
         $request = new GetCacheRequest($cacheId);
         $response = $this->send($request);
 
-        return $response->json()['data'] ?? [];
+        return $request->createDtoFromResponse($response);
     }
 
-    public function create(string $type, string $name, string $region, array $config): array
+    public function create(string $type, string $name, string $region, array $config): Cache
     {
         $response = $this->send(new CreateCacheRequest(
             type: $type,
@@ -35,17 +40,21 @@ class CachesResource extends Resource
             config: $config,
         ));
 
-        return $response->json()['data'] ?? [];
+        $data = $response->json()['data'] ?? [];
+
+        return Cache::createFromResponse(['data' => $data]);
     }
 
-    public function update(string $cacheId, array $data): array
+    public function update(string $cacheId, array $data): Cache
     {
         $response = $this->send(new UpdateCacheRequest(
             cacheId: $cacheId,
             data: $data,
         ));
 
-        return $response->json()['data'] ?? [];
+        $responseData = $response->json()['data'] ?? [];
+
+        return Cache::createFromResponse(['data' => $responseData]);
     }
 
     public function delete(string $cacheId): void
