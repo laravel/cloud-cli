@@ -30,8 +30,6 @@ class DataTable extends Prompt
 
     public KeyBindingsHelp $keyBindingsHelp;
 
-    public bool $keepLooping = true;
-
     public int $page = 1;
 
     public int $perPage = 10;
@@ -277,10 +275,11 @@ class DataTable extends Prompt
             ->listen();
     }
 
-    public function runCustomAction(callable $action): void
+    public function runCustomAction(callable $action): bool
     {
-        $this->keepLooping = false;
         $action($this->visible()[$this->index]);
+
+        return false;
     }
 
     /**
