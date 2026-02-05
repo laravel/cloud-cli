@@ -6,8 +6,9 @@ use App\Dto\DatabaseSnapshot;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListDatabaseSnapshotsRequest extends Request
+class ListDatabaseSnapshotsRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 

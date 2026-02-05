@@ -6,8 +6,9 @@ use App\Dto\WebsocketCluster;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListWebSocketClustersRequest extends Request
+class ListWebSocketClustersRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 
@@ -20,6 +21,6 @@ class ListWebSocketClustersRequest extends Request
     {
         $data = $response->json('data') ?? [];
 
-        return array_map(fn(array $item) => WebsocketCluster::createFromResponse(['data' => $item]), $data);
+        return array_map(fn (array $item) => WebsocketCluster::createFromResponse(['data' => $item]), $data);
     }
 }

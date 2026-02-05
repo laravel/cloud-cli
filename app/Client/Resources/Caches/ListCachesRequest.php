@@ -7,8 +7,9 @@ use App\Dto\Cache;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListCachesRequest extends Request
+class ListCachesRequest extends Request implements Paginatable
 {
     use AcceptsInclude;
 

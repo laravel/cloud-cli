@@ -6,8 +6,9 @@ use App\Dto\WebsocketApplication;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListWebSocketApplicationsRequest extends Request
+class ListWebSocketApplicationsRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 
@@ -27,6 +28,6 @@ class ListWebSocketApplicationsRequest extends Request
         $data = $response->json('data') ?? [];
         $included = $response->json('included') ?? [];
 
-        return array_map(fn(array $item) => WebsocketApplication::createFromResponse(['data' => $item, 'included' => $included]), $data);
+        return array_map(fn (array $item) => WebsocketApplication::createFromResponse(['data' => $item, 'included' => $included]), $data);
     }
 }

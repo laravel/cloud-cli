@@ -6,8 +6,9 @@ use App\Dto\BucketKey;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
+use Saloon\PaginationPlugin\Contracts\Paginatable;
 
-class ListBucketKeysRequest extends Request
+class ListBucketKeysRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 
