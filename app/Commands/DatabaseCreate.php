@@ -2,16 +2,16 @@
 
 namespace App\Commands;
 
-use Illuminate\Http\Client\RequestException;
+use App\Actions\CreateDatabase;
+use App\Concerns\Validates;
 
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 
 class DatabaseCreate extends BaseCommand
 {
+    use Validates;
+
     protected $signature = 'database:create
                             {database-cluster? : The database cluster ID or name}
                             {--name= : Database (schema) name}
@@ -27,46 +27,26 @@ class DatabaseCreate extends BaseCommand
 
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
 
-        $name = $this->option('name');
+        $defaults = array_filter([
+            'name' => $this->option('name'),
+        ]);
 
-        if (! $name && ! $this->isInteractive()) {
+        if (empty($defaults['name']) && ! $this->isInteractive()) {
             $this->failAndExit('Provide --name when non-interactive.');
         }
 
-        $name ??= text(
-            label: 'Database name',
-            placeholder: 'my_database',
-            required: true,
-            validate: fn (string $value) => match (true) {
-                ! preg_match('/^[a-z0-9_-]+$/', $value) => 'Must contain only lowercase letters, numbers, hyphens and underscores',
-                strlen($value) < 3 => 'Must be at least 3 characters',
-                strlen($value) > 40 => 'Must be less than 40 characters',
-                default => null,
-            },
+        $creator = app(CreateDatabase::class);
+
+        $database = $this->loopUntilValid(
+            fn () => $this->option('name') && ! $this->isInteractive()
+                ? $creator->runWithParams($this->client, $cluster, $this->option('name'))
+                : $creator->run($this->client, $cluster, $defaults),
         );
 
-        try {
-            $database = spin(
-                fn () => $this->client->databases()->create($cluster->id, $name),
-                'Creating database...',
-            );
+        $this->outputJsonIfWanted($database);
 
-            $this->outputJsonIfWanted($database);
+        success('Database created');
 
-            success('Database created');
-
-            outro("Database created: {$database->name}");
-        } catch (RequestException $e) {
-            if ($e->response?->status() === 422) {
-                $errors = $e->response->json()['errors'] ?? [];
-                foreach ($errors as $field => $messages) {
-                    error(ucwords(str_replace('_', ' ', $field)).': '.implode(', ', (array) $messages));
-                }
-            } else {
-                error('Failed to create database: '.$e->getMessage());
-            }
-
-            return self::FAILURE;
-        }
+        outro("Database created: {$database->name}");
     }
 }

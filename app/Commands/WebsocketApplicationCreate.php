@@ -2,10 +2,10 @@
 
 namespace App\Commands;
 
+use App\Actions\CreateWebSocketApplication;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\spin;
-use function Laravel\Prompts\text;
 
 class WebsocketApplicationCreate extends BaseCommand
 {
@@ -24,15 +24,11 @@ class WebsocketApplicationCreate extends BaseCommand
 
         $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
 
-        $name = $this->option('name') ?? text(
-            label: 'Application name',
-            required: true,
-        );
+        $defaults = array_filter([
+            'name' => $this->option('name'),
+        ]);
 
-        $app = spin(
-            fn () => $this->client->websocketApplications()->create($cluster->id, ['name' => $name]),
-            'Creating WebSocket application...',
-        );
+        $app = app(CreateWebSocketApplication::class)->run($this->client, $cluster, $defaults);
 
         $this->outputJsonIfWanted($app);
 
