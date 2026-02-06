@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Actions\CreateDatabase;
 use App\Actions\CreateDatabaseCluster;
+use App\Actions\CreateWebSocketApplication;
 use App\Actions\CreateWebSocketCluster;
 use App\Concerns\HandlesAvatars;
 use App\Concerns\RequiresRemoteGitRepo;
@@ -15,6 +16,7 @@ use App\Dto\DatabaseCluster;
 use App\Dto\Environment;
 use App\Dto\Region;
 use App\Dto\ValidationErrors;
+use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
 use App\Git;
 use Carbon\CarbonInterval;
@@ -293,7 +295,11 @@ class Ship extends BaseCommand
 
             if ($cluster) {
                 $cluster = $this->client->websocketClusters()->get($cluster->id);
-                $environmentParams['websocket_cluster_id'] = $cluster->id;
+                $websocketApplication = $this->getWebSocketApplication($cluster);
+
+                if ($websocketApplication) {
+                    $environmentParams['websocket_application_id'] = $websocketApplication->id;
+                }
             }
         }
 
@@ -318,6 +324,32 @@ class Ship extends BaseCommand
                 },
             );
         }
+    }
+
+    protected function getWebSocketApplication(WebsocketCluster $cluster): ?WebsocketApplication
+    {
+        $applicationsPaginator = $this->client->websocketApplications()->list($cluster->id);
+        $applications = $applicationsPaginator->collect();
+
+        if ($applications->isEmpty()) {
+            return null;
+        }
+
+        $options = $applications->collect()->mapWithKeys(fn (WebsocketApplication $application) => [$application->id => $application->name]);
+        $options->prepend('Create new websocket application', 'new');
+
+        $application = select(
+            label: 'Websocket application',
+            options: $options->toArray(),
+        );
+
+        if ($application !== 'new') {
+            return $applications->firstWhere('id', $application);
+        }
+
+        return $this->loopUntilValid(
+            fn () => app(CreateWebSocketApplication::class)->run($this->client, $cluster, []),
+        );
     }
 
     protected function getWebsocketCluster(): ?WebsocketCluster
@@ -475,7 +507,7 @@ class Ship extends BaseCommand
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 
-                $this->client->environments()->replaceVariables($application->environmentIds[0], $varsToAdd->toArray());
+                $this->client->environments()->addVariables($application->environmentIds[0], $varsToAdd->toArray());
             },
             'Adding selected variables to Cloud environment',
         );

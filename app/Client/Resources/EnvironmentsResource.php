@@ -86,7 +86,7 @@ class EnvironmentsResource extends Resource
         $this->send(new AddEnvironmentVariablesRequest(
             environmentId: $environmentId,
             variables: $variables,
-            method: $method,
+            action: $method,
         ));
     }
 
