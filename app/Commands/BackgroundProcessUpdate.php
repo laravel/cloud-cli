@@ -91,7 +91,8 @@ class BackgroundProcessUpdate extends BaseCommand
         spin(
             fn () => $this->client->backgroundProcesses()->update(new UpdateBackgroundProcessRequestData(
                 backgroundProcessId: $process->id,
-                data: $data,
+                command: isset($data['command']) ? (string) $data['command'] : null,
+                instances: array_key_exists('instances', $data) ? (int) $data['instances'] : null,
             )),
             'Updating background process...',
         );
@@ -136,12 +137,12 @@ class BackgroundProcessUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->$this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        $params = $this->$this->fields()->all();
+        $params = $this->fields()->all();
 
         if (isset($params['instances'])) {
             $params['instances'] = (int) $params['instances'];

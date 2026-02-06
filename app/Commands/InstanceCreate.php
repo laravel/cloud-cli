@@ -57,7 +57,7 @@ class InstanceCreate extends BaseCommand
 
     protected function createInstance(string $environmentId)
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
@@ -68,7 +68,7 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'size',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => search(
@@ -82,7 +82,7 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'scaling_type',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => select(
@@ -98,9 +98,9 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $isCustom = $this->$this->fields()->get('scaling_type') === 'custom';
+        $isCustom = $this->fields()->get('scaling_type') === 'custom';
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'min_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
@@ -112,20 +112,20 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'max_replicas',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
                     label: 'Maximum replicas',
-                    default: $value ?? $this->$this->fields()->get('min-replicas'),
-                    min: $this->$this->fields()->get('min-replicas'),
+                    default: $value ?? $this->fields()->get('min-replicas'),
+                    min: $this->fields()->get('min-replicas'),
                     max: 10,
-                ) : $this->$this->fields()->get('min-replicas'),
+                ) : $this->fields()->get('min-replicas'),
             ),
         );
 
         if ($isCustom) {
-            $this->$this->fields()->add(
+            $this->fields()->add(
                 'scaling_cpu_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling CPU threshold percentage',
@@ -135,7 +135,7 @@ class InstanceCreate extends BaseCommand
                 )),
             );
 
-            $this->$this->fields()->add(
+            $this->fields()->add(
                 'scaling_memory_threshold_percentage',
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling memory threshold percentage',
@@ -144,12 +144,12 @@ class InstanceCreate extends BaseCommand
             );
         }
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'type',
             fn ($resolver) => $resolver->fromInput(fn () => 'service'),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'uses_scheduler',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
@@ -159,10 +159,20 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
+        $all = $this->fields()->all();
+
         return spin(
             fn () => $this->client->instances()->create(new CreateInstanceRequestData(
                 environmentId: $environmentId,
-                data: $this->$this->fields()->all(),
+                name: isset($all['name']) ? (string) $all['name'] : null,
+                type: isset($all['type']) ? (string) $all['type'] : null,
+                size: isset($all['size']) ? (string) $all['size'] : null,
+                scalingType: isset($all['scaling_type']) ? (string) $all['scaling_type'] : null,
+                minReplicas: isset($all['min_replicas']) ? (int) $all['min_replicas'] : null,
+                maxReplicas: isset($all['max_replicas']) ? (int) $all['max_replicas'] : null,
+                usesScheduler: isset($all['uses_scheduler']) ? (bool) $all['uses_scheduler'] : null,
+                scalingCpuThresholdPercentage: isset($all['scaling_cpu_threshold_percentage']) ? (int) $all['scaling_cpu_threshold_percentage'] : null,
+                scalingMemoryThresholdPercentage: isset($all['scaling_memory_threshold_percentage']) ? (int) $all['scaling_memory_threshold_percentage'] : null,
             )),
             'Creating instance...',
         );

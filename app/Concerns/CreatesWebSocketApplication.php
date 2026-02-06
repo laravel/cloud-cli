@@ -13,7 +13,7 @@ trait CreatesWebSocketApplication
 {
     protected function createWebSocketApplication(WebsocketCluster $cluster, array $defaults = []): WebsocketApplication
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn (?string $value) => text(
@@ -27,7 +27,7 @@ trait CreatesWebSocketApplication
         return spin(
             fn () => $this->client->websocketApplications()->create(new CreateWebSocketApplicationRequestData(
                 clusterId: $cluster->id,
-                data: ['name' => $this->$this->fields()->get('name')],
+                name: $this->fields()->get('name'),
             )),
             'Creating WebSocket application...',
         );

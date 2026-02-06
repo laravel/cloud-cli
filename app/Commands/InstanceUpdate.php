@@ -28,25 +28,12 @@ class InstanceUpdate extends BaseCommand
 
         intro('Updating Instance');
 
-        $data = [];
+        $size = $this->option('size') ? (string) $this->option('size') : null;
+        $minReplicas = $this->option('min-replicas') !== null ? (int) $this->option('min-replicas') : null;
+        $maxReplicas = $this->option('max-replicas') !== null ? (int) $this->option('max-replicas') : null;
+        $scalingType = $this->option('scaling-type') ? (string) $this->option('scaling-type') : null;
 
-        if ($this->option('size')) {
-            $data['size'] = $this->option('size');
-        }
-
-        if ($this->option('min-replicas')) {
-            $data['min_replicas'] = (int) $this->option('min-replicas');
-        }
-
-        if ($this->option('max-replicas')) {
-            $data['max_replicas'] = (int) $this->option('max-replicas');
-        }
-
-        if ($this->option('scaling-type')) {
-            $data['scaling_type'] = $this->option('scaling-type');
-        }
-
-        if (empty($data)) {
+        if ($size === null && $minReplicas === null && $maxReplicas === null && $scalingType === null) {
             error('No fields to update. Provide at least one option.');
 
             return 1;
@@ -56,7 +43,10 @@ class InstanceUpdate extends BaseCommand
             $instance = spin(
                 fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
                     instanceId: $this->argument('instance'),
-                    data: $data,
+                    size: $size,
+                    minReplicas: $minReplicas,
+                    maxReplicas: $maxReplicas,
+                    scalingType: $scalingType,
                 )),
                 'Updating instance...',
             );

@@ -29,21 +29,11 @@ class EnvironmentUpdate extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        $data = [];
+        $branch = $this->option('branch') ? (string) $this->option('branch') : null;
+        $buildCommand = $this->option('build-command') ? (string) $this->option('build-command') : null;
+        $deployCommand = $this->option('deploy-command') ? (string) $this->option('deploy-command') : null;
 
-        if ($this->option('branch')) {
-            $data['branch'] = $this->option('branch');
-        }
-
-        if ($this->option('build-command')) {
-            $data['build_command'] = $this->option('build-command');
-        }
-
-        if ($this->option('deploy-command')) {
-            $data['deploy_command'] = $this->option('deploy-command');
-        }
-
-        if (empty($data)) {
+        if ($branch === null && $buildCommand === null && $deployCommand === null) {
             error('No fields to update. Provide at least one option.');
 
             return self::FAILURE;
@@ -53,7 +43,9 @@ class EnvironmentUpdate extends BaseCommand
             $environment = spin(
                 fn () => $this->client->environments()->update(new UpdateEnvironmentRequestData(
                     environmentId: $environment->id,
-                    data: $data,
+                    branch: $branch,
+                    buildCommand: $buildCommand,
+                    deployCommand: $deployCommand,
                 )),
                 'Updating environment...',
             );

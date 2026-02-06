@@ -11,26 +11,25 @@ trait UpdatesBuildDeployCommands
 {
     protected function updateCommands(Environment $environment): void
     {
-        $data = [];
-
-        $data['build_command'] = textarea(
+        $buildCommand = textarea(
             label: 'Build command',
             default: $environment->buildCommand,
             required: true,
         );
 
-        $data['deploy_command'] = textarea(
+        $deployCommand = textarea(
             label: 'Deploy command',
             default: $environment->deployCommand,
             required: true,
         );
 
         $this->loopUntilValid(
-            function () use ($environment, $data) {
+            function () use ($environment, $buildCommand, $deployCommand) {
                 return dynamicSpinner(
                     fn () => $this->client->environments()->update(new UpdateEnvironmentRequestData(
                         environmentId: $environment->id,
-                        data: $data,
+                        buildCommand: $buildCommand,
+                        deployCommand: $deployCommand,
                     )),
                     'Updating commands',
                 );

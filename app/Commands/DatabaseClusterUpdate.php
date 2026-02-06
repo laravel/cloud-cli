@@ -112,7 +112,7 @@ class DatabaseClusterUpdate extends BaseCommand
         spin(
             fn () => $this->client->databaseClusters()->update(new UpdateDatabaseClusterRequestData(
                 clusterId: $database->id,
-                data: ['config' => $config],
+                config: $config,
             )),
             'Updating database cluster...',
         );

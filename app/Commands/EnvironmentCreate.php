@@ -41,20 +41,20 @@ class EnvironmentCreate extends BaseCommand
     {
         $currentBranch = app(Git::class)->currentBranch();
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(fn ($value) => text(
                 label: 'Name',
-                default: $this->$this->fields()->get('name') ?? $currentBranch,
+                default: $this->fields()->get('name') ?? $currentBranch,
                 required: true,
             )),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'branch',
             fn ($resolver) => $resolver->fromInput(fn ($value) => text(
                 label: 'Branch',
-                default: $this->$this->fields()->get('branch') ?? $currentBranch,
+                default: $this->fields()->get('branch') ?? $currentBranch,
                 required: true,
             )),
         );
@@ -62,8 +62,8 @@ class EnvironmentCreate extends BaseCommand
         return spin(
             fn () => $this->client->environments()->create(new CreateEnvironmentRequestData(
                 applicationId: $applicationId,
-                name: $this->$this->fields()->get('name'),
-                branch: $this->$this->fields()->get('branch'),
+                name: $this->fields()->get('name'),
+                branch: $this->fields()->get('branch'),
             )),
             'Creating environment...',
         );

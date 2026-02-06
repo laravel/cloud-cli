@@ -15,7 +15,7 @@ trait CreatesWebSocketCluster
 {
     protected function createWebSocketCluster(array $defaults = []): WebsocketCluster
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn (?string $value) => text(
@@ -31,7 +31,7 @@ trait CreatesWebSocketCluster
             'Fetching regions...',
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'region',
             fn ($resolver) => $resolver->fromInput(
                 fn (?string $value) => select(
@@ -43,7 +43,7 @@ trait CreatesWebSocketCluster
             ),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'max_connections',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => number(
@@ -56,9 +56,9 @@ trait CreatesWebSocketCluster
 
         return spin(
             fn () => $this->client->websocketClusters()->create(new CreateWebSocketClusterRequestData(
-                name: $this->$this->fields()->get('name'),
-                region: $this->$this->fields()->get('region'),
-                maxConnections: (int) $this->$this->fields()->get('max_connections'),
+                name: $this->fields()->get('name'),
+                region: $this->fields()->get('region'),
+                maxConnections: (int) $this->fields()->get('max_connections'),
             )),
             'Creating WebSocket cluster...',
         );

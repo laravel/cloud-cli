@@ -154,12 +154,12 @@ class ApplicationUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->$this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        return $this->updateApplication($application, $this->$this->fields()->all());
+        return $this->updateApplication($application, $this->fields()->all());
     }
 
     protected function getNewName(string $oldName): string

@@ -43,7 +43,7 @@ class WebsocketApplicationUpdate extends BaseCommand
             fn () => $this->client->websocketApplications()->update(new UpdateWebSocketApplicationRequestData(
                 clusterId: $cluster->id,
                 applicationId: $app->id,
-                data: ['name' => $name],
+                name: $name,
             )),
             'Updating WebSocket application...',
         );

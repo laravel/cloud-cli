@@ -92,7 +92,10 @@ class CacheUpdate extends BaseCommand
         spin(
             fn () => $this->client->caches()->update(new UpdateCacheRequestData(
                 cacheId: $cache->id,
-                data: $data,
+                name: isset($data['name']) ? (string) $data['name'] : null,
+                size: isset($data['size']) ? (string) $data['size'] : null,
+                autoUpgradeEnabled: array_key_exists('auto_upgrade_enabled', $data) ? $this->coerceValue('auto_upgrade_enabled', $data['auto_upgrade_enabled']) : null,
+                isPublic: array_key_exists('is_public', $data) ? $this->coerceValue('is_public', $data['is_public']) : null,
             )),
             'Updating cache...',
         );
@@ -163,12 +166,12 @@ class CacheUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->$this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        return $this->updateCache($cache, $this->$this->fields()->all());
+        return $this->updateCache($cache, $this->fields()->all());
     }
 
     protected function coerceValue(string $key, mixed $value): mixed

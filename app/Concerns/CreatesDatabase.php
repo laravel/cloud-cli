@@ -13,7 +13,7 @@ trait CreatesDatabase
 {
     protected function createDatabase(DatabaseCluster $cluster): Database
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn (?string $value) => text(
@@ -33,7 +33,7 @@ trait CreatesDatabase
         return spin(
             fn () => $this->client->databases()->create(new CreateDatabaseRequestData(
                 clusterId: $cluster->id,
-                name: $this->$this->fields()->get('name'),
+                name: $this->fields()->get('name'),
             )),
             'Creating database...',
         );

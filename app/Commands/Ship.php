@@ -199,7 +199,7 @@ class Ship extends BaseCommand
 
     protected function createApplication(string $defaultRegion, string $repository): ?Application
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(fn ($value) => text(
                 label: 'Application name',
@@ -208,7 +208,7 @@ class Ship extends BaseCommand
             )),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'region',
             fn ($resolver) => $resolver->fromInput(function ($value) use ($defaultRegion) {
                 $regions = spin(
@@ -231,8 +231,8 @@ class Ship extends BaseCommand
         return dynamicSpinner(
             fn () => $this->client->applications()->create(new CreateApplicationRequestData(
                 repository: $repository,
-                name: $this->$this->fields()->get('name'),
-                region: $this->$this->fields()->get('region'),
+                name: $this->fields()->get('name'),
+                region: $this->fields()->get('region'),
             )),
             'Creating application',
         );
@@ -329,7 +329,11 @@ class Ship extends BaseCommand
                 fn () => spin(
                     fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
                         instanceId: $environment->instances[0],
-                        data: $instanceParams,
+                        usesScheduler: $instanceParams['uses_scheduler'] ?? null,
+                        usesOctane: $instanceParams['uses_octane'] ?? null,
+                        usesInertiaSsr: $instanceParams['uses_inertia_ssr'] ?? null,
+                        usesSleepMode: $instanceParams['uses_sleep_mode'] ?? null,
+                        sleepTimeout: isset($instanceParams['sleep_timeout']) ? (int) $instanceParams['sleep_timeout'] : null,
                     )),
                     'Updating instance...',
                 ),
@@ -346,7 +350,8 @@ class Ship extends BaseCommand
 
                     return spin(fn () => $this->client->environments()->update(new UpdateEnvironmentRequestData(
                         environmentId: $environment->id,
-                        data: $environmentParams,
+                        databaseSchemaId: $environmentParams['database_schema_id'] ?? null,
+                        websocketApplicationId: $environmentParams['websocket_application_id'] ?? null,
                     )), 'Updating environment...');
                 },
             );

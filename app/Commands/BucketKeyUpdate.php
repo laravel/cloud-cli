@@ -27,17 +27,10 @@ class BucketKeyUpdate extends BaseCommand
         $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
         $key = $this->resolvers()->bucketKey()->from($bucket, $this->argument('key'));
 
-        $data = [];
+        $name = $this->option('name') ? (string) $this->option('name') : null;
+        $permission = $this->option('permission') ? (string) $this->option('permission') : null;
 
-        if ($name = $this->option('name')) {
-            $data['name'] = $name;
-        }
-
-        if ($permission = $this->option('permission')) {
-            $data['permission'] = $permission;
-        }
-
-        if (empty($data)) {
+        if ($name === null && $permission === null) {
             $this->outputErrorOrThrow('No fields to update. Provide --name or --permission.');
 
             exit(self::FAILURE);
@@ -47,7 +40,8 @@ class BucketKeyUpdate extends BaseCommand
             fn () => $this->client->bucketKeys()->update(new UpdateBucketKeyRequestData(
                 bucketId: $bucket->id,
                 keyId: $key->id,
-                data: $data,
+                name: $name,
+                permission: $permission,
             )),
             'Updating key...',
         );

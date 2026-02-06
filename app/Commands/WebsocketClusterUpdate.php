@@ -40,7 +40,7 @@ class WebsocketClusterUpdate extends BaseCommand
         $updated = spin(
             fn () => $this->client->websocketClusters()->update(new UpdateWebSocketClusterRequestData(
                 clusterId: $cluster->id,
-                data: ['name' => $name],
+                name: $name,
             )),
             'Updating WebSocket cluster...',
         );

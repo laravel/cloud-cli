@@ -105,7 +105,8 @@ class DomainUpdate extends BaseCommand
         spin(
             fn () => $this->client->domains()->update(new UpdateDomainRequestData(
                 domainId: $domain->id,
-                data: $data,
+                verificationMethod: $data['verification_method'] ?? null,
+                isPrimary: isset($data['is_primary']) ? filter_var($data['is_primary'], FILTER_VALIDATE_BOOLEAN) : null,
             )),
             'Updating domain...',
         );
@@ -156,12 +157,12 @@ class DomainUpdate extends BaseCommand
         foreach ($selection as $optionName) {
             $field = $fields[$optionName];
 
-            $this->$this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
+            $this->fields()->add($field['key'], fn ($resolver) => $resolver->fromInput(
                 fn ($value) => ($field['prompt'])($value ?? $field['current']),
             ));
         }
 
-        $params = $this->$this->fields()->all();
+        $params = $this->fields()->all();
 
         if (isset($params['is_primary'])) {
             $params['is_primary'] = filter_var($params['is_primary'], FILTER_VALIDATE_BOOLEAN);

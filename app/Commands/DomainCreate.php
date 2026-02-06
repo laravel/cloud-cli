@@ -39,7 +39,7 @@ class DomainCreate extends BaseCommand
 
     protected function createDomain(string $environmentId)
     {
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'name',
             fn ($resolver) => $resolver->fromInput(fn (?string $value) => text(
                 label: 'Domain name',
@@ -48,7 +48,7 @@ class DomainCreate extends BaseCommand
             )),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'www_redirect',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => select(
@@ -63,7 +63,7 @@ class DomainCreate extends BaseCommand
                 ->nonInteractively(fn () => 'www_to_root'),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'wildcard_enabled',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => confirm(
@@ -72,7 +72,7 @@ class DomainCreate extends BaseCommand
                 )),
         );
 
-        $this->$this->fields()->add(
+        $this->fields()->add(
             'verification_method',
             fn ($resolver) => $resolver
                 ->fromInput(fn ($value) => selectWithContext(
@@ -89,12 +89,10 @@ class DomainCreate extends BaseCommand
         return spin(
             fn () => $this->client->domains()->create(new CreateDomainRequestData(
                 environmentId: $environmentId,
-                name: $this->$this->fields()->get('name'),
-                data: [
-                    'www_redirect' => $this->$this->fields()->get('www_redirect'),
-                    'wildcard_enabled' => $this->$this->fields()->get('wildcard_enabled'),
-                    'verification_method' => $this->$this->fields()->get('verification_method'),
-                ],
+                name: $this->fields()->get('name'),
+                wwwRedirect: $this->fields()->get('www_redirect'),
+                wildcardEnabled: $this->fields()->get('wildcard_enabled'),
+                verificationMethod: $this->fields()->get('verification_method'),
             )),
             'Creating domain...',
         );

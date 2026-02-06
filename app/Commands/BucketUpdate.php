@@ -25,17 +25,10 @@ class BucketUpdate extends BaseCommand
 
         $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
 
-        $data = [];
+        $name = $this->option('name') ? (string) $this->option('name') : null;
+        $visibility = $this->option('visibility') ? (string) $this->option('visibility') : null;
 
-        if ($name = $this->option('name')) {
-            $data['name'] = $name;
-        }
-
-        if ($visibility = $this->option('visibility')) {
-            $data['visibility'] = $visibility;
-        }
-
-        if (empty($data)) {
+        if ($name === null && $visibility === null) {
             $this->outputErrorOrThrow('No fields to update. Provide at least one option (--name or --visibility).');
 
             exit(self::FAILURE);
@@ -44,7 +37,8 @@ class BucketUpdate extends BaseCommand
         $updated = spin(
             fn () => $this->client->objectStorageBuckets()->update(new UpdateObjectStorageBucketRequestData(
                 bucketId: $bucket->id,
-                data: $data,
+                name: $name,
+                visibility: $visibility,
             )),
             'Updating bucket...',
         );
