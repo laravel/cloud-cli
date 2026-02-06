@@ -107,7 +107,7 @@ class MonitorDeployments extends Prompt
             }
         });
 
-        while (true) { // @phpstan-ignore-line
+        while (true) {
             $this->render();
 
             if (! $this->deployment && $this->autoExitAt && CarbonImmutable::now()->isAfter($this->autoExitAt)) {

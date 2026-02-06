@@ -52,7 +52,7 @@ class MonitorCommand extends Prompt
 
         $keyPressListener = KeyPressListener::for($this)->listenForQuit();
 
-        while (true) { // @phpstan-ignore-line
+        while (true) {
             $this->render();
 
             $this->count++;
