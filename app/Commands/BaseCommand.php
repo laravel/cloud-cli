@@ -102,6 +102,11 @@ abstract class BaseCommand extends Command
         )->toArray();
     }
 
+    protected function clearParams(): void
+    {
+        $this->paramCollectors = [];
+    }
+
     protected function ensureInteractive(string $message): void
     {
         if (! $this->isInteractive()) {
