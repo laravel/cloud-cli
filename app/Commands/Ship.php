@@ -22,7 +22,6 @@ use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
 use Illuminate\Support\Composer;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
@@ -91,7 +90,7 @@ class Ship extends BaseCommand
             );
 
             if ($selectedApp !== 'new') {
-                Artisan::call('deploy', [
+                $this->call('deploy', [
                     'application' => $selectedApp,
                 ], $this->output);
 
@@ -123,7 +122,7 @@ class Ship extends BaseCommand
             fn () => $this->collectOptionsToEnable($environment),
         );
 
-        outro($application->url());
+        success($application->url());
 
         if (! confirm('Do you want to deploy the application?')) {
             return;
@@ -133,25 +132,40 @@ class Ship extends BaseCommand
             $this->updateCommands($environment);
         }
 
-        Artisan::call('deploy', [
+        $this->call('deploy', [
             'application' => $application->id,
         ], $this->output);
 
         if (confirm('Open site in browser?')) {
-            spin(
+            $isReady = spin(
                 fn () => $this->waitForUrlToBeReady($environment),
                 'Waiting for site to be ready...',
             );
 
-            Process::run('open '.$environment->url);
+            if ($isReady) {
+                Process::run('open '.$environment->url);
+            } else {
+                warning('It looks like there is an error in your deployed site');
+
+                info($environment->url);
+
+                if (confirm('Do you want to check the logs?')) {
+                    $this->call(EnvironmentLogs::class, [
+                        'application' => $application->id,
+                        'environment' => $environment->id,
+                    ], $this->output);
+
+                    return;
+                }
+            }
         }
+
+        outro('Shipped: '.$environment->url);
     }
 
     protected function tryToSetAvatar(Application $application): void
     {
         $avatars = $this->getAvatarCandidatesFromRepo();
-
-        dump(['avatars' => $avatars->toArray()]);
 
         if ($avatars->isEmpty()) {
             return;
@@ -170,10 +184,10 @@ class Ship extends BaseCommand
     {
         do {
             $response = Http::get($environment->url);
-            Sleep::for(CarbonInterval::seconds(1));
-        } while ($response->status() !== 200);
+            Sleep::for(CarbonInterval::seconds(2));
+        } while (! $response->successful() && ! $response->serverError());
 
-        return true;
+        return $response->successful();
     }
 
     protected function createApplication(ValidationErrors $errors, string $defaultRegion, string $repository): ?Application
