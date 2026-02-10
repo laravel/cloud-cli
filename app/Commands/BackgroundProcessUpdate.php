@@ -9,6 +9,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -148,17 +149,11 @@ class BackgroundProcessUpdate extends BaseCommand
 
     protected function getNewInstances(int|string $oldInstances): int
     {
-        $value = text(
+        return number(
             label: 'Instances',
             required: true,
             default: (string) $oldInstances,
-            validate: fn ($value) => match (true) {
-                ! is_numeric($value) => 'Instances must be a number',
-                (int) $value < 1 => 'Instances must be at least 1',
-                default => null,
-            },
+            min: 1,
         );
-
-        return (int) $value;
     }
 }

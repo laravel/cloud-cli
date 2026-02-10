@@ -33,6 +33,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -285,17 +286,13 @@ class Ship extends BaseCommand
         }
 
         if ($instanceParams['uses_sleep_mode'] ?? false) {
-            $hibernateFor = text(
+            $hibernateFor = number(
                 label: 'Hibernate after',
                 default: '5',
                 required: true,
-                validate: fn ($value) => match (true) {
-                    ! is_numeric($value) => 'Must be a number',
-                    intval($value) < 1 => 'Must be at least 1',
-                    intval($value) > 60 => 'Must be less than 60',
-                    default => null,
-                },
                 hint: 'The number of minutes without HTTP requests received before your application hibernates (1-60)',
+                min: 1,
+                max: 60,
             );
 
             $instanceParams['sleep_timeout'] = $hibernateFor;
