@@ -62,11 +62,13 @@ class ApplicationCreate extends BaseCommand
         $this->form()->prompt(
             'repository',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => text(
-                    label: 'Repository',
-                    required: true,
-                    default: $value ?? ($git->hasGitHubRemote() ? $git->remoteRepo() : ''),
-                ))
+                ->fromInput(
+                    fn (?string $value) => text(
+                        label: 'Repository',
+                        required: true,
+                        default: $value ?? ($git->hasGitHubRemote() ? $git->remoteRepo() : ''),
+                    ),
+                )
                 ->nonInteractively(fn () => $git->hasGitHubRemote() ? $git->remoteRepo() : null),
         );
 
@@ -78,14 +80,16 @@ class ApplicationCreate extends BaseCommand
         $this->form()->prompt(
             'region',
             fn ($resolver) => $resolver
-                ->fromInput(fn (?string $value) => select(
-                    label: 'Region',
-                    options: collect($regions)->mapWithKeys(fn (Region $region) => [
-                        $region->value => $region->label,
-                    ]),
-                    default: $value ?? $this->getDefaultRegion(),
-                    required: true,
-                ))
+                ->fromInput(
+                    fn (?string $value) => select(
+                        label: 'Region',
+                        options: collect($regions)->mapWithKeys(fn (Region $region) => [
+                            $region->value => $region->label,
+                        ]),
+                        default: $value ?? $this->getDefaultRegion(),
+                        required: true,
+                    ),
+                )
                 ->nonInteractively(fn () => $this->getDefaultRegion()),
         );
 

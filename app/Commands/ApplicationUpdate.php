@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\UpdateApplicationRequestData;
 use App\Concerns\HandlesAvatars;
 use App\Dto\Application;
+use App\Exceptions\CommandExitException;
 use App\Git;
 use Imagick;
 
@@ -191,7 +192,7 @@ class ApplicationUpdate extends BaseCommand
         if (empty($selection)) {
             $this->outputErrorOrThrow('No fields to update. Select at least one option.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         foreach ($selection as $optionName) {
