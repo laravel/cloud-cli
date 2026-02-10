@@ -68,7 +68,7 @@ class ApplicationUpdate extends BaseCommand
             if (! $this->form()->hasAnyValues()) {
                 $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
 
-                exit(self::FAILURE);
+                throw new CommandExitException(self::FAILURE);
             }
 
             return $this->updateApplication($application);
@@ -83,7 +83,7 @@ class ApplicationUpdate extends BaseCommand
         if (! $this->shouldRunUpdateFromOptions()) {
             error('Update cancelled');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         return $this->updateApplication($application);

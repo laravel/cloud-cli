@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\DatabaseCluster;
+use App\Exceptions\CommandExitException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 use RuntimeException;
@@ -44,7 +45,7 @@ class DatabaseClusterOpen extends BaseCommand
         if (! $this->canOpenTablePlus()) {
             error('TablePlus is not installed or cannot be opened.');
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         $url = $this->buildTablePlusUrl($database);

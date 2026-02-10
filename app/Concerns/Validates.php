@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Commands\BaseCommand;
 use App\Dto\ValidationErrors;
+use App\Exceptions\CommandExitException;
 use RuntimeException;
 use Saloon\Exceptions\Request\RequestException;
 
@@ -95,7 +96,7 @@ trait Validates
 
             $this->line($this->errors->toJson());
 
-            exit(BaseCommand::FAILURE);
+            throw new CommandExitException(BaseCommand::FAILURE);
         }
     }
 }

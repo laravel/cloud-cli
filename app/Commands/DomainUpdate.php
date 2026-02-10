@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateDomainRequestData;
 use App\Dto\Domain;
+use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -57,7 +58,7 @@ class DomainUpdate extends BaseCommand
             if (! $this->form()->hasAnyValues()) {
                 $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
 
-                exit(self::FAILURE);
+                throw new CommandExitException(self::FAILURE);
             }
 
             return $this->updateDomain($domain);
@@ -72,7 +73,7 @@ class DomainUpdate extends BaseCommand
         if (! $this->shouldRunUpdateFromOptions()) {
             error('Update cancelled');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         return $this->updateDomain($domain);
@@ -85,7 +86,7 @@ class DomainUpdate extends BaseCommand
         if ($verificationMethod !== null && ! in_array($verificationMethod, ['pre_verification', 'real_time'], true)) {
             $this->outputErrorOrThrow("Invalid verification method. Use 'pre_verification' or 'real_time'.");
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         $isPrimary = $this->form()->get('is_primary');
@@ -142,7 +143,7 @@ class DomainUpdate extends BaseCommand
         if (empty($selection)) {
             $this->outputErrorOrThrow('No fields to update. Select at least one option.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         foreach ($selection as $optionName) {

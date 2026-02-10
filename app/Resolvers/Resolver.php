@@ -3,6 +3,7 @@
 namespace App\Resolvers;
 
 use App\Client\Connector;
+use App\Exceptions\CommandExitException;
 use App\LocalConfig;
 use Illuminate\Console\Command;
 use Throwable;
@@ -50,12 +51,12 @@ abstract class Resolver
         if (! $this->isInteractive) {
             echo json_encode(['message' => $message]).PHP_EOL;
 
-            exit(Command::FAILURE);
+            throw new CommandExitException(Command::FAILURE);
         }
 
         error($message);
 
-        exit(Command::FAILURE);
+        throw new CommandExitException(Command::FAILURE);
     }
 
     protected function resolvers(): Resolvers
@@ -72,7 +73,7 @@ abstract class Resolver
         if (! $this->isInteractive) {
             echo json_encode(['message' => $message]).PHP_EOL;
 
-            exit(Command::FAILURE);
+            throw new CommandExitException(Command::FAILURE);
         }
     }
 

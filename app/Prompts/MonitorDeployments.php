@@ -4,6 +4,7 @@ namespace App\Prompts;
 
 use App\Dto\Deployment;
 use App\Dto\Environment;
+use App\Exceptions\CommandExitException;
 use App\Support\KeyPressListener;
 use Carbon\CarbonImmutable;
 use Closure;
@@ -106,7 +107,7 @@ class MonitorDeployments extends Prompt
             $this->render();
 
             if (! $this->deployment && $this->autoExitAt && CarbonImmutable::now()->isAfter($this->autoExitAt)) {
-                exit(0);
+                throw new CommandExitException(0);
             }
 
             $this->count++;

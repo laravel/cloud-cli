@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
+use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -59,7 +60,7 @@ class WebsocketApplicationUpdate extends BaseCommand
             if (! $this->form()->hasAnyValues()) {
                 $this->outputErrorOrThrow('Provide --name to update.');
 
-                exit(self::FAILURE);
+                throw new CommandExitException(self::FAILURE);
             }
 
             return $this->updateApplication($cluster, $app);
@@ -74,7 +75,7 @@ class WebsocketApplicationUpdate extends BaseCommand
         if (! $this->shouldRunUpdateFromOptions()) {
             error('Update cancelled');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         return $this->updateApplication($cluster, $app);
@@ -129,7 +130,7 @@ class WebsocketApplicationUpdate extends BaseCommand
         if (empty($selection)) {
             $this->outputErrorOrThrow('No fields to update. Select at least one option.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         foreach ($selection as $optionName) {

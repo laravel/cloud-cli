@@ -6,6 +6,7 @@ use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
+use App\Exceptions\CommandExitException;
 use App\Git;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
@@ -83,11 +84,11 @@ class Deploy extends BaseCommand
                         '--open' => $this->option('open'),
                     ], $this->output);
 
-                    exit(0);
+                    throw new CommandExitException(0);
                 }
             }
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         success('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');

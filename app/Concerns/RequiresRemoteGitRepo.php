@@ -2,6 +2,7 @@
 
 namespace App\Concerns;
 
+use App\Exceptions\CommandExitException;
 use App\Git;
 
 use function Laravel\Prompts\confirm;
@@ -23,7 +24,7 @@ trait RequiresRemoteGitRepo
         if (! $git->ghInstalled() || ! $git->ghAuthenticated()) {
             warning('This directory is not a Git repository. A Git repository is required to deploy to Laravel Cloud.');
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         if ($git->isRepo()) {
@@ -33,7 +34,7 @@ trait RequiresRemoteGitRepo
             );
 
             if (! $createRepo) {
-                exit(0);
+                throw new CommandExitException(0);
             }
         } else {
             $createRepo = confirm(
@@ -44,7 +45,7 @@ trait RequiresRemoteGitRepo
             if (! $createRepo) {
                 warning('Your codebase must be in a Git repository in order to deploy to Laravel Cloud.');
 
-                exit(0);
+                throw new CommandExitException(0);
             }
 
             $git->initRepo();
@@ -87,7 +88,7 @@ trait RequiresRemoteGitRepo
         if (! $result->successful()) {
             error('Failed to create repository: '.$result->errorOutput());
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         info("Repository created: https://github.com/{$owner}/{$repoName}");
@@ -114,7 +115,7 @@ trait RequiresRemoteGitRepo
         if (! $commitResult->successful()) {
             error('Failed to commit: '.$commitResult->errorOutput());
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         info('Files committed successfully.');
@@ -124,7 +125,7 @@ trait RequiresRemoteGitRepo
         if (! $pushResult->successful()) {
             error('Failed to push: '.$pushResult->errorOutput());
 
-            exit(1);
+            throw new CommandExitException(1);
         }
 
         info('Pushed to GitHub successfully.');

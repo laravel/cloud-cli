@@ -2,6 +2,8 @@
 
 namespace App\Commands;
 
+use App\Exceptions\CommandExitException;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -44,7 +46,7 @@ class EnvironmentVariablesAdd extends BaseCommand
         if (! in_array($method, ['append', 'set'], true)) {
             $this->outputErrorOrThrow('Method must be append or set.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         spin(

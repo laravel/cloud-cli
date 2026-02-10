@@ -2,6 +2,8 @@
 
 namespace App\Commands;
 
+use App\Exceptions\CommandExitException;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -27,13 +29,13 @@ class EnvironmentVariablesReplace extends BaseCommand
         if (! $file) {
             $this->outputErrorOrThrow('Provide --file with path to .env file.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         if (! is_readable($file)) {
             $this->outputErrorOrThrow("Cannot read file: {$file}");
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         $content = file_get_contents($file);

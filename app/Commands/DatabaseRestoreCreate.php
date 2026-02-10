@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateDatabaseRestoreRequestData;
+use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -71,7 +72,7 @@ class DatabaseRestoreCreate extends BaseCommand
         if (! $snapshotId && ! $pointInTime) {
             $this->outputErrorOrThrow('Provide either --snapshot or --point-in-time.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         $restored = spin(

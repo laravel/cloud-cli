@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
+use App\Exceptions\CommandExitException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 
@@ -128,7 +129,7 @@ class Auth extends BaseCommand implements NoAuthRequired
         if ($orgs->isEmpty()) {
             warning('No API tokens found.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         table(

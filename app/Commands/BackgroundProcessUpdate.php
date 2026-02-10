@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateBackgroundProcessRequestData;
 use App\Dto\BackgroundProcess;
+use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -58,7 +59,7 @@ class BackgroundProcessUpdate extends BaseCommand
             if (! $this->form()->hasAnyValues()) {
                 $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
 
-                exit(self::FAILURE);
+                throw new CommandExitException(self::FAILURE);
             }
 
             return $this->updateProcess($process);
@@ -73,7 +74,7 @@ class BackgroundProcessUpdate extends BaseCommand
         if (! $this->shouldRunUpdateFromOptions()) {
             error('Update cancelled');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         return $this->updateProcess($process);
@@ -137,7 +138,7 @@ class BackgroundProcessUpdate extends BaseCommand
         if (empty($selection)) {
             $this->outputErrorOrThrow('No fields to update. Select at least one option.');
 
-            exit(self::FAILURE);
+            throw new CommandExitException(self::FAILURE);
         }
 
         foreach ($selection as $optionName) {
