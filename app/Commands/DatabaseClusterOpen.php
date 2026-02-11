@@ -3,23 +3,18 @@
 namespace App\Commands;
 
 use App\Dto\DatabaseCluster;
-use App\Exceptions\CommandExitException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 use RuntimeException;
 
-use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
-use function Laravel\Prompts\spin;
 
 class DatabaseClusterOpen extends BaseCommand
 {
-    protected $signature = 'database-cluster:open
-                            {application? : The application ID or name}
-                            {environment? : The name of the environment}
-                            {database? : The database ID or name}';
+    protected $signature = 'database-cluster:open {database? : The database ID or name}';
 
     protected $description = 'Open database in TablePlus';
 
@@ -27,32 +22,17 @@ class DatabaseClusterOpen extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Opening Database In TablePlus');
+        intro('Open Database Locally');
 
-        $app = $this->resolvers()->application()->from($this->argument('application'));
-        $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
+        $database = $this->resolvers()->databaseCluster()->from($this->argument('database'));
 
-        $databases = spin(
-            fn () => $this->client->databaseClusters()->include('schemas')->list(),
-            'Fetching databases...',
-        );
+        $url = $this->buildUrl($database);
 
-        $database = $this->resolveDatabase(
-            $databases->items(),
-            $environment,
-        );
-
-        if (! $this->canOpenTablePlus()) {
-            error('TablePlus is not installed or cannot be opened.');
-
-            throw new CommandExitException(1);
-        }
-
-        $url = $this->buildTablePlusUrl($database);
+        info($url);
 
         Process::run(['open', $url]);
 
-        outro("Opened {$database->name} in TablePlus");
+        outro("Opened {$database->name} ");
     }
 
     protected function resolveDatabase(Collection $databases, $environment): DatabaseCluster
@@ -130,24 +110,7 @@ class DatabaseClusterOpen extends BaseCommand
         return $normalize($host1) === $normalize($host2);
     }
 
-    protected function canOpenTablePlus(): bool
-    {
-        if (PHP_OS_FAMILY !== 'Darwin') {
-            return false;
-        }
-
-        $result = Process::run('which open');
-
-        if (! $result->successful()) {
-            return false;
-        }
-
-        $appCheck = Process::run('test -d "/Applications/TablePlus.app" || test -d "$HOME/Applications/TablePlus.app"');
-
-        return $appCheck->successful();
-    }
-
-    protected function buildTablePlusUrl(DatabaseCluster $database): string
+    protected function buildUrl(DatabaseCluster $database): string
     {
         $connection = $database->connection ?? [];
         $protocol = $connection['protocol'] ?? null;
@@ -155,6 +118,7 @@ class DatabaseClusterOpen extends BaseCommand
         $port = $connection['port'] ?? $this->getDefaultPort($database->type);
         $user = $connection['username'] ?? $connection['user'] ?? 'root';
         $password = $connection['password'] ?? '';
+
         $databaseName = count($database->schemas) === 1 ? $database->schemas[0]->name : select(
             label: 'Database',
             options: collect($database->schemas)->mapWithKeys(fn ($schema) => [$schema->name => $schema->name]),
@@ -186,7 +150,7 @@ class DatabaseClusterOpen extends BaseCommand
         $queryParams = http_build_query([
             'Name' => $database->name,
             'Environment' => 'Laravel Cloud',
-        ]);
+        ], encoding_type: PHP_QUERY_RFC3986);
 
         return $url.'?'.$queryParams;
     }
