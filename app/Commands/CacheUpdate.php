@@ -7,7 +7,6 @@ use App\Dto\Cache;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -46,40 +45,14 @@ class CacheUpdate extends BaseCommand
             );
         }
 
-        $updatedCache = $this->resolveUpdatedCache($cache);
+        $updatedCache = $this->runUpdate(
+            fn () => $this->updateCache($cache),
+            fn () => $this->collectDataAndUpdate($cache),
+        );
 
         $this->outputJsonIfWanted($updatedCache);
 
-        success('Cache updated');
-
         outro("Cache updated: {$updatedCache->name}");
-    }
-
-    protected function resolveUpdatedCache(Cache $cache): Cache
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateCache($cache);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($cache),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateCache($cache);
     }
 
     protected function updateCache(Cache $cache): Cache
