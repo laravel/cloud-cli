@@ -7,7 +7,6 @@ use App\Dto\BackgroundProcess;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
@@ -29,7 +28,7 @@ class BackgroundProcessUpdate extends BaseCommand
                             {--sleep= : Seconds to sleep when no jobs (worker only)}
                             {--rest= : Seconds to rest between jobs (worker only)}
                             {--timeout= : Job timeout in seconds (worker only)}
-                            {--run-in-maintenance : Run in maintenance mode (worker only)}
+                            {--run-in-maintenance= : Run in maintenance mode (worker only)}
                             {--force : Force update without confirmation}
                             {--json : Output as JSON}';
 
@@ -45,7 +44,7 @@ class BackgroundProcessUpdate extends BaseCommand
 
         $this->defineFields($process);
 
-        foreach ($this->form()->filled() as $key => $value) {
+        foreach ($this->form()->filled() as $value) {
             $this->reportChange(
                 $value->label(),
                 $value->previousValue(),
@@ -53,56 +52,26 @@ class BackgroundProcessUpdate extends BaseCommand
             );
         }
 
-        $updatedProcess = $this->resolveUpdatedProcess($process);
+        $updatedProcess = $this->runUpdate(
+            fn () => $this->updateProcess($process),
+            fn () => $this->collectDataAndUpdate($process),
+        );
 
         $this->outputJsonIfWanted($updatedProcess);
-
-        success('Background process updated');
 
         outro("Background process updated: {$updatedProcess->id}");
     }
 
-    protected function resolveUpdatedProcess(BackgroundProcess $process): BackgroundProcess
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateProcess($process);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($process),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateProcess($process);
-    }
-
     protected function updateProcess(BackgroundProcess $process): BackgroundProcess
     {
-        $processes = $this->form()->get('processes');
-        $command = $this->form()->get('command');
-        $config = $this->buildConfig($process);
-
         spin(
             fn () => $this->client->backgroundProcesses()->update(
                 new UpdateBackgroundProcessRequestData(
                     backgroundProcessId: $process->id,
                     type: null,
-                    processes: $processes !== null ? (int) $processes : null,
-                    command: $command,
-                    config: $config,
+                    processes: $this->form()->integer('processes'),
+                    command: $this->form()->get('command'),
+                    config: $this->buildConfig($process),
                 ),
             ),
             'Updating background process...',
@@ -120,35 +89,12 @@ class BackgroundProcessUpdate extends BaseCommand
             return null;
         }
 
-        $keys = ['connection', 'queue', 'tries', 'backoff', 'sleep', 'rest', 'timeout', 'force'];
-        $config = [];
-
-        foreach ($keys as $key) {
-            $value = $this->form()->get('config.'.$key);
-
-            if ($value === null) {
-                continue;
-            }
-
-            if ($key === 'force') {
-                $config[$key] = (bool) $value;
-            } elseif (in_array($key, ['tries', 'backoff', 'sleep', 'rest', 'timeout'], true)) {
-                $config[$key] = (int) $value;
-            } else {
-                $config[$key] = (string) $value;
-            }
-        }
-
-        return $config ?: null;
-    }
-
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the background process?');
+        return collect($this->form()->filled())
+            ->filter(fn ($field) => str_starts_with($field->key, 'config.'))
+            ->mapWithKeys(fn ($field) => [
+                str_replace('config.', '', $field->key) => $field->value(),
+            ])
+            ->toArray();
     }
 
     protected function defineFields(BackgroundProcess $process): void
@@ -156,7 +102,7 @@ class BackgroundProcessUpdate extends BaseCommand
         $this->form()->define(
             'processes',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Processes',
                     required: true,
                     default: (string) ($value ?? $process->processes),
@@ -177,37 +123,24 @@ class BackgroundProcessUpdate extends BaseCommand
                     ),
                 ),
             )->setPreviousValue($process->command);
-        }
-
-        if ($process->type === 'worker') {
+        } elseif ($process->type === 'worker') {
             $this->defineWorkerConfigFields($process);
         }
     }
 
     protected function defineWorkerConfigFields(BackgroundProcess $process): void
     {
-        $defaults = [
-            'connection' => $process->connection ?? 'redis',
-            'queue' => $process->queue ?? 'default',
-            'tries' => (string) ($process->tries ?? 1),
-            'backoff' => (string) ($process->backoff ?? 30),
-            'sleep' => (string) ($process->sleep ?? 3),
-            'rest' => (string) ($process->rest ?? 0),
-            'timeout' => (string) ($process->timeout ?? 60),
-            'force' => $process->force ?? false,
-        ];
-
         $this->form()->define(
             'config.connection',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
                     label: 'Connection',
                     required: true,
-                    default: $value ?? $defaults['connection'],
+                    default: $value ?? $process->connection ?? '',
                 ),
             )->setLabel('Connection'),
             'connection',
-        )->setPreviousValue($defaults['connection']);
+        )->setPreviousValue($process->connection);
 
         $this->form()->define(
             'config.queue',
@@ -215,93 +148,101 @@ class BackgroundProcessUpdate extends BaseCommand
                 fn ($value) => text(
                     label: 'Queue',
                     required: true,
-                    default: $value ?? $defaults['queue'],
+                    default: $value ?? $process->queue ?? '',
                     hint: 'Comma-separated for multiple queues',
                 ),
             )->setLabel('Queue'),
             'queue',
-        )->setPreviousValue($defaults['queue']);
+        )->setPreviousValue($process->queue);
 
         $this->form()->define(
             'config.tries',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Tries',
                     required: true,
-                    default: $value ?? $defaults['tries'],
+                    default: $value ?? $process->tries ?? '',
                     hint: 'Number of times a job should be attempted',
                 ),
             )->setLabel('Tries'),
             'tries',
-        )->setPreviousValue($defaults['tries']);
+        )->setPreviousValue($process->tries);
 
         $this->form()->define(
             'config.backoff',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Backoff',
                     required: true,
-                    default: $value ?? $defaults['backoff'],
+                    default: $value ?? $process->backoff ?? '',
                     hint: 'Seconds before retrying a failed job',
                 ),
             )->setLabel('Backoff'),
             'backoff',
-        )->setPreviousValue($defaults['backoff']);
+        )->setPreviousValue($process->backoff);
 
         $this->form()->define(
             'config.sleep',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Sleep',
                     required: true,
-                    default: $value ?? $defaults['sleep'],
+                    default: $value ?? $process->sleep ?? '',
                     hint: 'Seconds to sleep when no jobs available',
                 ),
             )->setLabel('Sleep'),
             'sleep',
-        )->setPreviousValue($defaults['sleep']);
+        )->setPreviousValue($process->sleep);
 
         $this->form()->define(
             'config.rest',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Rest',
                     required: true,
-                    default: $value ?? $defaults['rest'],
+                    default: $value ?? $process->rest ?? '',
                     hint: 'Seconds to rest between jobs',
                 ),
             )->setLabel('Rest'),
             'rest',
-        )->setPreviousValue($defaults['rest']);
+        )->setPreviousValue($process->rest);
 
         $this->form()->define(
             'config.timeout',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => (int) number(
+                fn ($value) => number(
                     label: 'Timeout',
                     required: true,
-                    default: $value ?? $defaults['timeout'],
+                    default: $value ?? $process->timeout ?? '',
                     hint: 'Seconds a job can run before timing out',
                 ),
             )->setLabel('Timeout'),
             'timeout',
-        )->setPreviousValue($defaults['timeout']);
+        )->setPreviousValue($process->timeout);
 
         $this->form()->define(
             'config.force',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
                     label: 'Run in maintenance mode?',
-                    default: (bool) ($value ?? $defaults['force']),
+                    default: (bool) ($value ?? $process->force ?? false),
                     hint: 'Force the worker to run even in maintenance mode',
                 ),
             )->setLabel('Run in maintenance mode'),
             'run-in-maintenance',
-        )->setPreviousValue($defaults['force'] ? 'Yes' : 'No');
+        )->setPreviousValue($process->force);
     }
 
     protected function collectDataAndUpdate(BackgroundProcess $process): BackgroundProcess
     {
+        if ($this->errors->hasAny()) {
+            foreach ($this->errors->all() as $field => $message) {
+                $this->form()->prompt($field);
+            }
+
+            return $this->updateProcess($process);
+        }
+
         $options = collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
             $field->key => $field->label(),
         ])->toArray();
