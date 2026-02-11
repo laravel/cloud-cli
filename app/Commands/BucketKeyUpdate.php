@@ -14,7 +14,6 @@ use function Laravel\Prompts\text;
 class BucketKeyUpdate extends BaseCommand
 {
     protected $signature = 'bucket-key:update
-                            {bucket? : The bucket ID or name}
                             {key? : The key ID or name}
                             {--name= : Key name}
                             {--force : Force update without confirmation}
@@ -28,7 +27,7 @@ class BucketKeyUpdate extends BaseCommand
 
         intro('Updating Bucket Key');
 
-        $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
+        $bucket = $this->resolvers()->objectStorageBucket()->resolve();
         $key = $this->resolvers()->bucketKey()->from($bucket, $this->argument('key'));
 
         $this->defineFields($key);
