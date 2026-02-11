@@ -42,13 +42,12 @@ class EnvironmentList extends BaseCommand
         }
 
         dataTable(
-            headers: ['ID', 'Name', 'Branch', 'Status', 'URL'],
+            headers: ['ID', 'Name', 'Branch', 'Status'],
             rows: $envItems->map(fn ($env) => [
                 $env->id,
                 $env->name,
-                $env->branch ?? 'N/A',
-                $env->status ?? 'N/A',
-                $env->url ?: 'N/A',
+                $env->branch ?? '—',
+                $env->status ?? '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [
