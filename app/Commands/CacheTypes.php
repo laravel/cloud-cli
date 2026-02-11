@@ -6,6 +6,7 @@ use App\Dto\CacheType;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\table;
 use function Laravel\Prompts\warning;
 
 class CacheTypes extends BaseCommand
@@ -35,13 +36,15 @@ class CacheTypes extends BaseCommand
             return self::FAILURE;
         }
 
-        $rows = collect($types)->map(fn (CacheType $type) => [
-            $type->type,
+        $rows = collect($types)->map(fn (CacheType $type, $index) => [
             $type->label,
+            $type->supportsAutoUpgrade ? 'Yes' : 'No',
+            implode(PHP_EOL, collect($type->regions)->when($index < count($types) - 1, fn ($regions) => $regions->push(''))->toArray()),
+            implode(PHP_EOL, collect($type->sizes)->pluck('label')->when($index < count($types) - 1, fn ($sizes) => $sizes->push(''))->toArray()),
         ])->toArray();
 
-        dataTable(
-            headers: ['Type', 'Label'],
+        table(
+            headers: ['Type', 'Auto Upgrade', 'Regions', 'Sizes'],
             rows: $rows,
         );
     }
