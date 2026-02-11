@@ -19,10 +19,7 @@ class AddEnvironmentVariablesRequestData extends RequestData
     {
         return [
             'method' => $this->method,
-            'variables' => collect($this->variables)->map(fn ($value, $key) => [
-                'key' => $key,
-                'value' => $value,
-            ])->values()->toArray(),
+            'variables' => $this->variables,
         ];
     }
 }

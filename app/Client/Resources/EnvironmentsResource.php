@@ -75,16 +75,9 @@ class EnvironmentsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    /**
-     * @param  'append'|'set'  $method
-     */
-    public function addVariables(string $environmentId, array $variables, string $method = 'append'): void
+    public function addVariables(AddEnvironmentVariablesRequestData $data): void
     {
-        $this->send(new AddEnvironmentVariablesRequest(new AddEnvironmentVariablesRequestData(
-            environmentId: $environmentId,
-            variables: $variables,
-            action: $method,
-        )));
+        $this->send(new AddEnvironmentVariablesRequest($data));
     }
 
     public function replaceVariables(string $environmentId, array $variables = [], ?string $content = null): void

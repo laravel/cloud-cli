@@ -165,17 +165,19 @@ abstract class BaseCommand extends Command
 
     protected function outputJsonIfWanted(mixed $data): void
     {
-        if ($this->wantsJson()) {
-            if (is_string($data)) {
-                $this->line(json_encode(['message' => $data]));
-            } elseif ($data instanceof Jsonable) {
-                $this->line($data->toJson());
-            } else {
-                $this->line(json_encode($data));
-            }
-
-            throw new CommandExitException(self::SUCCESS);
+        if (! $this->wantsJson()) {
+            return;
         }
+
+        if (is_string($data)) {
+            $this->line(json_encode(['message' => $data]));
+        } elseif ($data instanceof Jsonable) {
+            $this->line($data->toJson());
+        } else {
+            $this->line(json_encode($data));
+        }
+
+        throw new CommandExitException(self::SUCCESS);
     }
 
     protected function resolve(string $argument): ValueResolver
