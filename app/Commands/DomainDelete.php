@@ -12,7 +12,7 @@ use function Laravel\Prompts\spin;
 
 class DomainDelete extends BaseCommand
 {
-    protected $signature = 'domain:delete {domain : The domain ID} {--force : Skip confirmation}';
+    protected $signature = 'domain:delete {domain? : The domain ID} {--force : Skip confirmation}';
 
     protected $description = 'Delete a domain';
 
@@ -22,24 +22,17 @@ class DomainDelete extends BaseCommand
 
         intro('Deleting Domain');
 
-        $domainId = $this->argument('domain');
+        $domain = $this->resolvers()->domain()->from($this->argument('domain'));
 
-        if (! $this->option('force')) {
-            $domain = spin(
-                fn () => $this->client->domains()->get($domainId),
-                'Fetching domain...',
-            );
+        if (! $this->option('force') && ! confirm("Delete domain '{$domain->name}'?")) {
+            info('Cancelled.');
 
-            if (! confirm("Delete domain '{$domain->name}'?")) {
-                info('Cancelled.');
-
-                return;
-            }
+            return self::FAILURE;
         }
 
         try {
             spin(
-                fn () => $this->client->domains()->delete($domainId),
+                fn () => $this->client->domains()->delete($domain->id),
                 'Deleting domain...',
             );
 
@@ -47,7 +40,7 @@ class DomainDelete extends BaseCommand
         } catch (RequestException $e) {
             error('Failed to delete domain: '.$e->getMessage());
 
-            return 1;
+            return self::FAILURE;
         }
     }
 }
