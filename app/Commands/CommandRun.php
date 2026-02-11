@@ -17,7 +17,7 @@ class CommandRun extends BaseCommand
 
     protected $signature = 'command:run
                             {environment? : The environment ID}
-                            {--command= : The command to run}
+                            {--cmd= : The command to run}
                             {--monitor : Monitor the command in real-time}
                             {--copy-output : Copy the output to the clipboard}
                             {--json : Output as JSON}';
@@ -60,13 +60,16 @@ class CommandRun extends BaseCommand
                     required: true,
                 ),
             ),
+            'cmd',
         );
 
         return dynamicSpinner(
-            fn () => $this->client->commands()->run(new RunCommandRequestData(
-                environmentId: $environmentId,
-                command: $this->form()->get('command'),
-            )),
+            fn () => $this->client->commands()->run(
+                new RunCommandRequestData(
+                    environmentId: $environmentId,
+                    command: $this->form()->get('command'),
+                ),
+            ),
             'Running command...',
         );
     }
