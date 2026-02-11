@@ -65,12 +65,22 @@ class DataTable extends Prompt
         $this->keyBindingsHelp = new KeyBindingsHelp;
         $this->totalPages = $this->getTotalPages($rows);
         $this->listener = KeyPressListener::for($this);
-        $this->perPage = min($this->perPage, count($rows));
+        $this->perPage = $this->calculatePerPage($rows);
     }
 
     protected function getTotalPages(array $records): int
     {
         return (int) ceil(count($records) / $this->perPage);
+    }
+
+    protected function calculatePerPage(array $rows): int
+    {
+        $highestRow = collect($rows)->map(fn ($row) => collect($row)->map(fn ($cell) => substr_count($cell, PHP_EOL))->max())->max();
+        $terminalHeight = $this->terminal()->lines();
+        $availableHeight = $terminalHeight - 10;
+        $perPage = floor($availableHeight / ($highestRow + 1));
+
+        return max(1, min($this->perPage, $perPage, count($rows)));
     }
 
     public function visible(): array
