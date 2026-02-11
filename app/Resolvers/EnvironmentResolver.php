@@ -6,7 +6,6 @@ use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Environment;
 use App\Resolvers\Concerns\HasAnApplication;
 
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class EnvironmentResolver extends Resolver
