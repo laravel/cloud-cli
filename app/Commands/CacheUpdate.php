@@ -74,15 +74,6 @@ class CacheUpdate extends BaseCommand
         return $this->client->caches()->get($cache->id);
     }
 
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the cache?');
-    }
-
     protected function defineFields(Cache $cache): void
     {
         $this->form()->define(

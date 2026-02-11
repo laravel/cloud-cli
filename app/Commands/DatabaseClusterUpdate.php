@@ -8,7 +8,6 @@ use App\Dto\DatabaseType;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
@@ -20,7 +19,7 @@ use function Laravel\Prompts\text;
 class DatabaseClusterUpdate extends BaseCommand
 {
     protected $signature = 'database-cluster:update
-                            {database? : The database ID or name}
+                            {cluster? : The cluster ID or name}
                             {--size= : Instance size}
                             {--storage= : Storage in GB}
                             {--retention-days= : Days to retain backups}
@@ -43,16 +42,16 @@ class DatabaseClusterUpdate extends BaseCommand
 
         intro('Updating Database Cluster');
 
-        $database = $this->resolvers()->databaseCluster()->from($this->argument('database'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
         $types = spin(
             fn () => $this->client->databaseClusters()->types(),
             'Fetching database types...',
         );
 
-        $type = collect($types)->firstWhere('type', $database->type);
+        $type = collect($types)->firstWhere('type', $cluster->type);
 
-        $this->defineFields($database, $type);
+        $this->defineFields($cluster, $type);
 
         foreach ($this->form()->filled() as $key => $value) {
             $this->reportChange(
@@ -62,7 +61,10 @@ class DatabaseClusterUpdate extends BaseCommand
             );
         }
 
-        $updatedDatabase = $this->resolveUpdatedDatabase($database, $type);
+        $updatedDatabase = $this->runUpdate(
+            fn () => $this->updateCluster($cluster, $type),
+            fn () => $this->collectDataAndUpdate($cluster, $type),
+        );
 
         $this->outputJsonIfWanted($updatedDatabase);
 
@@ -71,36 +73,9 @@ class DatabaseClusterUpdate extends BaseCommand
         outro("Database cluster updated: {$updatedDatabase->name}");
     }
 
-    protected function resolveUpdatedDatabase(DatabaseCluster $database, DatabaseType $type): DatabaseCluster
+    protected function updateCluster(DatabaseCluster $cluster, DatabaseType $type): DatabaseCluster
     {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateDatabase($database, $type);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($database, $type),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateDatabase($database, $type);
-    }
-
-    protected function updateDatabase(DatabaseCluster $database, DatabaseType $type): DatabaseCluster
-    {
-        $config = $database->config;
+        $config = $cluster->config;
 
         foreach ($type->configSchema as $schemaField) {
             $schema = is_array($schemaField) ? $schemaField : $schemaField->toArray();
@@ -114,43 +89,110 @@ class DatabaseClusterUpdate extends BaseCommand
 
         spin(
             fn () => $this->client->databaseClusters()->update(new UpdateDatabaseClusterRequestData(
-                clusterId: $database->id,
-                config: $config,
+                clusterId: $cluster->id,
+                config: collect($config)
+                    ->filter(fn ($value, $key) => str_starts_with($key, 'config.'))
+                    ->mapWithKeys(fn ($value, $key) => [
+                        str_replace('config.', '', $key) => $value,
+                    ])
+                    ->toArray(),
             )),
             'Updating database cluster...',
         );
 
-        return $this->client->databaseClusters()->get($database->id);
+        return $this->client->databaseClusters()->get($cluster->id);
     }
 
-    protected function shouldRunUpdateFromOptions(): bool
+    protected function defineFields(DatabaseCluster $cluster, DatabaseType $type): void
     {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the database cluster?');
-    }
-
-    protected function defineFields(DatabaseCluster $database, DatabaseType $type): void
-    {
-        $config = $database->config;
-
-        foreach ($type->configSchema as $schemaField) {
-            $schema = is_array($schemaField) ? $schemaField : $schemaField->toArray();
-            $name = $schema['name'];
+        foreach ($type->configSchema as $field) {
+            $schema = is_array($field) ? $field : $field->toArray();
+            $name = 'config.'.$schema['name'];
             $optionName = str_replace('_', '-', $name);
-            $current = $config[$name] ?? $schema['example'] ?? null;
-            $promptSchema = $schema;
-            $promptCurrent = $current;
+            $current = $cluster->config[$name] ?? $schema['example'] ?? null;
+            $fieldType = $schema['type'] ?? 'string';
+            $description = $schema['description'] ?? null;
+            $min = $schema['min'] ?? null;
+            $max = $schema['max'] ?? null;
+            $enum = $schema['enum'] ?? [];
 
-            $this->form()->define(
-                $name,
-                fn ($resolver) => $resolver->fromInput(
-                    fn ($value) => $this->promptForConfigValue($promptSchema, $value ?? $promptCurrent),
-                ),
-                $optionName,
-            )->setPreviousValue($current !== null ? (string) $current : '');
+            $label = match ($name) {
+                'cu_min' => 'CU min',
+                'cu_max' => 'CU max',
+                default => str_replace('_', ' ', ucfirst($name)),
+            };
+
+            if (count($enum) > 0) {
+                $options = is_array($enum) ? array_combine($enum, $enum) : $enum;
+
+                $this->form()->define(
+                    $name,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => select(
+                            label: $label,
+                            options: $options,
+                            default: (string) ($value ?? $current ?? array_key_first($options)),
+                            required: true,
+                        ),
+                    ),
+                    $optionName,
+                )->setPreviousValue($current !== null ? (string) $current : '');
+            } elseif ($fieldType === 'boolean') {
+                $this->form()->define(
+                    $name,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => confirm(
+                            label: $label,
+                            default: filter_var($value ?? $current, FILTER_VALIDATE_BOOLEAN),
+                            hint: $description,
+                        ),
+                    ),
+                    $optionName,
+                )->setPreviousValue($current !== null ? ($current ? 'true' : 'false') : '');
+            } elseif ($fieldType === 'integer') {
+                $this->form()->define(
+                    $name,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => (int) number(
+                            label: $label,
+                            default: (string) ($value ?? $current ?? 0),
+                            required: true,
+                            hint: $description,
+                            min: $min,
+                            max: $max,
+                        ),
+                    ),
+                    $optionName,
+                )->setPreviousValue($current !== null ? (string) $current : '');
+            } elseif ($fieldType === 'number') {
+                $this->form()->define(
+                    $name,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => (float) number(
+                            label: $label,
+                            default: (string) ($value ?? $current ?? 0),
+                            required: true,
+                            hint: $description,
+                            min: $min,
+                            max: $max,
+                        ),
+                    ),
+                    $optionName,
+                )->setPreviousValue($current !== null ? (string) $current : '');
+            } else {
+                $this->form()->define(
+                    $name,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => text(
+                            label: $label,
+                            default: $value ?? $current ?? '',
+                            required: true,
+                            hint: $description,
+                        ),
+                    ),
+                    $optionName,
+                )->setPreviousValue($current !== null ? (string) $current : '');
+            }
         }
     }
 
@@ -173,66 +215,7 @@ class DatabaseClusterUpdate extends BaseCommand
             $this->form()->prompt($optionName);
         }
 
-        return $this->updateDatabase($database, $type);
-    }
-
-    protected function promptForConfigValue(array $schema, mixed $current): mixed
-    {
-        $name = $schema['name'];
-        $fieldType = $schema['type'] ?? 'string';
-        $label = str_replace('_', ' ', ucfirst($name));
-        $hint = $schema['description'] ?? null;
-        $enum = $schema['enum'] ?? [];
-        $min = $schema['min'] ?? null;
-        $max = $schema['max'] ?? null;
-
-        if (count($enum) > 0) {
-            $options = is_array($enum) ? array_combine($enum, $enum) : $enum;
-
-            return select(
-                label: $label,
-                options: $options,
-                default: (string) $current,
-                required: true,
-            );
-        }
-
-        if ($fieldType === 'boolean') {
-            return confirm(
-                label: $label,
-                default: (bool) $current,
-                hint: $hint,
-            );
-        }
-
-        if ($fieldType === 'integer') {
-            return (int) number(
-                label: $label,
-                default: (string) ($current ?? 0),
-                required: true,
-                hint: $hint,
-                min: $min,
-                max: $max,
-            );
-        }
-
-        if ($fieldType === 'number') {
-            return (float) number(
-                label: $label,
-                default: (string) ($current ?? 0),
-                required: true,
-                hint: $hint,
-                min: $min,
-                max: $max,
-            );
-        }
-
-        return text(
-            label: $label,
-            default: $current !== null ? (string) $current : '',
-            required: true,
-            hint: $hint,
-        );
+        return $this->updateCluster($database, $type);
     }
 
     protected function coerceConfigValue(string $key, mixed $value, DatabaseType $type): mixed

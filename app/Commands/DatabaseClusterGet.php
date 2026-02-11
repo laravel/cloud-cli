@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class DatabaseClusterGet extends BaseCommand
 {
-    protected $signature = 'database-cluster:get {database? : The database ID or name} {--json : Output as JSON}';
+    protected $signature = 'database-cluster:get {cluster? : The cluster ID or name} {--json : Output as JSON}';
 
     protected $description = 'Get database cluster details';
 
@@ -16,17 +16,17 @@ class DatabaseClusterGet extends BaseCommand
 
         intro('Database Cluster Details');
 
-        $databaseCluster = $this->resolvers()->databaseCluster()->from($this->argument('database'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
-        $this->outputJsonIfWanted($databaseCluster);
+        $this->outputJsonIfWanted($cluster);
 
         dataList([
-            'ID' => $databaseCluster->id,
-            'Name' => $databaseCluster->name,
-            'Type' => $databaseCluster->type,
-            'Status' => $databaseCluster->status,
-            'Region' => $databaseCluster->region,
-            'Schemas' => collect($databaseCluster->schemas)->pluck('name')->toArray(),
+            'ID' => $cluster->id,
+            'Name' => $cluster->name,
+            'Type' => $cluster->type,
+            'Status' => $cluster->status,
+            'Region' => $cluster->region,
+            'Schemas' => collect($cluster->schemas)->pluck('name')->toArray(),
         ]);
     }
 }

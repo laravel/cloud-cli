@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Client\Requests\UpdateBucketKeyRequestData;
 use App\Dto\BucketKey;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
@@ -65,15 +64,6 @@ class BucketKeyUpdate extends BaseCommand
         );
 
         return $this->client->bucketKeys()->get($key->id);
-    }
-
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the bucket key?');
     }
 
     protected function defineFields(BucketKey $key): void

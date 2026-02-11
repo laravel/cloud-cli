@@ -17,8 +17,8 @@ trait CreatesWebSocketCluster
     {
         $this->form()->prompt(
             'name',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => text(
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
                     label: 'Cluster name',
                     default: $value ?? $defaults['name'] ?? '',
                     required: true,
@@ -27,16 +27,16 @@ trait CreatesWebSocketCluster
         );
 
         $regions = spin(
-            fn() => $this->client->meta()->regions(),
+            fn () => $this->client->meta()->regions(),
             'Fetching regions...',
         );
 
         $this->form()->prompt(
             'region',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => select(
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => select(
                     label: 'Region',
-                    options: collect($regions)->mapWithKeys(fn(Region $r) => [$r->value => $r->label])->toArray(),
+                    options: collect($regions)->mapWithKeys(fn (Region $r) => [$r->value => $r->label])->toArray(),
                     default: $value ?? $defaults['region'] ?? null,
                     required: true,
                 ),
@@ -45,8 +45,8 @@ trait CreatesWebSocketCluster
 
         $this->form()->prompt(
             'max_connections',
-            fn($resolver) => $resolver->fromInput(
-                fn($value) => number(
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
                     label: 'Max connections',
                     default: $value ?? $defaults['max_connections'] ?? 100,
                     required: true,
@@ -55,7 +55,7 @@ trait CreatesWebSocketCluster
         );
 
         return spin(
-            fn() => $this->client->websocketClusters()->create(new CreateWebSocketClusterRequestData(
+            fn () => $this->client->websocketClusters()->create(new CreateWebSocketClusterRequestData(
                 name: $this->form()->get('name'),
                 region: $this->form()->get('region'),
                 maxConnections: (int) $this->form()->get('max_connections'),

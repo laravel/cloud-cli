@@ -15,8 +15,8 @@ trait CreatesWebSocketApplication
     {
         $this->form()->prompt(
             'name',
-            fn($resolver) => $resolver->fromInput(
-                fn(?string $value) => text(
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
                     label: 'Application name',
                     default: $value ?? $defaults['name'] ?? '',
                     required: true,
@@ -25,7 +25,7 @@ trait CreatesWebSocketApplication
         );
 
         return spin(
-            fn() => $this->client->websocketApplications()->create(new CreateWebSocketApplicationRequestData(
+            fn () => $this->client->websocketApplications()->create(new CreateWebSocketApplicationRequestData(
                 clusterId: $cluster->id,
                 name: $this->form()->get('name'),
             )),

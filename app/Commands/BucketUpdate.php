@@ -6,7 +6,6 @@ use App\Client\Requests\UpdateObjectStorageBucketRequestData;
 use App\Dto\ObjectStorageBucket;
 use App\Exceptions\CommandExitException;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -67,15 +66,6 @@ class BucketUpdate extends BaseCommand
         );
 
         return $this->client->objectStorageBuckets()->get($bucket->id);
-    }
-
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the bucket?');
     }
 
     protected function defineFields(ObjectStorageBucket $bucket): void
