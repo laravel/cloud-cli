@@ -7,7 +7,6 @@ use App\Dto\ObjectStorageBucket;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -44,40 +43,16 @@ class BucketUpdate extends BaseCommand
             );
         }
 
-        $updatedBucket = $this->resolveUpdatedBucket($bucket);
+        $updatedBucket = $this->runUpdate(
+            fn () => $this->updateBucket($bucket),
+            fn () => $this->collectDataAndUpdate($bucket),
+        );
 
         $this->outputJsonIfWanted($updatedBucket);
 
         success('Bucket updated');
 
         outro("Bucket updated: {$updatedBucket->name}");
-    }
-
-    protected function resolveUpdatedBucket(ObjectStorageBucket $bucket): ObjectStorageBucket
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option (--name or --visibility).');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateBucket($bucket);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($bucket),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateBucket($bucket);
     }
 
     protected function updateBucket(ObjectStorageBucket $bucket): ObjectStorageBucket
