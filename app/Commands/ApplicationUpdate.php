@@ -9,8 +9,6 @@ use App\Exceptions\CommandExitException;
 use App\Git;
 use Imagick;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
@@ -53,40 +51,16 @@ class ApplicationUpdate extends BaseCommand
             );
         }
 
-        $updatedApplication = $this->resolveUpdatedApplication($application);
+        $updatedApplication = $this->runUpdate(
+            fn () => $this->updateApplication($application),
+            fn () => $this->collectDataAndUpdate($application),
+        );
 
         $this->outputJsonIfWanted($updatedApplication);
 
         success('Application updated');
 
         outro($updatedApplication->url());
-    }
-
-    protected function resolveUpdatedApplication(Application $application): Application
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('No fields to update. Provide at least one option.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateApplication($application);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($application),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateApplication($application);
     }
 
     protected function updateApplication(Application $application): Application
@@ -105,15 +79,6 @@ class ApplicationUpdate extends BaseCommand
         );
 
         return $this->client->applications()->get($application->id);
-    }
-
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the application?');
     }
 
     protected function defineFields(Application $application): void

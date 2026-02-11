@@ -235,14 +235,6 @@ class BackgroundProcessUpdate extends BaseCommand
 
     protected function collectDataAndUpdate(BackgroundProcess $process): BackgroundProcess
     {
-        if ($this->errors->hasAny()) {
-            foreach ($this->errors->all() as $field => $message) {
-                $this->form()->prompt($field);
-            }
-
-            return $this->updateProcess($process);
-        }
-
         $options = collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
             $field->key => $field->label(),
         ])->toArray();

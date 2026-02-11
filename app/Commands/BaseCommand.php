@@ -207,7 +207,17 @@ abstract class BaseCommand extends Command
         }
 
         if ($this->form()->isEmpty()) {
-            return $this->loopUntilValid($interactiveCallback);
+            return $this->loopUntilValid(function () use ($interactiveCallback, $noninteractiveCallback) {
+                if ($this->errors->isEmpty()) {
+                    return $interactiveCallback();
+                }
+
+                foreach ($this->errors->all() as $field => $message) {
+                    $this->form()->prompt($field);
+                }
+
+                return $noninteractiveCallback();
+            });
         }
 
         if (! $this->confirmUpdate($resourceType)) {
