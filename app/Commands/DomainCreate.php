@@ -30,6 +30,7 @@ class DomainCreate extends BaseCommand
         intro('Creating Domain');
 
         $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+
         $domain = $this->loopUntilValid(fn () => $this->createDomain($environment->id));
 
         $this->outputJsonIfWanted($domain);
