@@ -21,10 +21,9 @@ class WebSocketApplicationsResource extends Resource
         return $this->paginate($request);
     }
 
-    public function get(string $clusterId, string $applicationId): WebsocketApplication
+    public function get(string $applicationId): WebsocketApplication
     {
         $request = new GetWebSocketApplicationRequest(
-            clusterId: $clusterId,
             applicationId: $applicationId,
         );
         $response = $this->send($request);
