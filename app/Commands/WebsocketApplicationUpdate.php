@@ -84,15 +84,16 @@ class WebsocketApplicationUpdate extends BaseCommand
     protected function updateApplication(WebsocketCluster $cluster, WebsocketApplication $app): WebsocketApplication
     {
         spin(
-            fn () => $this->client->websocketApplications()->update(new UpdateWebSocketApplicationRequestData(
-                clusterId: $cluster->id,
-                applicationId: $app->id,
-                name: $this->form()->get('name'),
-            )),
+            fn () => $this->client->websocketApplications()->update(
+                new UpdateWebSocketApplicationRequestData(
+                    applicationId: $app->id,
+                    name: $this->form()->get('name'),
+                ),
+            ),
             'Updating WebSocket application...',
         );
 
-        return $this->client->websocketApplications()->get($cluster->id, $app->id);
+        return $this->client->websocketApplications()->get($app->id);
     }
 
     protected function shouldRunUpdateFromOptions(): bool
