@@ -4,13 +4,13 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateWebSocketClusterRequestData;
 use App\Dto\WebsocketCluster;
+use App\Enums\WebsocketServerMaxConnection;
 use App\Exceptions\CommandExitException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -34,15 +34,18 @@ class WebsocketClusterUpdate extends BaseCommand
 
         $this->defineFields($cluster);
 
-        foreach ($this->form()->filled() as $fieldKey => $resolver) {
+        foreach ($this->form()->filled() as $value) {
             $this->reportChange(
-                $resolver->label(),
-                $resolver->previousValue(),
-                $resolver->value(),
+                $value->label(),
+                $value->previousValue(),
+                $value->value(),
             );
         }
 
-        $updatedCluster = $this->resolveUpdatedCluster($cluster);
+        $updatedCluster = $this->runUpdate(
+            fn () => $this->updateCluster($cluster),
+            fn () => $this->collectDataAndUpdate($cluster),
+        );
 
         $this->outputJsonIfWanted($updatedCluster);
 
@@ -51,53 +54,20 @@ class WebsocketClusterUpdate extends BaseCommand
         outro("WebSocket cluster updated: {$updatedCluster->name}");
     }
 
-    protected function resolveUpdatedCluster(WebsocketCluster $cluster): WebsocketCluster
-    {
-        if (! $this->isInteractive()) {
-            if (! $this->form()->hasAnyValues()) {
-                $this->outputErrorOrThrow('Provide --name to update.');
-
-                throw new CommandExitException(self::FAILURE);
-            }
-
-            return $this->updateCluster($cluster);
-        }
-
-        if (! $this->form()->hasAnyValues()) {
-            return $this->loopUntilValid(
-                fn () => $this->collectDataAndUpdate($cluster),
-            );
-        }
-
-        if (! $this->shouldRunUpdateFromOptions()) {
-            error('Update cancelled');
-
-            throw new CommandExitException(self::FAILURE);
-        }
-
-        return $this->updateCluster($cluster);
-    }
-
     protected function updateCluster(WebsocketCluster $cluster): WebsocketCluster
     {
         spin(
-            fn () => $this->client->websocketClusters()->update(new UpdateWebSocketClusterRequestData(
-                clusterId: $cluster->id,
-                name: $this->form()->get('name'),
-            )),
+            fn () => $this->client->websocketClusters()->update(
+                new UpdateWebSocketClusterRequestData(
+                    clusterId: $cluster->id,
+                    name: $this->form()->get('name'),
+                    maxConnections: $this->form()->integer('max_connections'),
+                ),
+            ),
             'Updating WebSocket cluster...',
         );
 
         return $this->client->websocketClusters()->get($cluster->id);
-    }
-
-    protected function shouldRunUpdateFromOptions(): bool
-    {
-        if ($this->option('force')) {
-            return true;
-        }
-
-        return confirm('Update the WebSocket cluster?');
     }
 
     protected function defineFields(WebsocketCluster $cluster): void
@@ -112,6 +82,17 @@ class WebsocketClusterUpdate extends BaseCommand
                 ),
             ),
         )->setPreviousValue($cluster->name);
+
+        $this->form()->define(
+            'max_connections',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => select(
+                    label: 'Max connections',
+                    options: collect(WebsocketServerMaxConnection::cases())->mapWithKeys(fn ($case) => [$case->value => $case->value])->toArray(),
+                    default: $value ?? $cluster->maxConnections->value,
+                ),
+            ),
+        )->setPreviousValue($cluster->maxConnections->value);
     }
 
     protected function collectDataAndUpdate(WebsocketCluster $cluster): WebsocketCluster

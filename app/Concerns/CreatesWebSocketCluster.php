@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Client\Requests\CreateWebSocketClusterRequestData;
 use App\Dto\Region;
 use App\Dto\WebsocketCluster;
+use App\Enums\WebsocketServerMaxConnection;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -42,15 +43,13 @@ trait CreatesWebSocketCluster
             ),
         );
 
-        $maxConnectionOptions = [100, 200, 500, 2000, 5000, 10000];
-
         $this->form()->prompt(
             'max_connections',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => select(
                     label: 'Max connections',
-                    options: $maxConnectionOptions,
-                    default: $value ?? $defaults['max_connections'] ?? $maxConnectionOptions[0],
+                    options: collect(WebsocketServerMaxConnection::cases())->mapWithKeys(fn ($case) => [$case->value => $case->value])->toArray(),
+                    default: $value ?? $defaults['max_connections'] ?? WebsocketServerMaxConnection::ONE_HUNDRED->value,
                     required: true,
                 ),
             ),
