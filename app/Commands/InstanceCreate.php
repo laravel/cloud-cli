@@ -10,7 +10,6 @@ use function Laravel\Prompts\intro;
 use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\search;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -72,16 +71,7 @@ class InstanceCreate extends BaseCommand
         $this->form()->prompt(
             'scaling_type',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => select(
-                    label: 'Scaling type',
-                    options: [
-                        'none' => 'None',
-                        'custom' => 'Custom',
-                        'auto' => 'Auto',
-                    ],
-                    default: $value ?? 'none',
-                    required: true,
-                ),
+                fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? 'custom' : 'none'),
             ),
         );
 
@@ -104,10 +94,10 @@ class InstanceCreate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $isCustom ? number(
                     label: 'Maximum replicas',
-                    default: $value ?? $this->form()->get('min-replicas'),
-                    min: $this->form()->get('min-replicas'),
+                    default: $value ?? $this->form()->get('min_replicas'),
+                    min: $this->form()->integer('min_replicas'),
                     max: 10,
-                ) : $this->form()->get('min-replicas'),
+                ) : $this->form()->integer('min_replicas'),
             ),
         );
 
@@ -127,6 +117,8 @@ class InstanceCreate extends BaseCommand
                 fn ($resolver) => $resolver->fromInput(fn ($value) => number(
                     label: 'Scaling memory threshold percentage',
                     default: $value ?? '50',
+                    min: 50,
+                    max: 95,
                 )),
             );
         }
@@ -146,21 +138,21 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
-        $all = $this->form()->all();
-
         return spin(
-            fn () => $this->client->instances()->create(new CreateInstanceRequestData(
-                environmentId: $environmentId,
-                name: isset($all['name']) ? (string) $all['name'] : null,
-                type: isset($all['type']) ? (string) $all['type'] : null,
-                size: isset($all['size']) ? (string) $all['size'] : null,
-                scalingType: isset($all['scaling_type']) ? (string) $all['scaling_type'] : null,
-                minReplicas: isset($all['min_replicas']) ? (int) $all['min_replicas'] : null,
-                maxReplicas: isset($all['max_replicas']) ? (int) $all['max_replicas'] : null,
-                usesScheduler: isset($all['uses_scheduler']) ? (bool) $all['uses_scheduler'] : null,
-                scalingCpuThresholdPercentage: isset($all['scaling_cpu_threshold_percentage']) ? (int) $all['scaling_cpu_threshold_percentage'] : null,
-                scalingMemoryThresholdPercentage: isset($all['scaling_memory_threshold_percentage']) ? (int) $all['scaling_memory_threshold_percentage'] : null,
-            )),
+            fn () => $this->client->instances()->create(
+                new CreateInstanceRequestData(
+                    environmentId: $environmentId,
+                    name: $this->form()->get('name'),
+                    type: $this->form()->get('type'),
+                    size: $this->form()->get('size'),
+                    scalingType: $this->form()->get('scaling_type'),
+                    minReplicas: $this->form()->integer('min_replicas'),
+                    maxReplicas: $this->form()->integer('max_replicas'),
+                    usesScheduler: $this->form()->boolean('uses_scheduler'),
+                    scalingCpuThresholdPercentage: $this->form()->integer('scaling_cpu_threshold_percentage'),
+                    scalingMemoryThresholdPercentage: $this->form()->integer('scaling_memory_threshold_percentage'),
+                ),
+            ),
             'Creating instance...',
         );
     }
