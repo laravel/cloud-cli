@@ -7,6 +7,7 @@ use App\Dto\EnvironmentInstance;
 use App\Enums\InstanceSize;
 use App\Exceptions\CommandExitException;
 
+use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
@@ -22,6 +23,13 @@ class InstanceUpdate extends BaseCommand
                             {--min-replicas= : Minimum replicas}
                             {--max-replicas= : Maximum replicas}
                             {--scaling-type= : Scaling type}
+                            {--uses-scheduler= : Uses scheduler}
+                            {--scaling-cpu-threshold-percentage= : Scaling CPU threshold percentage}
+                            {--scaling-memory-threshold-percentage= : Scaling memory threshold percentage}
+                            {--uses-octane= : Uses Octane}
+                            {--uses-inertia-ssr= : Uses Inertia SSR}
+                            {--hibernation= : Uses hibernation}
+                            {--hibernation-timeout= : Hibernation timeout}
                             {--force : Force update without confirmation}
                             {--json : Output as JSON}';
 
@@ -61,13 +69,22 @@ class InstanceUpdate extends BaseCommand
         $maxReplicas = $this->form()->get('max_replicas');
 
         spin(
-            fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
-                instanceId: $instance->id,
-                size: $this->form()->get('size'),
-                minReplicas: $minReplicas !== null ? (int) $minReplicas : null,
-                maxReplicas: $maxReplicas !== null ? (int) $maxReplicas : null,
-                scalingType: $this->form()->get('scaling_type'),
-            )),
+            fn () => $this->client->instances()->update(
+                new UpdateInstanceRequestData(
+                    instanceId: $instance->id,
+                    size: $this->form()->get('size'),
+                    minReplicas: $minReplicas !== null ? (int) $minReplicas : null,
+                    maxReplicas: $maxReplicas !== null ? (int) $maxReplicas : null,
+                    scalingType: $this->form()->get('scaling_type'),
+                    usesScheduler: $this->form()->get('uses_scheduler'),
+                    scalingCpuThresholdPercentage: $this->form()->get('scaling_cpu_threshold_percentage'),
+                    scalingMemoryThresholdPercentage: $this->form()->get('scaling_memory_threshold_percentage'),
+                    usesOctane: $this->form()->get('uses_octane'),
+                    usesInertiaSsr: $this->form()->get('uses_inertia_ssr'),
+                    usesSleepMode: $this->form()->get('uses_sleep_mode'),
+                    sleepTimeout: $this->form()->get('sleep_timeout'),
+                ),
+            ),
             'Updating instance...',
         );
 
@@ -130,6 +147,89 @@ class InstanceUpdate extends BaseCommand
             ),
             'scaling-type',
         )->setPreviousValue($instance->scalingType);
+
+        $this->form()->define(
+            'uses_scheduler',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => confirm(
+                    label: 'Use scheduler?',
+                    default: false,
+                ),
+            ),
+            'uses-scheduler',
+        )->setPreviousValue($instance->usesScheduler);
+
+        $this->form()->define(
+            'scaling_cpu_threshold_percentage',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Scaling CPU threshold percentage',
+                    default: (string) ($value ?? $instance->scalingCpuThresholdPercentage),
+                    min: 50,
+                    max: 95,
+                ),
+            ),
+            'scaling-cpu-threshold-percentage',
+        )->setPreviousValue((string) $instance->scalingCpuThresholdPercentage)->setLabel('Scaling CPU threshold percentage');
+
+        $this->form()->define(
+            'scaling_memory_threshold_percentage',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Scaling memory threshold percentage',
+                    default: (string) ($value ?? $instance->scalingMemoryThresholdPercentage),
+                    min: 50,
+                    max: 95,
+                ),
+            ),
+            'scaling-memory-threshold-percentage',
+        )->setPreviousValue((string) $instance->scalingMemoryThresholdPercentage);
+
+        $this->form()->define(
+            'uses_octane',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => confirm(
+                    label: 'Use Octane?',
+                    default: false,
+                ),
+            ),
+            'uses-octane',
+        )->setPreviousValue($instance->environment?->usesOctane)->setLabel('Octane');
+
+        $this->form()->define(
+            'uses_inertia_ssr',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => confirm(
+                    label: 'Use Inertia SSR?',
+                    default: false,
+                ),
+            ),
+            'uses-inertia-ssr',
+        )->setLabel('Inertia SSR');
+
+        $this->form()->define(
+            'uses_sleep_mode',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => confirm(
+                    label: 'Use sleep mode?',
+                    default: $value ?? $instance->environment?->usesHibernation ?? true,
+                ),
+            ),
+            'hibernation',
+        )->setPreviousValue($instance->environment?->usesHibernation)->setLabel('Hibernation');
+
+        $this->form()->define(
+            'sleep_timeout',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => number(
+                    label: 'Sleep timeout',
+                    default: (string) ($value ?? ''),
+                    min: 1,
+                    max: 60,
+                ),
+            ),
+            'hibernation-timeout',
+        )->setLabel('Hibernation timeout');
     }
 
     protected function collectDataAndUpdate(EnvironmentInstance $instance): EnvironmentInstance

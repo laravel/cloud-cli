@@ -25,7 +25,7 @@ class InstanceList extends BaseCommand
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
         $instances = spin(
-            fn () => $this->client->instances()->list($environment->id),
+            fn() => $this->client->instances()->list($environment->id),
             'Fetching instances...',
         );
 
@@ -40,17 +40,18 @@ class InstanceList extends BaseCommand
         }
 
         dataTable(
-            headers: ['ID', 'Name', 'Type', 'Size', 'Replicas'],
-            rows: $items->map(fn ($instance) => [
+            headers: ['ID', 'Name', 'Type', 'Size', 'Replicas', 'Scheduler'],
+            rows: $items->map(fn($instance) => [
                 $instance->id,
                 $instance->name,
                 $instance->type,
                 $instance->size,
-                "{$instance->minReplicas}-{$instance->maxReplicas}",
+                $instance->minReplicas === $instance->maxReplicas ? $instance->minReplicas : "{$instance->minReplicas}-{$instance->maxReplicas}",
+                $instance->usesScheduler ? 'Yes' : 'No',
             ])->toArray(),
             actions: [
                 Key::ENTER => [
-                    fn ($row) => $this->call('instance:get', ['instance' => $row[0]]),
+                    fn($row) => $this->call('instance:get', ['instance' => $row[0]]),
                     'View',
                 ],
             ],

@@ -19,35 +19,22 @@ class InstanceGet extends BaseCommand
         intro('Instance Details');
 
         $instance = spin(
-            fn () => $this->client->instances()->get($this->argument('instance')),
+            fn() => $this->client->instances()->get($this->argument('instance')),
             'Fetching instance...',
         );
 
-        if ($this->option('json')) {
-            $this->line(json_encode([
-                'id' => $instance->id,
-                'name' => $instance->name,
-                'type' => $instance->type,
-                'size' => $instance->size,
-                'scaling_type' => $instance->scalingType,
-                'min_replicas' => $instance->minReplicas,
-                'max_replicas' => $instance->maxReplicas,
-                'uses_scheduler' => $instance->usesScheduler,
-                'scaling_cpu_threshold' => $instance->scalingCpuThresholdPercentage,
-                'scaling_memory_threshold' => $instance->scalingMemoryThresholdPercentage,
-                'background_process_ids' => $instance->backgroundProcessIds,
-                'created_at' => $instance->createdAt?->toIso8601String(),
-                'updated_at' => $instance->updatedAt?->toIso8601String(),
-            ], JSON_PRETTY_PRINT));
+        $this->outputJsonIfWanted($instance);
 
-            return;
-        }
-
-        info("Instance: {$instance->name}");
-        $this->line("ID: {$instance->id}");
-        $this->line("Type: {$instance->type}");
-        $this->line("Size: {$instance->size}");
-        $this->line("Replicas: {$instance->minReplicas}-{$instance->maxReplicas}");
-        $this->line('Background Processes: '.count($instance->backgroundProcessIds));
+        dataList([
+            'ID' => $instance->id,
+            'Name' => $instance->name,
+            'Type' => $instance->type,
+            'Size' => $instance->size,
+            'Replicas' => $instance->minReplicas === $instance->maxReplicas ? $instance->minReplicas : "{$instance->minReplicas}-{$instance->maxReplicas}",
+            'Scheduler' => $instance->usesScheduler ? 'Yes' : 'No',
+            'Scaling CPU Threshold' => $instance->scalingCpuThresholdPercentage . '%',
+            'Scaling Memory Threshold' => $instance->scalingMemoryThresholdPercentage . '%',
+            'Background Processes' => count($instance->backgroundProcessIds),
+        ]);
     }
 }

@@ -24,7 +24,7 @@ class EnvironmentInstance extends Data
         public readonly ?CarbonImmutable $createdAt = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $updatedAt = null,
-        public readonly ?string $environmentId = null,
+        public readonly ?Environment $environment = null,
         public readonly array $backgroundProcessIds = [],
     ) {
         //
@@ -35,6 +35,7 @@ class EnvironmentInstance extends Data
         $data = $response['data'] ?? [];
         $attributes = $data['attributes'] ?? [];
         $relationships = $data['relationships'] ?? [];
+        $included = $response['included'] ?? [];
 
         $transformed = [
             'id' => $data['id'],
@@ -49,11 +50,8 @@ class EnvironmentInstance extends Data
             'scalingMemoryThresholdPercentage' => $attributes['scaling_memory_threshold_percentage'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
             'updatedAt' => $attributes['updated_at'] ?? null,
+            'environment' => ($relationships['environment']['data'] ?? null) ? Environment::createFromResponse(['data' => collect($included)->firstWhere('type', 'environments')]) : null,
         ];
-
-        if (isset($relationships['environment']['data']['id'])) {
-            $transformed['environmentId'] = $relationships['environment']['data']['id'];
-        }
 
         if (isset($relationships['backgroundProcesses']['data'])) {
             $transformed['backgroundProcessIds'] = array_column($relationships['backgroundProcesses']['data'], 'id');
