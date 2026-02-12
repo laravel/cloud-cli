@@ -4,7 +4,6 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
-use App\Enums\InstanceSize;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
@@ -65,16 +64,13 @@ class InstanceUpdate extends BaseCommand
 
     protected function updateInstance(EnvironmentInstance $instance): EnvironmentInstance
     {
-        $minReplicas = $this->form()->get('min_replicas');
-        $maxReplicas = $this->form()->get('max_replicas');
-
         spin(
             fn () => $this->client->instances()->update(
                 new UpdateInstanceRequestData(
                     instanceId: $instance->id,
                     size: $this->form()->get('size'),
-                    minReplicas: $minReplicas !== null ? (int) $minReplicas : null,
-                    maxReplicas: $maxReplicas !== null ? (int) $maxReplicas : null,
+                    minReplicas: $this->form()->integer('min_replicas'),
+                    maxReplicas: $this->form()->integer('max_replicas'),
                     scalingType: $this->form()->get('scaling_type'),
                     usesScheduler: $this->form()->get('uses_scheduler'),
                     scalingCpuThresholdPercentage: $this->form()->get('scaling_cpu_threshold_percentage'),
@@ -98,7 +94,9 @@ class InstanceUpdate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => select(
                     label: 'Size',
-                    options: collect(InstanceSize::cases())->map(fn ($size) => $size->value)->toArray(),
+                    options: collect($this->client->instances()->sizes()->all())
+                        ->mapWithKeys(fn ($size) => [$size->name => $size->description])
+                        ->toArray(),
                     required: true,
                     default: $value ?? $instance->size,
                 ),

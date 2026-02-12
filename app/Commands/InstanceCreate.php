@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateInstanceRequestData;
-use App\Enums\InstanceSize;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -54,14 +53,20 @@ class InstanceCreate extends BaseCommand
             ),
         );
 
+        $sizes = $this->client->instances()->sizes();
+
         $this->form()->prompt(
             'size',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => search(
                     label: 'Size',
-                    options: fn ($query) => collect(InstanceSize::cases())
-                        ->map(fn ($size) => $size->value)
-                        ->filter(fn ($size) => $query === '' ? true : str_contains($size, $query))
+                    options: fn ($query) => collect($sizes->all())
+                        ->filter(
+                            fn ($size) => $query === ''
+                                || str_contains(strtolower($size->name), strtolower($query))
+                                || str_contains(strtolower($size->description), strtolower($query)),
+                        )
+                        ->mapWithKeys(fn ($size) => [$size->name => $size->description])
                         ->toArray(),
                     required: true,
                 ),
