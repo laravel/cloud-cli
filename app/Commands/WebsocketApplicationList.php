@@ -52,7 +52,6 @@ class WebsocketApplicationList extends BaseCommand
             actions: [
                 Key::ENTER => [
                     fn ($row) => $this->call('websocket-application:get', [
-                        'cluster' => $cluster->id,
                         'application' => $row[0],
                     ]),
                     'View',
