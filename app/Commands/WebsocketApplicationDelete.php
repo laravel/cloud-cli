@@ -10,7 +10,6 @@ use function Laravel\Prompts\spin;
 class WebsocketApplicationDelete extends BaseCommand
 {
     protected $signature = 'websocket-application:delete
-                            {cluster? : The WebSocket cluster ID or name}
                             {application? : The application ID or name}
                             {--force : Skip confirmation}';
 
@@ -22,8 +21,7 @@ class WebsocketApplicationDelete extends BaseCommand
 
         intro('Deleting WebSocket Application');
 
-        $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
-        $app = $this->resolvers()->websocketApplication()->from($cluster, $this->argument('application'));
+        $app = $this->resolvers()->websocketApplication()->from($this->argument('application'));
 
         if (! $this->option('force') && ! confirm("Delete WebSocket application \"{$app->name}\"?", default: false)) {
             error('Delete cancelled');
@@ -32,7 +30,7 @@ class WebsocketApplicationDelete extends BaseCommand
         }
 
         spin(
-            fn () => $this->client->websocketApplications()->delete($cluster->id, $app->id),
+            fn () => $this->client->websocketApplications()->delete($app->id),
             'Deleting WebSocket application...',
         );
 

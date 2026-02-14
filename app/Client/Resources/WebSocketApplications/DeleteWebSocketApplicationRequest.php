@@ -10,7 +10,6 @@ class DeleteWebSocketApplicationRequest extends Request
     protected Method $method = Method::DELETE;
 
     public function __construct(
-        protected string $clusterId,
         protected string $applicationId,
     ) {
         //
@@ -18,6 +17,6 @@ class DeleteWebSocketApplicationRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/websocket-servers/{$this->clusterId}/applications/{$this->applicationId}";
+        return "/websocket-applications/{$this->applicationId}";
     }
 }

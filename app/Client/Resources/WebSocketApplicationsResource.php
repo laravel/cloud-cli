@@ -47,10 +47,9 @@ class WebSocketApplicationsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function delete(string $clusterId, string $applicationId): void
+    public function delete(string $applicationId): void
     {
         $this->send(new DeleteWebSocketApplicationRequest(
-            clusterId: $clusterId,
             applicationId: $applicationId,
         ));
     }
