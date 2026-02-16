@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Saloon\Exceptions\Request\RequestException as SaloonRequestException;
 use Socket;
@@ -198,21 +199,23 @@ class Auth extends BaseCommand implements NoAuthRequired
         if (preg_match('/GET \/[^?\s]*[?&]exchange_code=([^&\s]+)/', $request, $matches)) {
             $this->exchangeCode = urldecode($matches[1]);
 
-            $response = "HTTP/1.1 200 OK\r\n";
-            $response .= "Content-Type: text/html\r\n";
-            $response .= "\r\n";
-            $response .= '<!DOCTYPE html><html><head><title>Authentication Successful</title></head>';
-            $response .= '<body><h1>Authentication Successful!</h1><p>You can close this window.</p></body></html>';
+            $response = [
+                'HTTP/1.1 200 OK',
+                'Content-Type: text/html',
+                '',
+                File::get(resource_path('html/auth-success.html')),
+            ];
 
-            socket_write($clientSocket, $response);
+            socket_write($clientSocket, implode("\r\n", $response));
         } else {
-            $response = "HTTP/1.1 400 Bad Request\r\n";
-            $response .= "Content-Type: text/html\r\n";
-            $response .= "\r\n";
-            $response .= '<!DOCTYPE html><html><head><title>Error</title></head>';
-            $response .= '<body><h1>Error</h1><p>Invalid request.</p></body></html>';
+            $response = [
+                'HTTP/1.1 400 Bad Request',
+                'Content-Type: text/html',
+                '',
+                File::get(resource_path('html/auth-failure.html')),
+            ];
 
-            socket_write($clientSocket, $response);
+            socket_write($clientSocket, implode("\r\n", $response));
         }
 
         socket_close($clientSocket);
