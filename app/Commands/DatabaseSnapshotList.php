@@ -12,7 +12,7 @@ use function Laravel\Prompts\warning;
 class DatabaseSnapshotList extends BaseCommand
 {
     protected $signature = 'database-snapshot:list
-                            {database-cluster? : The database cluster ID or name}
+                            {cluster? : The database cluster ID or name}
                             {--json : Output as JSON}';
 
     protected $description = 'List database snapshots for a cluster';
@@ -23,7 +23,7 @@ class DatabaseSnapshotList extends BaseCommand
 
         intro('Database Snapshots');
 
-        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
         $snapshots = spin(
             fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),
@@ -45,13 +45,13 @@ class DatabaseSnapshotList extends BaseCommand
             rows: $items->map(fn (DatabaseSnapshot $s) => [
                 $s->id,
                 $s->name,
-                $s->createdAt?->toIso8601String() ?? '-',
-                $s->status ?? '-',
+                $s->createdAt?->toIso8601String() ?? '—',
+                $s->status ?? '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [
                     fn ($row) => $this->call('database-snapshot:get', [
-                        'database-cluster' => $cluster->id,
+                        'cluster' => $cluster->id,
                         'snapshot' => $row[0],
                     ]),
                     'View',

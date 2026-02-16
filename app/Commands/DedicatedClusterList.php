@@ -36,10 +36,10 @@ class DedicatedClusterList extends BaseCommand
         }
 
         $rows = $items->map(fn ($cluster) => [
-            $cluster['id'] ?? '-',
-            $cluster['attributes']['name'] ?? $cluster['name'] ?? '-',
-            $cluster['attributes']['region'] ?? $cluster['region'] ?? '-',
-            $cluster['attributes']['status'] ?? $cluster['status'] ?? '-',
+            $cluster['id'] ?? '—',
+            $cluster['attributes']['name'] ?? $cluster['name'] ?? '—',
+            $cluster['attributes']['region'] ?? $cluster['region'] ?? '—',
+            $cluster['attributes']['status'] ?? $cluster['status'] ?? '—',
         ])->toArray();
 
         dataTable(

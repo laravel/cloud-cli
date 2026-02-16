@@ -34,7 +34,7 @@ class BucketKeyGet extends BaseCommand
             'ID' => $key->id,
             'Name' => $key->name,
             'Permission' => $key->permission,
-            'Created At' => $key->createdAt?->toIso8601String() ?? '-',
+            'Created At' => $key->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

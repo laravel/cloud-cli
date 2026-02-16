@@ -27,9 +27,9 @@ class BucketGet extends BaseCommand
             'Status' => $bucket->status->value,
             'Visibility' => $bucket->visibility->value,
             'Jurisdiction' => $bucket->jurisdiction->value,
-            'Endpoint' => $bucket->endpoint ?? '-',
-            'URL' => $bucket->url ?? '-',
-            'Created At' => $bucket->createdAt?->toIso8601String() ?? '-',
+            'Endpoint' => $bucket->endpoint ?? '—',
+            'URL' => $bucket->url ?? '—',
+            'Created At' => $bucket->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

@@ -30,7 +30,7 @@ class DatabaseGet extends BaseCommand
         dataList([
             'ID' => $database->id,
             'Name' => $database->name,
-            'Created At' => $database->createdAt?->toIso8601String() ?? '-',
+            'Created At' => $database->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

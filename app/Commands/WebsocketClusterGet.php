@@ -28,7 +28,7 @@ class WebsocketClusterGet extends BaseCommand
             'Type' => $cluster->type->value ?? $cluster->type->name,
             'Hostname' => $cluster->hostname,
             'Max connections' => $cluster->maxConnections->value ?? $cluster->maxConnections->name,
-            'Created At' => $cluster->createdAt?->toIso8601String() ?? '-',
+            'Created At' => $cluster->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

@@ -29,7 +29,7 @@ class CacheGet extends BaseCommand
             'Size' => $cache->size,
             'Auto upgrade' => $cache->autoUpgradeEnabled ? 'Yes' : 'No',
             'Public' => $cache->isPublic ? 'Yes' : 'No',
-            'Created At' => $cache->createdAt?->toIso8601String() ?? '-',
+            'Created At' => $cache->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

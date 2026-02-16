@@ -47,7 +47,7 @@ class WebsocketApplicationList extends BaseCommand
                 $a->name,
                 $a->appId,
                 $a->maxConnections,
-                $a->createdAt?->toIso8601String() ?? '-',
+                $a->createdAt?->toIso8601String() ?? '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [

@@ -37,7 +37,7 @@ class WebsocketApplicationGet extends BaseCommand
             'Ping interval' => $app->pingInterval,
             'Activity timeout' => $app->activityTimeout,
             'Max message size' => $app->maxMessageSize,
-            'Created At' => $app->createdAt?->toIso8601String() ?? '-',
+            'Created At' => $app->createdAt?->toIso8601String() ?? '—',
         ]);
     }
 }

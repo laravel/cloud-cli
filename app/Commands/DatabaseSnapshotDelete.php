@@ -10,7 +10,7 @@ use function Laravel\Prompts\spin;
 class DatabaseSnapshotDelete extends BaseCommand
 {
     protected $signature = 'database-snapshot:delete
-                            {database-cluster? : The database cluster ID or name}
+                            {cluster? : The database cluster ID or name}
                             {snapshot? : The snapshot ID or name}
                             {--force : Skip confirmation}';
 
@@ -22,7 +22,7 @@ class DatabaseSnapshotDelete extends BaseCommand
 
         intro('Deleting Database Snapshot');
 
-        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
         $snapshot = $this->resolvers()->databaseSnapshot()->from($cluster, $this->argument('snapshot'));
 
         if (! $this->option('force') && ! confirm("Delete snapshot \"{$snapshot->name}\"?", default: false)) {

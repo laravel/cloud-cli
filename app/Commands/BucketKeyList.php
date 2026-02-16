@@ -46,7 +46,7 @@ class BucketKeyList extends BaseCommand
                 $k->id,
                 $k->name,
                 $k->permission,
-                $k->createdAt?->toIso8601String() ?? '-',
+                $k->createdAt?->toIso8601String() ?? '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [

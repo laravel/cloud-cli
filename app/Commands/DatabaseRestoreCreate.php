@@ -14,7 +14,7 @@ use function Laravel\Prompts\text;
 class DatabaseRestoreCreate extends BaseCommand
 {
     protected $signature = 'database-restore:create
-                            {database-cluster? : The database cluster ID or name}
+                            {cluster? : The database cluster ID or name}
                             {--snapshot= : Snapshot ID to restore from}
                             {--point-in-time= : Point-in-time (ISO 8601) to restore to}
                             {--json : Output as JSON}';
@@ -27,7 +27,7 @@ class DatabaseRestoreCreate extends BaseCommand
 
         intro('Creating Database Restore');
 
-        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
         $snapshotId = $this->option('snapshot');
         $pointInTime = $this->option('point-in-time');

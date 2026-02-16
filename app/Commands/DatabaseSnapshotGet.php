@@ -8,7 +8,7 @@ use function Laravel\Prompts\spin;
 class DatabaseSnapshotGet extends BaseCommand
 {
     protected $signature = 'database-snapshot:get
-                            {database-cluster? : The database cluster ID or name}
+                            {cluster? : The database cluster ID or name}
                             {snapshot? : The snapshot ID or name}
                             {--json : Output as JSON}';
 
@@ -20,7 +20,7 @@ class DatabaseSnapshotGet extends BaseCommand
 
         intro('Database Snapshot Details');
 
-        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('database-cluster'));
+        $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
         $snapshot = $this->resolvers()->databaseSnapshot()->from($cluster, $this->argument('snapshot'));
 
         $snapshot = spin(
@@ -33,8 +33,8 @@ class DatabaseSnapshotGet extends BaseCommand
         dataList([
             'ID' => $snapshot->id,
             'Name' => $snapshot->name,
-            'Created At' => $snapshot->createdAt?->toIso8601String() ?? '-',
-            'Status' => $snapshot->status ?? '-',
+            'Created At' => $snapshot->createdAt?->toIso8601String() ?? '—',
+            'Status' => $snapshot->status ?? '—',
         ]);
     }
 }

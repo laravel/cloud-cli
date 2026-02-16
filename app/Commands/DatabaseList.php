@@ -42,7 +42,7 @@ class DatabaseList extends BaseCommand
             rows: $databases->map(fn ($database) => [
                 $database->id,
                 $database->name,
-                $database->createdAt?->toIso8601String() ?? '-',
+                $database->createdAt?->toIso8601String() ?? '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [
