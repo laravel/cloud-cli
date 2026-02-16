@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Concerns\CreatesWebSocketApplication;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 class WebsocketApplicationCreate extends BaseCommand
 {
@@ -36,6 +35,6 @@ class WebsocketApplicationCreate extends BaseCommand
 
         $this->outputJsonIfWanted($app);
 
-        outro("WebSocket application created: {$app->name}");
+        success("WebSocket application created: {$app->name}");
     }
 }

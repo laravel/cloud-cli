@@ -7,7 +7,6 @@ use App\Dto\Domain;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
@@ -46,9 +45,7 @@ class DomainUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedDomain);
 
-        success('Domain updated');
-
-        outro($updatedDomain->name);
+        success("Domain updated: {$updatedDomain->name}");
     }
 
     protected function updateDomain(Domain $domain): Domain

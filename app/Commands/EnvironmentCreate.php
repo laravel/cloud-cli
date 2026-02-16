@@ -6,7 +6,6 @@ use App\Client\Requests\CreateEnvironmentRequestData;
 use App\Git;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -35,12 +34,8 @@ class EnvironmentCreate extends BaseCommand
         $this->outputJsonIfWanted($environment);
 
         $environment = $this->client->environments()->include('application')->get($environment->id);
-        $application = $this->client->applications()->get($application->id);
 
         success($environment->url);
-        success($application->url($environment));
-
-        outro('Environment created');
     }
 
     protected function createEnvironment(string $applicationId)

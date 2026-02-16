@@ -10,7 +10,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
@@ -59,7 +58,7 @@ class InstanceUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedInstance);
 
-        outro('Instance updated.');
+        success('Instance updated');
     }
 
     protected function updateInstance(EnvironmentInstance $instance): EnvironmentInstance

@@ -6,7 +6,6 @@ use App\Client\Requests\UpdateBucketKeyRequestData;
 use App\Dto\BucketKey;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -46,9 +45,7 @@ class BucketKeyUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedKey);
 
-        success('Bucket key updated');
-
-        outro("Bucket key updated: {$updatedKey->name}");
+        success("Bucket key updated: {$updatedKey->name}");
     }
 
     protected function updateKey(BucketKey $key): BucketKey

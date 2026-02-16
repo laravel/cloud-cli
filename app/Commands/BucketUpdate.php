@@ -8,7 +8,6 @@ use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -49,9 +48,7 @@ class BucketUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedBucket);
 
-        success('Bucket updated');
-
-        outro("Bucket updated: {$updatedBucket->name}");
+        success("Bucket updated: {$updatedBucket->name}");
     }
 
     protected function updateBucket(ObjectStorageBucket $bucket): ObjectStorageBucket

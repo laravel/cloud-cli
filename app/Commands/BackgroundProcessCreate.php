@@ -8,7 +8,6 @@ use App\Dto\EnvironmentInstance;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -44,7 +43,7 @@ class BackgroundProcessCreate extends BaseCommand
 
         $this->outputJsonIfWanted($process);
 
-        outro("Background process created: {$process->id}");
+        success("Background process created: {$process->id}");
     }
 
     protected function createBackgroundProcess(EnvironmentInstance $instance)

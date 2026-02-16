@@ -7,7 +7,6 @@ use App\Client\Requests\CreateInstanceRequestData;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\search;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -37,7 +36,7 @@ class InstanceCreate extends BaseCommand
 
         $this->outputJsonIfWanted($instance);
 
-        outro("Instance created: {$instance->name}");
+        success("Instance created: {$instance->name}");
     }
 
     protected function createInstance(string $environmentId)

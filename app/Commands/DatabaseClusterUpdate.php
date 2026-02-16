@@ -11,7 +11,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -68,9 +67,7 @@ class DatabaseClusterUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedDatabase);
 
-        success('Database cluster updated');
-
-        outro("Database cluster updated: {$updatedDatabase->name}");
+        success("Database cluster updated: {$updatedDatabase->name}");
     }
 
     protected function updateCluster(DatabaseCluster $cluster, DatabaseType $type): DatabaseCluster

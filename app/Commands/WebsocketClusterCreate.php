@@ -6,7 +6,6 @@ use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\DeterminesDefaultRegion;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 class WebsocketClusterCreate extends BaseCommand
 {
@@ -37,8 +36,6 @@ class WebsocketClusterCreate extends BaseCommand
 
         $this->outputJsonIfWanted($cluster);
 
-        success('WebSocket cluster created');
-
-        outro("Cluster created: {$cluster->name}");
+        success("WebSocket cluster created: {$cluster->name}");
     }
 }

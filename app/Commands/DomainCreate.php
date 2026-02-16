@@ -6,7 +6,6 @@ use App\Client\Requests\CreateDomainRequestData;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -35,7 +34,7 @@ class DomainCreate extends BaseCommand
 
         $this->outputJsonIfWanted($domain);
 
-        outro("Domain created: {$domain->name}");
+        success("Domain created: {$domain->name}");
     }
 
     protected function createDomain(string $environmentId)

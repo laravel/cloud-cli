@@ -9,7 +9,6 @@ use App\Exceptions\CommandExitException;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -52,7 +51,7 @@ class CacheUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedCache);
 
-        outro("Cache updated: {$updatedCache->name}");
+        success("Cache updated: {$updatedCache->name}");
     }
 
     protected function updateCache(Cache $cache): Cache

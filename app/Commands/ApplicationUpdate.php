@@ -11,7 +11,6 @@ use Imagick;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -58,9 +57,7 @@ class ApplicationUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedApplication);
 
-        success('Application updated');
-
-        outro($updatedApplication->url());
+        success($updatedApplication->url());
     }
 
     protected function updateApplication(Application $application): Application

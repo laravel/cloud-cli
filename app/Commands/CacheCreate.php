@@ -9,7 +9,6 @@ use App\Dto\Region;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -40,9 +39,7 @@ class CacheCreate extends BaseCommand
 
         $this->outputJsonIfWanted($cache);
 
-        success('Cache created');
-
-        outro("Cache created: {$cache->name}");
+        success("Cache created: {$cache->name}");
     }
 
     protected function createCache()

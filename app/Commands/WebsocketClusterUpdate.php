@@ -9,7 +9,6 @@ use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -49,9 +48,7 @@ class WebsocketClusterUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedCluster);
 
-        success('WebSocket cluster updated');
-
-        outro("WebSocket cluster updated: {$updatedCluster->name}");
+        success("WebSocket cluster updated: {$updatedCluster->name}");
     }
 
     protected function updateCluster(WebsocketCluster $cluster): WebsocketCluster

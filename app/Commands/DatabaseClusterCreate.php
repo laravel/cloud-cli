@@ -6,7 +6,6 @@ use App\Concerns\CreatesDatabaseCluster;
 use App\Concerns\DeterminesDefaultRegion;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 class DatabaseClusterCreate extends BaseCommand
 {
@@ -33,8 +32,6 @@ class DatabaseClusterCreate extends BaseCommand
 
         $this->outputJsonIfWanted($database);
 
-        success('Database cluster created');
-
-        outro("Database cluster created: {$database->name}");
+        success("Database cluster created: {$database->name}");
     }
 }

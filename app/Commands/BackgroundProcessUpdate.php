@@ -10,7 +10,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -59,7 +58,7 @@ class BackgroundProcessUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedProcess);
 
-        outro("Background process updated: {$updatedProcess->id}");
+        success("Background process updated: {$updatedProcess->id}");
     }
 
     protected function updateProcess(BackgroundProcess $process): BackgroundProcess

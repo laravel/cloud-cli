@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Concerns\CreatesDatabase;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 
 class DatabaseCreate extends BaseCommand
 {
@@ -30,6 +29,6 @@ class DatabaseCreate extends BaseCommand
 
         $this->outputJsonIfWanted($database);
 
-        outro("Database created: {$database->name}");
+        success("Database created: {$database->name}");
     }
 }

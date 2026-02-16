@@ -8,7 +8,6 @@ use App\Dto\Environment;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -36,7 +35,7 @@ class EnvironmentVariables extends BaseCommand
 
         $this->outputJsonIfWanted('Environment variables updated');
 
-        outro('Environment variables updated');
+        success('Environment variables updated');
     }
 
     protected function updateVariables(Environment $environment): void

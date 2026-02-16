@@ -6,7 +6,6 @@ use Illuminate\Http\Client\RequestException;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 
 class DomainVerify extends BaseCommand
@@ -31,7 +30,7 @@ class DomainVerify extends BaseCommand
 
             $this->outputJsonIfWanted($domain);
 
-            outro("Domain verification request completed: {$domain->name}");
+            success("Domain verification request completed: {$domain->name}");
         } catch (RequestException $e) {
             error('Failed to verify domain: '.$e->getMessage());
 

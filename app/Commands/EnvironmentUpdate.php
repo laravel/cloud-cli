@@ -8,7 +8,6 @@ use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\textarea;
@@ -50,9 +49,7 @@ class EnvironmentUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedEnvironment);
 
-        success('Environment updated');
-
-        outro("Environment updated: {$updatedEnvironment->name}");
+        success("Environment updated: {$updatedEnvironment->name}");
     }
 
     protected function updateEnvironment(Environment $environment): Environment

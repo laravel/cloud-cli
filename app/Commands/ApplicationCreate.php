@@ -9,7 +9,6 @@ use App\Dto\Region;
 use App\Git;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -37,11 +36,9 @@ class ApplicationCreate extends BaseCommand
 
         $this->outputJsonIfWanted($application);
 
-        success('Application created');
-
         $application = $this->client->applications()->get($application->id);
 
-        outro($application->url());
+        success($application->url());
     }
 
     protected function createApplication()

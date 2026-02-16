@@ -9,7 +9,6 @@ use App\Exceptions\CommandExitException;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\textarea;
@@ -49,9 +48,7 @@ class WebsocketApplicationUpdate extends BaseCommand
 
         $this->outputJsonIfWanted($updatedApp);
 
-        success('WebSocket application updated');
-
-        outro("WebSocket application updated: {$updatedApp->name}");
+        success("WebSocket application updated: {$updatedApp->name}");
     }
 
     protected function updateApplication(WebsocketApplication $app): WebsocketApplication

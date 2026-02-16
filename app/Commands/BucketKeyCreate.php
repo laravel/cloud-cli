@@ -6,7 +6,6 @@ use App\Client\Requests\CreateBucketKeyRequestData;
 use App\Dto\ObjectStorageBucket;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -33,9 +32,7 @@ class BucketKeyCreate extends BaseCommand
 
         $this->outputJsonIfWanted($key);
 
-        success('Bucket key created');
-
-        outro("Key created: {$key->name}");
+        success("Bucket key created: {$key->name}");
     }
 
     protected function createBucketKey(ObjectStorageBucket $bucket)
