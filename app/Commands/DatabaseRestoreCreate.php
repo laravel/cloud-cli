@@ -75,11 +75,13 @@ class DatabaseRestoreCreate extends BaseCommand
         }
 
         $restored = spin(
-            fn () => $this->client->databaseRestores()->create(new CreateDatabaseRestoreRequestData(
-                clusterId: $cluster->id,
-                snapshotId: $snapshotId,
-                pointInTime: $pointInTime,
-            )),
+            fn () => $this->client->databaseRestores()->create(
+                new CreateDatabaseRestoreRequestData(
+                    clusterId: $cluster->id,
+                    snapshotId: $snapshotId,
+                    pointInTime: $pointInTime,
+                ),
+            ),
             'Creating restore...',
         );
 

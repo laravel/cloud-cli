@@ -91,11 +91,13 @@ class ApplicationCreate extends BaseCommand
         );
 
         return spin(
-            fn () => $this->client->applications()->create(new CreateApplicationRequestData(
-                repository: $this->form()->get('repository'),
-                name: $this->form()->get('name'),
-                region: $this->form()->get('region'),
-            )),
+            fn () => $this->client->applications()->create(
+                new CreateApplicationRequestData(
+                    repository: $this->form()->get('repository'),
+                    name: $this->form()->get('name'),
+                    region: $this->form()->get('region'),
+                ),
+            ),
             'Creating application...',
         );
     }

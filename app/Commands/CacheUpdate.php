@@ -60,13 +60,15 @@ class CacheUpdate extends BaseCommand
         $isPublic = $this->form()->get('is_public');
 
         spin(
-            fn () => $this->client->caches()->update(new UpdateCacheRequestData(
-                cacheId: $cache->id,
-                name: $this->form()->get('name'),
-                size: $this->form()->get('size'),
-                autoUpgradeEnabled: $autoUpgradeEnabled !== null ? filter_var($autoUpgradeEnabled, FILTER_VALIDATE_BOOLEAN) : null,
-                isPublic: $isPublic !== null ? filter_var($isPublic, FILTER_VALIDATE_BOOLEAN) : null,
-            )),
+            fn () => $this->client->caches()->update(
+                new UpdateCacheRequestData(
+                    cacheId: $cache->id,
+                    name: $this->form()->get('name'),
+                    size: $this->form()->get('size'),
+                    autoUpgradeEnabled: $autoUpgradeEnabled !== null ? filter_var($autoUpgradeEnabled, FILTER_VALIDATE_BOOLEAN) : null,
+                    isPublic: $isPublic !== null ? filter_var($isPublic, FILTER_VALIDATE_BOOLEAN) : null,
+                ),
+            ),
             'Updating cache...',
         );
 

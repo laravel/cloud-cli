@@ -85,15 +85,17 @@ class DatabaseClusterUpdate extends BaseCommand
         }
 
         spin(
-            fn () => $this->client->databaseClusters()->update(new UpdateDatabaseClusterRequestData(
-                clusterId: $cluster->id,
-                config: collect($config)
-                    ->filter(fn ($value, $key) => str_starts_with($key, 'config.'))
-                    ->mapWithKeys(fn ($value, $key) => [
-                        str_replace('config.', '', $key) => $value,
-                    ])
-                    ->toArray(),
-            )),
+            fn () => $this->client->databaseClusters()->update(
+                new UpdateDatabaseClusterRequestData(
+                    clusterId: $cluster->id,
+                    config: collect($config)
+                        ->filter(fn ($value, $key) => str_starts_with($key, 'config.'))
+                        ->mapWithKeys(fn ($value, $key) => [
+                            str_replace('config.', '', $key) => $value,
+                        ])
+                        ->toArray(),
+                ),
+            ),
             'Updating database cluster...',
         );
 

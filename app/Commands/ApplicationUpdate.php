@@ -63,15 +63,17 @@ class ApplicationUpdate extends BaseCommand
     protected function updateApplication(Application $application): Application
     {
         spin(
-            fn () => $this->client->applications()->update(new UpdateApplicationRequestData(
-                applicationId: $application->id,
-                name: $this->form()->get('name'),
-                slug: $this->form()->get('slug'),
-                defaultEnvironmentId: $this->form()->get('default_environment_id'),
-                repository: $this->form()->get('repository'),
-                slackChannel: $this->form()->get('slack_channel'),
-                avatar: $this->form()->get('avatar'),
-            )),
+            fn () => $this->client->applications()->update(
+                new UpdateApplicationRequestData(
+                    applicationId: $application->id,
+                    name: $this->form()->get('name'),
+                    slug: $this->form()->get('slug'),
+                    defaultEnvironmentId: $this->form()->get('default_environment_id'),
+                    repository: $this->form()->get('repository'),
+                    slackChannel: $this->form()->get('slack_channel'),
+                    avatar: $this->form()->get('avatar'),
+                ),
+            ),
             'Updating application...',
         );
 

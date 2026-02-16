@@ -62,7 +62,9 @@ class Deploy extends BaseCommand
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
-        $deployment = $this->client->deployments()->initiate(new InitiateDeploymentRequestData($environment->id));
+        $deployment = $this->client->deployments()->initiate(
+            new InitiateDeploymentRequestData($environment->id),
+        );
 
         dynamicSpinner(
             fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),

@@ -54,11 +54,13 @@ class BucketUpdate extends BaseCommand
     protected function updateBucket(ObjectStorageBucket $bucket): ObjectStorageBucket
     {
         spin(
-            fn () => $this->client->objectStorageBuckets()->update(new UpdateObjectStorageBucketRequestData(
-                bucketId: $bucket->id,
-                name: $this->form()->get('name'),
-                visibility: $this->form()->get('visibility'),
-            )),
+            fn () => $this->client->objectStorageBuckets()->update(
+                new UpdateObjectStorageBucketRequestData(
+                    bucketId: $bucket->id,
+                    name: $this->form()->get('name'),
+                    visibility: $this->form()->get('visibility'),
+                ),
+            ),
             'Updating bucket...',
         );
 

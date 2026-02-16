@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use App\Client\Requests\CreateApplicationRequestData;
 use App\Client\Requests\UpdateApplicationRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
@@ -345,11 +346,13 @@ class Ship extends BaseCommand
                         Sleep::for(CarbonInterval::seconds(5));
                     }
 
-                    return spin(fn () => $this->client->environments()->update(new UpdateEnvironmentRequestData(
-                        environmentId: $environment->id,
-                        databaseSchemaId: $environmentParams['database_schema_id'] ?? null,
-                        websocketApplicationId: $environmentParams['websocket_application_id'] ?? null,
-                    )), 'Updating environment...');
+                    return spin(fn () => $this->client->environments()->update(
+                        new UpdateEnvironmentRequestData(
+                            environmentId: $environment->id,
+                            databaseSchemaId: $environmentParams['database_schema_id'] ?? null,
+                            websocketApplicationId: $environmentParams['websocket_application_id'] ?? null,
+                        ),
+                    ), 'Updating environment...');
                 },
             );
         }
@@ -527,7 +530,7 @@ class Ship extends BaseCommand
             return;
         }
 
-        $varsToAdd = collect($varsToAdd)->mapWithKeys(fn ($key) => [$key => $variables[$key]]);
+        $varsToAdd = collect($varsToAdd)->map(fn ($key) => ['key' => $key, 'value' => $variables[$key]]);
 
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
@@ -536,7 +539,12 @@ class Ship extends BaseCommand
                     Sleep::for(CarbonInterval::seconds(1));
                 }
 
-                $this->client->environments()->addVariables($application->environmentIds[0], $varsToAdd->toArray());
+                $this->client->environments()->addVariables(
+                    new AddEnvironmentVariablesRequestData(
+                        environmentId: $application->environmentIds[0],
+                        variables: $varsToAdd->toArray(),
+                    ),
+                );
             },
             'Adding selected variables to Cloud environment',
         );
