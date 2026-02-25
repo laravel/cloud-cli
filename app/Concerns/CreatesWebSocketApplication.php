@@ -84,4 +84,33 @@ trait CreatesWebSocketApplication
             'Creating WebSocket application...',
         );
     }
+
+    protected function createWebSocketApplicationWithOptions(WebsocketCluster $cluster, array $options): WebsocketApplication
+    {
+        $name = $options['name'] ?? '';
+        $pingInterval = (int) ($options['ping_interval'] ?? 60);
+        $activityTimeout = (int) ($options['activity_timeout'] ?? 30);
+        $allowedOrigins = $options['allowed_origins'] ?? null;
+
+        if (is_array($allowedOrigins)) {
+            $allowedOrigins = array_values(array_filter($allowedOrigins));
+        } elseif (is_string($allowedOrigins) && $allowedOrigins !== '') {
+            $allowedOrigins = collect(explode(PHP_EOL, $allowedOrigins))->filter(fn ($origin) => $origin !== '')->values()->toArray();
+        } else {
+            $allowedOrigins = null;
+        }
+
+        return spin(
+            fn () => $this->client->websocketApplications()->create(
+                new CreateWebSocketApplicationRequestData(
+                    clusterId: $cluster->id,
+                    name: $name,
+                    pingInterval: $pingInterval,
+                    activityTimeout: $activityTimeout,
+                    allowedOrigins: $allowedOrigins,
+                ),
+            ),
+            'Creating WebSocket application...',
+        );
+    }
 }

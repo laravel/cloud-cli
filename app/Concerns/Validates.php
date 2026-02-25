@@ -21,7 +21,7 @@ trait Validates
      * @param  callable(ValidationErrors): TReturn  $callback
      * @return TReturn
      */
-    protected function loopUntilValid(callable $callback, int $maxAttempts = 10, bool|callable $suppressOutput = false): mixed
+    protected function loopUntilValid(callable $callback, int $maxAttempts = 10, bool|callable $suppressOutput = false, ?callable $handleNonInteractiveErrors = null): mixed
     {
         $result = null;
         $this->errors ??= new ValidationErrors;
@@ -33,7 +33,7 @@ trait Validates
                 throw new RuntimeException('Maximum attempts reached');
             }
 
-            $this->breakValidationLoopIfNotInteractive();
+            $this->breakValidationLoopIfNonInteractive($handleNonInteractiveErrors);
 
             $attempts++;
 
@@ -87,16 +87,22 @@ trait Validates
         error($message);
     }
 
-    protected function breakValidationLoopIfNotInteractive(): void
+    protected function breakValidationLoopIfNonInteractive(?callable $handleNonInteractiveErrors = null): void
     {
-        if ($this->errors->hasAny() && ! $this->isInteractive()) {
-            if (! $this->wantsJson()) {
-                throw new RuntimeException($this->errors);
-            }
-
-            $this->line($this->errors->toJson());
-
-            throw new CommandExitException(BaseCommand::FAILURE);
+        if ($this->errors->isEmpty() || $this->isInteractive()) {
+            return;
         }
+
+        if ($handleNonInteractiveErrors && $handleNonInteractiveErrors($this->errors)) {
+            return;
+        }
+
+        if (! $this->wantsJson()) {
+            throw new RuntimeException($this->errors);
+        }
+
+        $this->line($this->errors->toJson());
+
+        throw new CommandExitException(BaseCommand::FAILURE);
     }
 }

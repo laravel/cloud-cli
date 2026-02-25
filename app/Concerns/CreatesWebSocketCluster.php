@@ -66,4 +66,22 @@ trait CreatesWebSocketCluster
             'Creating WebSocket cluster...',
         );
     }
+
+    protected function createWebSocketClusterWithOptions(array $options): WebsocketCluster
+    {
+        $name = $options['name'] ?? '';
+        $region = $options['region'] ?? null;
+        $maxConnections = (int) ($options['max_connections'] ?? WebsocketServerMaxConnection::ONE_HUNDRED->value);
+
+        return spin(
+            fn () => $this->client->websocketClusters()->create(
+                new CreateWebSocketClusterRequestData(
+                    name: $name,
+                    region: $region,
+                    maxConnections: $maxConnections,
+                ),
+            ),
+            'Creating WebSocket cluster...',
+        );
+    }
 }

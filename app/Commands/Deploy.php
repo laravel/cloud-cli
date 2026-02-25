@@ -8,6 +8,7 @@ use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
 use App\Exceptions\CommandExitException;
 use App\Git;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Process;
@@ -76,17 +77,19 @@ class Deploy extends BaseCommand
         if ($deployment->failed()) {
             error('Deployment failed: '.$deployment->failureReason);
 
-            if (confirm('Do you want to edit the build and deploy commands and try again?')) {
-                $this->updateCommands($environment);
+            if ($this->isInteractive()) {
+                if (confirm('Do you want to edit the build and deploy commands and try again?')) {
+                    $this->updateCommands($environment);
 
-                if (confirm('Re-deploy?')) {
-                    Artisan::call('deploy', [
-                        'application' => $app->id,
-                        'environment' => $environment->name,
-                        '--open' => $this->option('open'),
-                    ], $this->output);
+                    if (confirm('Re-deploy?')) {
+                        Artisan::call('deploy', [
+                            'application' => $app->id,
+                            'environment' => $environment->name,
+                            '--open' => $this->option('open'),
+                        ], $this->output);
 
-                    throw new CommandExitException(0);
+                        throw new CommandExitException(0);
+                    }
                 }
             }
 
@@ -98,6 +101,14 @@ class Deploy extends BaseCommand
         if ($this->option('open')) {
             Process::run('open '.$environment->url);
         }
+
+        $this->outputJsonIfWanted([
+            'status' => $deployment->status->value,
+            'message' => $deployment->status->monitorLabel(),
+            'timestamp' => CarbonImmutable::now()->timestamp,
+            'duration' => $deployment->totalTime()->format('%I:%S'),
+            'url' => $environment->url,
+        ]);
 
         outro($environment->url);
     }
@@ -117,6 +128,14 @@ class Deploy extends BaseCommand
             }
 
             $newMessage = $this->getDeploymentMessage($deploymentStatus);
+
+            if (! $this->isInteractive() && $lastMessage !== $deploymentStatus->status->monitorLabel()) {
+                $this->line(json_encode([
+                    'status' => $deploymentStatus->status->value,
+                    'message' => $deploymentStatus->status->monitorLabel(),
+                    'timestamp' => CarbonImmutable::now()->timestamp,
+                ]));
+            }
 
             $updateMessage($newMessage, $lastMessage !== $deploymentStatus->status->monitorLabel());
 
