@@ -5,11 +5,15 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
+use App\Prompts\Renderer;
+use App\Prompts\SuppressedOutput;
 use App\Resolvers\Resolvers;
+use App\Support\DetectsNonInteractiveEnvironments;
 use App\Support\Form;
 use App\Support\ValueResolver;
 use Illuminate\Contracts\Support\Jsonable;
 use Laravel\Prompts\Concerns\Colors;
+use Laravel\Prompts\Prompt;
 use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -22,6 +26,7 @@ use function Laravel\Prompts\error;
 abstract class BaseCommand extends Command
 {
     use Colors;
+    use DetectsNonInteractiveEnvironments;
     use HasAClient;
     use Validates;
 
@@ -45,6 +50,15 @@ abstract class BaseCommand extends Command
     protected function runningAsSubcommand(): bool
     {
         return $this->input instanceof ArrayInput;
+    }
+
+    protected function configurePrompts(InputInterface $input): void
+    {
+        parent::configurePrompts($input);
+
+        if (Renderer::$suppressOutput) {
+            Prompt::setOutput(new SuppressedOutput);
+        }
     }
 
     protected function failAndExit(string $message): void
@@ -116,28 +130,6 @@ abstract class BaseCommand extends Command
         }
 
         return true;
-    }
-
-    protected function isNonInteractiveEnvironment(): bool
-    {
-        $envs = [
-            'CI',
-            'CURSOR',
-            'GITHUB_ACTIONS',
-            'GITLAB_CI',
-            'JENKINS_URL',
-            'CIRCLECI',
-            'TRAVIS',
-            'AGENT_MODE',
-        ];
-
-        foreach ($envs as $env) {
-            if (! empty(getenv($env))) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     protected function outputErrorOrThrow(string $message): void

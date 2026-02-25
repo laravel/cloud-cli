@@ -7,6 +7,7 @@ use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Region;
 use App\Enums\DatabaseClusterPreset;
+use RuntimeException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\number;
@@ -212,5 +213,38 @@ trait CreatesDatabaseCluster
             ->mapWithKeys(fn ($value) => [
                 str_replace('config.', '', $value->key) => $value->value(),
             ])->toArray();
+    }
+
+    protected function createDatabaseClusterWithOptions(string $type, string $preset, string $name, string $region): DatabaseCluster
+    {
+        $enum = DatabaseClusterPreset::tryFrom($type);
+
+        if ($enum === null) {
+            throw new RuntimeException(
+                'Invalid database type. Must be one of: '.implode(', ', array_map(fn (DatabaseClusterPreset $e) => $e->value, DatabaseClusterPreset::cases())),
+            );
+        }
+
+        $presets = $enum->presets();
+
+        if (! array_key_exists($preset, $presets)) {
+            throw new RuntimeException(
+                'Invalid database preset. Must be one of: '.implode(', ', array_keys($presets)),
+            );
+        }
+
+        $config = $presets[$preset];
+
+        return spin(
+            fn () => $this->client->databaseClusters()->create(
+                new CreateDatabaseClusterRequestData(
+                    type: $type,
+                    name: $name,
+                    region: $region,
+                    config: $config,
+                ),
+            ),
+            'Creating database cluster...',
+        );
     }
 }

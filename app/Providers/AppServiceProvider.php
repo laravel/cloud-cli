@@ -62,8 +62,8 @@ class AppServiceProvider extends ServiceProvider
     {
         $manager = $this->app->make(CommandMiddlewareManager::class);
 
-        $manager->register(RequiresAuthToken::class);
         $manager->register(SuppressOutputIfJson::class);
+        $manager->register(RequiresAuthToken::class);
 
         if ($this->app->bound(EventDispatcherInterface::class)) {
             $dispatcher = $this->app->make(EventDispatcherInterface::class);
