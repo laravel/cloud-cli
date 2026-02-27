@@ -93,7 +93,7 @@ enum DatabaseClusterPreset: string
                     ->toString(),
                 $preset['storage'],
                 $preset['retention_days'],
-                Str::plural('day', $preset['retention_days']),
+                str('day')->plural($preset['retention_days']),
             ),
             self::NeonServerlessPostgres18 => fn ($preset) => sprintf(
                 '%s vCPU units · %s · %s',
