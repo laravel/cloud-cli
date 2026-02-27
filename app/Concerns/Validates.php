@@ -21,7 +21,7 @@ trait Validates
      * @param  callable(ValidationErrors): TReturn  $callback
      * @return TReturn
      */
-    protected function loopUntilValid(callable $callback, int $maxAttempts = 10, bool|callable $suppressOutput = false, ?callable $handleNonInteractiveErrors = null): mixed
+    protected function loopUntilValid(callable $callback, int $maxAttempts = 20, bool|callable $suppressOutput = false, ?callable $handleNonInteractiveErrors = null): mixed
     {
         $result = null;
         $this->errors ??= new ValidationErrors;
