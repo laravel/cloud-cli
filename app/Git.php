@@ -94,11 +94,13 @@ class Git
 
     public function remoteRepo(): string
     {
-        return str($this->run(['git', 'remote', 'get-url', 'origin'])->output())
-            ->trim()
-            ->after(':')
-            ->beforeLast('.git')
-            ->toString();
+        $url = str($this->run(['git', 'remote', 'get-url', 'origin'])->output())->trim();
+
+        $repo = $url->contains('://')
+            ? $url->after('://')->after('/')
+            : $url->after(':');
+
+        return $repo->beforeLast('.git')->toString();
     }
 
     public function addAll(): bool
