@@ -3,6 +3,7 @@
 namespace App\Enums;
 
 use Closure;
+use Illuminate\Support\Str;
 
 enum DatabaseClusterPreset: string
 {
@@ -92,7 +93,7 @@ enum DatabaseClusterPreset: string
                     ->toString(),
                 $preset['storage'],
                 $preset['retention_days'],
-                str($preset['retention_days'])->plural('day'),
+                Str::plural('day', $preset['retention_days']),
             ),
             self::NeonServerlessPostgres18 => fn ($preset) => sprintf(
                 '%s vCPU units · %s · %s',
