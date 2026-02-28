@@ -470,8 +470,6 @@ class Ship extends BaseCommand
                     ), 'Updating environment...');
                 },
                 handleNonInteractiveErrors: function ($errors) {
-                    dump($errors);
-
                     if ($errors->messageContains('database', 'please wait')) {
                         Sleep::for(CarbonInterval::seconds(5));
 
