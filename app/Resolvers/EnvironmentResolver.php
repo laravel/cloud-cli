@@ -4,6 +4,7 @@ namespace App\Resolvers;
 
 use App\Client\Resources\Concerns\HasIncludes;
 use App\Dto\Environment;
+use App\Git;
 use App\Resolvers\Concerns\HasAnApplication;
 
 use function Laravel\Prompts\spin;
@@ -23,7 +24,7 @@ class EnvironmentResolver extends Resolver
     public function from(?string $idOrName = null): ?Environment
     {
         $identifier = $idOrName ?? $this->localConfig->environmentId();
-        $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromInput();
+        $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromBranch() ?? $this->fromInput();
 
         if (! $environment) {
             $this->failAndExit('Unable to resolve environment: '.($idOrName ?? 'Provide a valid environment ID or name as an argument.'));
@@ -37,6 +38,14 @@ class EnvironmentResolver extends Resolver
         $this->displayResolved('Environment', $environment->name, $environment->id);
 
         return $environment;
+    }
+
+    public function fromBranch()
+    {
+        $envs = $this->client->environments()->include('branch')->list($this->application()->id)->collect();
+        $localbranch = app(Git::class)->currentBranch();
+
+        return $envs->firstWhere('branch', $localbranch);
     }
 
     public function fromIdentifier(string $identifier): ?Environment
@@ -71,6 +80,7 @@ class EnvironmentResolver extends Resolver
         $selectedEnv = selectWithContext(
             label: 'Environment',
             options: $envs->mapWithKeys(fn ($env) => [$env->id => $env->name])->toArray(),
+            default: $envs->firstWhere('id', $this->application()->defaultEnvironmentId)?->id,
         );
 
         // No need to display the resolved environment name, it will be displayed from the select above

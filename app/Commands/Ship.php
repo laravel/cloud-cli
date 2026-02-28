@@ -419,8 +419,8 @@ class Ship extends BaseCommand
 
         $instanceParams = [
             'uses_scheduler' => true,
-            'uses_sleep_mode' => true,
-            'sleep_timeout' => 5,
+            // 'uses_sleep_mode' => true,
+            // 'sleep_timeout' => 5,
             'uses_octane' => $composer->hasPackage('laravel/octane'),
         ];
 
