@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: mbstring, xml, ctype, json, tokenizer, phar
+          ini-values: phar.readonly=0
+
+      - name: Install Composer dependencies
+        run: composer install --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Build binary
+        run: php cloud app:build --build-version=${{ github.ref_name }}
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v2
+        with:
+          files: builds/cloud
