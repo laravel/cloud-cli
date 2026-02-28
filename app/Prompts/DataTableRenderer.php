@@ -47,7 +47,9 @@ class DataTableRenderer extends Renderer
             $this->withPageCount($prompt, '');
         }
 
-        if (count($tableLines) > 0) {
+        $tableLinesCount = count($tableLines);
+
+        if ($tableLinesCount > 0) {
             $first = true;
 
             foreach ($tableLines as $line) {
@@ -61,12 +63,12 @@ class DataTableRenderer extends Renderer
             }
         } else {
             $this->bullet($this->dim(' No results found.'));
-            $this->lineWithBorder('');
+            $tableLinesCount++;
         }
 
-        $i = count($tableLines);
+        $i = $tableLinesCount;
 
-        // Per page + top line + header line + divider line+ bottom line
+        // Per page + top line + header line + divider line + bottom line
         while ($i < $prompt->perPage + 4) {
             $this->lineWithBorder('');
             $i++;
