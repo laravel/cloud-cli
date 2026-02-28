@@ -82,25 +82,25 @@ class Ship extends BaseCommand
         $repository = $this->git->remoteRepo();
 
         $applications = spin(
-            fn () => $this->client->applications()->withDefaultIncludes()->list(),
+            fn() => $this->client->applications()->withDefaultIncludes()->list(),
             'Checking for existing application...',
         );
 
         $existingApps = $applications->collect()->filter(
-            fn (Application $app) => $app->repositoryFullName === $repository,
+            fn(Application $app) => $app->repositoryFullName === $repository,
         );
 
         if ($existingApps->isNotEmpty()) {
             if (! $this->isInteractive()) {
                 $this->outputErrorOrThrow(
-                    'Repository already has an application. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
+                    'Repository already has an application. Use deploy <application-id> to deploy. Existing: ' . $existingApps->pluck('id')->join(', '),
                 );
             }
 
-            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for this repository.');
+            info('Found ' . $existingApps->count() . ' existing ' . str('application')->plural($existingApps->count()) . ' for this repository.');
 
             $options = $existingApps
-                ->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name])
+                ->mapWithKeys(fn(Application $app) => [$app->id => 'Deploy ' . $app->name])
                 ->collect()
                 ->prepend('Create new application', 'new');
 
@@ -122,7 +122,7 @@ class Ship extends BaseCommand
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
 
         $application = $this->isInteractive()
-            ? $this->loopUntilValid(fn () => $this->createApplication($defaultRegion, $repository))
+            ? $this->loopUntilValid(fn() => $this->createApplication($defaultRegion, $repository))
             : $this->createApplicationNonInteractively($repository, $defaultRegion);
 
         $this->tryToSetAvatar($application);
@@ -138,11 +138,11 @@ class Ship extends BaseCommand
             $this->applyOpinionatedOptions($environment);
         } else {
             $this->loopUntilValid(
-                fn () => $this->pushCustomEnvironmentVariables($application),
+                fn() => $this->pushCustomEnvironmentVariables($application),
             );
 
             $this->loopUntilValid(
-                fn () => $this->collectOptionsToEnable($environment),
+                fn() => $this->collectOptionsToEnable($environment),
             );
 
             success($application->url());
@@ -171,12 +171,12 @@ class Ship extends BaseCommand
 
         if (confirm('Open site in browser?')) {
             $isReady = spin(
-                fn () => $this->waitForUrlToBeReady($environment),
+                fn() => $this->waitForUrlToBeReady($environment),
                 'Waiting for site to be ready...',
             );
 
             if ($isReady) {
-                Process::run('open '.$environment->url);
+                Process::run('open ' . $environment->url);
             } else {
                 warning('It looks like there is an error in your deployed site');
 
@@ -193,7 +193,7 @@ class Ship extends BaseCommand
             }
         }
 
-        outro('Shipped: '.$environment->url);
+        outro('Shipped: ' . $environment->url);
     }
 
     protected function tryToSetAvatar(Application $application): void
@@ -243,7 +243,7 @@ class Ship extends BaseCommand
     {
         $this->form()->prompt(
             'name',
-            fn ($resolver) => $resolver->fromInput(fn ($value) => text(
+            fn($resolver) => $resolver->fromInput(fn($value) => text(
                 label: 'Application name',
                 default: $value ?? str($this->git->remoteRepo())->afterLast('/')->toString(),
                 required: true,
@@ -252,16 +252,16 @@ class Ship extends BaseCommand
 
         $this->form()->prompt(
             'region',
-            fn ($resolver) => $resolver->fromInput(function ($value) use ($defaultRegion) {
+            fn($resolver) => $resolver->fromInput(function ($value) use ($defaultRegion) {
                 $regions = spin(
-                    fn () => $this->client->meta()->regions(),
+                    fn() => $this->client->meta()->regions(),
                     'Fetching regions...',
                 );
 
                 return select(
                     label: 'Region',
                     options: collect($regions)->mapWithKeys(
-                        fn (Region $region) => [
+                        fn(Region $region) => [
                             $region->value => $region->label,
                         ],
                     ),
@@ -271,7 +271,7 @@ class Ship extends BaseCommand
         );
 
         return dynamicSpinner(
-            fn () => $this->client->applications()->create(
+            fn() => $this->client->applications()->create(
                 new CreateApplicationRequestData(
                     repository: $repository,
                     name: $this->form()->get('name'),
@@ -367,8 +367,8 @@ class Ship extends BaseCommand
 
         if (count($instanceParams) > 0) {
             $this->loopUntilValid(
-                fn () => spin(
-                    fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
+                fn() => spin(
+                    fn() => $this->client->instances()->update(new UpdateInstanceRequestData(
                         instanceId: $environment->instances[0],
                         usesScheduler: $instanceParams['uses_scheduler'] ?? null,
                         usesOctane: $instanceParams['uses_octane'] ?? null,
@@ -390,7 +390,7 @@ class Ship extends BaseCommand
                     }
 
                     return spin(
-                        fn () => $this->client->environments()->update(
+                        fn() => $this->client->environments()->update(
                             new UpdateEnvironmentRequestData(
                                 environmentId: $environment->id,
                                 databaseSchemaId: $environmentParams['database_schema_id'] ?? null,
@@ -419,7 +419,7 @@ class Ship extends BaseCommand
 
         $instanceParams = [
             'uses_scheduler' => true,
-            // 'uses_sleep_mode' => true,
+            'uses_sleep_mode' => false,
             // 'sleep_timeout' => 5,
             'uses_octane' => $composer->hasPackage('laravel/octane'),
         ];
@@ -459,7 +459,7 @@ class Ship extends BaseCommand
                         Sleep::for(CarbonInterval::seconds(5));
                     }
 
-                    return spin(fn () => $this->client->environments()->update(
+                    return spin(fn() => $this->client->environments()->update(
                         new UpdateEnvironmentRequestData(
                             environmentId: $environment->id,
                             databaseSchemaId: $environmentParams['database_schema_id'] ?? null,
@@ -503,9 +503,9 @@ class Ship extends BaseCommand
             return $input;
         }
 
-        $validValues = implode(', ', [...array_keys($aliases), ...array_map(fn (DatabaseClusterPreset $e) => $e->value, DatabaseClusterPreset::cases())]);
+        $validValues = implode(', ', [...array_keys($aliases), ...array_map(fn(DatabaseClusterPreset $e) => $e->value, DatabaseClusterPreset::cases())]);
 
-        $this->outputErrorOrThrow('Invalid --database value "'.$input.'". Must be one of: '.$validValues);
+        $this->outputErrorOrThrow('Invalid --database value "' . $input . '". Must be one of: ' . $validValues);
 
         return null;
     }
@@ -517,13 +517,13 @@ class Ship extends BaseCommand
         $normalized = ucfirst(strtolower($input));
 
         if (! in_array($normalized, $validPresets)) {
-            $this->outputErrorOrThrow('Invalid --database-preset value "'.$input.'". Must be one of: '.implode(', ', $validPresets).' (case-insensitive)');
+            $this->outputErrorOrThrow('Invalid --database-preset value "' . $input . '". Must be one of: ' . implode(', ', $validPresets) . ' (case-insensitive)');
         }
 
         $preset = DatabaseClusterPreset::from($type);
 
         if (! array_key_exists($normalized, $preset->presets())) {
-            $this->outputErrorOrThrow('Preset "'.$normalized.'" is not available for database type "'.$type.'".');
+            $this->outputErrorOrThrow('Preset "' . $normalized . '" is not available for database type "' . $type . '".');
         }
 
         return $normalized;
@@ -532,7 +532,7 @@ class Ship extends BaseCommand
     protected function provisionDatabaseOpinionated(): ?string
     {
         $types = $this->client->databaseClusters()->types();
-        $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
+        $types = collect($types)->filter(fn(DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
         $resolvedType = $this->resolveDatabaseType();
 
@@ -544,7 +544,7 @@ class Ship extends BaseCommand
             }
 
             if ($type === null) {
-                $this->outputErrorOrThrow('Database type "'.$resolvedType.'" is not available from the API.');
+                $this->outputErrorOrThrow('Database type "' . $resolvedType . '" is not available from the API.');
             }
         }
 
@@ -563,7 +563,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => $this->createDatabaseWithName($cluster, $databaseName)->id,
+            fn() => $this->createDatabaseWithName($cluster, $databaseName)->id,
             handleNonInteractiveErrors: function ($errors) {
                 if ($errors->messageContains('database', 'please wait')) {
                     Sleep::for(CarbonInterval::seconds(5));
@@ -603,7 +603,7 @@ class Ship extends BaseCommand
             return null;
         }
 
-        $options = $applications->collect()->mapWithKeys(fn (WebsocketApplication $application) => [$application->id => $application->name]);
+        $options = $applications->collect()->mapWithKeys(fn(WebsocketApplication $application) => [$application->id => $application->name]);
         $options->prepend('Create new websocket application', 'new');
 
         $application = select(
@@ -616,7 +616,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => $this->createWebSocketApplication($cluster, []),
+            fn() => $this->createWebSocketApplication($cluster, []),
         );
     }
 
@@ -632,14 +632,14 @@ class Ship extends BaseCommand
 
             if ($createWebsocketCluster) {
                 return $this->loopUntilValid(
-                    fn () => $this->createWebSocketCluster(),
+                    fn() => $this->createWebSocketCluster(),
                 );
             }
 
             return null;
         }
 
-        $options = $clusters->collect()->mapWithKeys(fn (WebsocketCluster $cluster) => [$cluster->id => $cluster->name]);
+        $options = $clusters->collect()->mapWithKeys(fn(WebsocketCluster $cluster) => [$cluster->id => $cluster->name]);
         $options->prepend('Create new websocket cluster', 'new');
 
         $cluster = select(
@@ -654,7 +654,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => $this->createWebSocketCluster($this->getWebSocketClusterDefaults()),
+            fn() => $this->createWebSocketCluster($this->getWebSocketClusterDefaults()),
         );
     }
 
@@ -668,7 +668,7 @@ class Ship extends BaseCommand
 
     protected function getDatabase(DatabaseCluster $database): ?Database
     {
-        $options = collect($database->schemas)->mapWithKeys(fn (Database $schema) => [$schema->id => $schema->name]);
+        $options = collect($database->schemas)->mapWithKeys(fn(Database $schema) => [$schema->id => $schema->name]);
         $options->prepend('Create new database', 'new');
 
         $schema = select(
@@ -683,7 +683,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => $this->createDatabase($database),
+            fn() => $this->createDatabase($database),
         );
     }
 
@@ -699,14 +699,14 @@ class Ship extends BaseCommand
 
             if ($createDatabase) {
                 return $this->loopUntilValid(
-                    fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
+                    fn() => $this->createDatabaseCluster($this->databaseClusterDefaults()),
                 );
             }
 
             return null;
         }
 
-        $options = $databases->collect()->mapWithKeys(fn (DatabaseCluster $database) => [$database->id => $database->name]);
+        $options = $databases->collect()->mapWithKeys(fn(DatabaseCluster $database) => [$database->id => $database->name]);
         $options->prepend('Create new database cluster', 'new');
 
         $database = select(
@@ -721,7 +721,7 @@ class Ship extends BaseCommand
         }
 
         return $this->loopUntilValid(
-            fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
+            fn() => $this->createDatabaseCluster($this->databaseClusterDefaults()),
         );
     }
 
@@ -735,7 +735,7 @@ class Ship extends BaseCommand
 
     protected function pushCustomEnvironmentVariables(Application $application): void
     {
-        $envPath = getcwd().'/.env';
+        $envPath = getcwd() . '/.env';
 
         if (! file_exists($envPath)) {
             return;
@@ -753,8 +753,8 @@ class Ship extends BaseCommand
             return;
         }
 
-        $varOptions = collect($diff)->mapWithKeys(fn ($key) => [
-            $key => $key.$this->dim(str($variables[$key])->limit(5)->prepend(' (')->append(')')),
+        $varOptions = collect($diff)->mapWithKeys(fn($key) => [
+            $key => $key . $this->dim(str($variables[$key])->limit(5)->prepend(' (')->append(')')),
         ]);
 
         $varsToAdd = multiselect(
@@ -766,7 +766,7 @@ class Ship extends BaseCommand
             return;
         }
 
-        $varsToAdd = collect($varsToAdd)->map(fn ($key) => ['key' => $key, 'value' => $variables[$key]]);
+        $varsToAdd = collect($varsToAdd)->map(fn($key) => ['key' => $key, 'value' => $variables[$key]]);
 
         dynamicSpinner(
             function () use ($application, $varsToAdd) {
