@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
-use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Process;
 use Saloon\Exceptions\Request\RequestException as SaloonRequestException;
 use Socket;
@@ -199,20 +198,28 @@ class Auth extends BaseCommand implements NoAuthRequired
         if (preg_match('/GET \/[^?\s]*[?&]exchange_code=([^&\s]+)/', $request, $matches)) {
             $this->exchangeCode = urldecode($matches[1]);
 
+            ob_start();
+            require __DIR__.'/../../resources/html/auth-success.php';
+            $successHtml = ob_get_clean();
+
             $response = [
                 'HTTP/1.1 200 OK',
                 'Content-Type: text/html',
                 '',
-                File::get(resource_path('html/auth-success.html')),
+                $successHtml,
             ];
 
             socket_write($clientSocket, implode("\r\n", $response));
         } else {
+            ob_start();
+            require __DIR__.'/../../resources/html/auth-failure.php';
+            $failureHtml = ob_get_clean();
+
             $response = [
                 'HTTP/1.1 400 Bad Request',
                 'Content-Type: text/html',
                 '',
-                File::get(resource_path('html/auth-failure.html')),
+                $failureHtml,
             ];
 
             socket_write($clientSocket, implode("\r\n", $response));
