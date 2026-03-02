@@ -133,7 +133,6 @@ php cloud app:build --build-version="$NEW_TAG"
 
 if [ -f ".env.bak" ]; then
     mv .env.bak .env
-    rm .env.bak
     info "Restored .env from .env.bak"
 fi
 
