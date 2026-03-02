@@ -22,6 +22,8 @@
     "require": {
         "php": "^8.2",
         "illuminate/http": "^12.17",
+        "illuminate/translation": "^12.53",
+        "illuminate/validation": "^12.53",
         "laravel-zero/phar-updater": "^1.4",
         "saloonphp/cache-plugin": "^3.0",
         "saloonphp/pagination-plugin": "^2.0",

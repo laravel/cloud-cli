@@ -4,8 +4,68 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e6c533fd228d234f16c02f7cb9f03edd",
+    "content-hash": "ce069f27556d80099cdbed704d2704db",
     "packages": [
+        {
+            "name": "brick/math",
+            "version": "0.14.8",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/brick/math.git",
+                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/brick/math/zipball/63422359a44b7f06cae63c3b429b59e8efcc0629",
+                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "^2.2",
+                "phpstan/phpstan": "2.1.22",
+                "phpunit/phpunit": "^11.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Brick\\Math\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "Arbitrary-precision arithmetic library",
+            "keywords": [
+                "Arbitrary-precision",
+                "BigInteger",
+                "BigRational",
+                "arithmetic",
+                "bigdecimal",
+                "bignum",
+                "bignumber",
+                "brick",
+                "decimal",
+                "integer",
+                "math",
+                "mathematics",
+                "rational"
+            ],
+            "support": {
+                "issues": "https://github.com/brick/math/issues",
+                "source": "https://github.com/brick/math/tree/0.14.8"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/BenMorel",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-02-10T14:33:43+00:00"
+        },
         {
             "name": "carbonphp/carbon-doctrine-types",
             "version": "3.2.0",
@@ -212,6 +272,150 @@
                 }
             ],
             "time": "2025-08-10T19:31:58+00:00"
+        },
+        {
+            "name": "doctrine/lexer",
+            "version": "3.0.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/doctrine/lexer.git",
+                "reference": "31ad66abc0fc9e1a1f2d9bc6a42668d2fbbcd6dd"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/doctrine/lexer/zipball/31ad66abc0fc9e1a1f2d9bc6a42668d2fbbcd6dd",
+                "reference": "31ad66abc0fc9e1a1f2d9bc6a42668d2fbbcd6dd",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "doctrine/coding-standard": "^12",
+                "phpstan/phpstan": "^1.10",
+                "phpunit/phpunit": "^10.5",
+                "psalm/plugin-phpunit": "^0.18.3",
+                "vimeo/psalm": "^5.21"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Doctrine\\Common\\Lexer\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Guilherme Blanco",
+                    "email": "guilhermeblanco@gmail.com"
+                },
+                {
+                    "name": "Roman Borschel",
+                    "email": "roman@code-factory.org"
+                },
+                {
+                    "name": "Johannes Schmitt",
+                    "email": "schmittjoh@gmail.com"
+                }
+            ],
+            "description": "PHP Doctrine Lexer parser library that can be used in Top-Down, Recursive Descent Parsers.",
+            "homepage": "https://www.doctrine-project.org/projects/lexer.html",
+            "keywords": [
+                "annotations",
+                "docblock",
+                "lexer",
+                "parser",
+                "php"
+            ],
+            "support": {
+                "issues": "https://github.com/doctrine/lexer/issues",
+                "source": "https://github.com/doctrine/lexer/tree/3.0.1"
+            },
+            "funding": [
+                {
+                    "url": "https://www.doctrine-project.org/sponsorship.html",
+                    "type": "custom"
+                },
+                {
+                    "url": "https://www.patreon.com/phpdoctrine",
+                    "type": "patreon"
+                },
+                {
+                    "url": "https://tidelift.com/funding/github/packagist/doctrine%2Flexer",
+                    "type": "tidelift"
+                }
+            ],
+            "time": "2024-02-05T11:56:58+00:00"
+        },
+        {
+            "name": "egulias/email-validator",
+            "version": "4.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/egulias/EmailValidator.git",
+                "reference": "d42c8731f0624ad6bdc8d3e5e9a4524f68801cfa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/egulias/EmailValidator/zipball/d42c8731f0624ad6bdc8d3e5e9a4524f68801cfa",
+                "reference": "d42c8731f0624ad6bdc8d3e5e9a4524f68801cfa",
+                "shasum": ""
+            },
+            "require": {
+                "doctrine/lexer": "^2.0 || ^3.0",
+                "php": ">=8.1",
+                "symfony/polyfill-intl-idn": "^1.26"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.2",
+                "vimeo/psalm": "^5.12"
+            },
+            "suggest": {
+                "ext-intl": "PHP Internationalization Libraries are required to use the SpoofChecking validation"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "4.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Egulias\\EmailValidator\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Eduardo Gulias Davis"
+                }
+            ],
+            "description": "A library for validating emails against several RFCs",
+            "homepage": "https://github.com/egulias/EmailValidator",
+            "keywords": [
+                "email",
+                "emailvalidation",
+                "emailvalidator",
+                "validation",
+                "validator"
+            ],
+            "support": {
+                "issues": "https://github.com/egulias/EmailValidator/issues",
+                "source": "https://github.com/egulias/EmailValidator/tree/4.0.4"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/egulias",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-03-06T22:45:56+00:00"
         },
         {
             "name": "fruitcake/php-cors",
@@ -802,6 +1006,68 @@
             "time": "2025-05-13T15:08:45+00:00"
         },
         {
+            "name": "illuminate/container",
+            "version": "v12.53.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/container.git",
+                "reference": "648307e8f54bcd9450c858f99abd11bc50c364a0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/container/zipball/648307e8f54bcd9450c858f99abd11bc50c364a0",
+                "reference": "648307e8f54bcd9450c858f99abd11bc50c364a0",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^12.0",
+                "illuminate/reflection": "^12.0",
+                "php": "^8.2",
+                "psr/container": "^1.1.1|^2.0.1",
+                "symfony/polyfill-php84": "^1.33",
+                "symfony/polyfill-php85": "^1.33"
+            },
+            "provide": {
+                "psr/container-implementation": "1.1|2.0"
+            },
+            "suggest": {
+                "illuminate/auth": "Required to use the Auth attribute",
+                "illuminate/cache": "Required to use the Cache attribute",
+                "illuminate/config": "Required to use the Config attribute",
+                "illuminate/database": "Required to use the DB attribute",
+                "illuminate/filesystem": "Required to use the Storage attribute",
+                "illuminate/log": "Required to use the Log or Context attributes"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "12.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Container\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Container package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-02-12T16:13:27+00:00"
+        },
+        {
             "name": "illuminate/contracts",
             "version": "v12.53.0",
             "source": {
@@ -1211,6 +1477,120 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-02-23T15:44:06+00:00"
+        },
+        {
+            "name": "illuminate/translation",
+            "version": "v12.53.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/translation.git",
+                "reference": "18aa24aba6f2ab2447b9b903ae7360725fe5bdd0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/translation/zipball/18aa24aba6f2ab2447b9b903ae7360725fe5bdd0",
+                "reference": "18aa24aba6f2ab2447b9b903ae7360725fe5bdd0",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/collections": "^12.0",
+                "illuminate/contracts": "^12.0",
+                "illuminate/filesystem": "^12.0",
+                "illuminate/macroable": "^12.0",
+                "illuminate/support": "^12.0",
+                "php": "^8.2"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "12.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Translation\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Translation package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-02-06T12:12:31+00:00"
+        },
+        {
+            "name": "illuminate/validation",
+            "version": "v12.53.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/illuminate/validation.git",
+                "reference": "bfd544135cb4784c8664a0b5de7cf16830768e8b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/illuminate/validation/zipball/bfd544135cb4784c8664a0b5de7cf16830768e8b",
+                "reference": "bfd544135cb4784c8664a0b5de7cf16830768e8b",
+                "shasum": ""
+            },
+            "require": {
+                "brick/math": "^0.11|^0.12|^0.13|^0.14",
+                "egulias/email-validator": "^3.2.5|^4.0",
+                "ext-filter": "*",
+                "ext-mbstring": "*",
+                "illuminate/collections": "^12.0",
+                "illuminate/container": "^12.0",
+                "illuminate/contracts": "^12.0",
+                "illuminate/macroable": "^12.0",
+                "illuminate/support": "^12.0",
+                "illuminate/translation": "^12.0",
+                "php": "^8.2",
+                "symfony/http-foundation": "^7.2",
+                "symfony/mime": "^7.2",
+                "symfony/polyfill-php83": "^1.33"
+            },
+            "suggest": {
+                "illuminate/database": "Required to use the database presence verifier (^12.0).",
+                "ramsey/uuid": "Required to use Validator::validateUuid() (^4.7)."
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "12.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Illuminate\\Validation\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Taylor Otwell",
+                    "email": "taylor@laravel.com"
+                }
+            ],
+            "description": "The Illuminate Validation package.",
+            "homepage": "https://laravel.com",
+            "support": {
+                "issues": "https://github.com/laravel/framework/issues",
+                "source": "https://github.com/laravel/framework"
+            },
+            "time": "2026-02-20T15:20:18+00:00"
         },
         {
             "name": "laravel-zero/phar-updater",
@@ -4499,66 +4879,6 @@
             "time": "2026-01-08T08:02:38+00:00"
         },
         {
-            "name": "brick/math",
-            "version": "0.14.8",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/brick/math.git",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/brick/math/zipball/63422359a44b7f06cae63c3b429b59e8efcc0629",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629",
-                "shasum": ""
-            },
-            "require": {
-                "php": "^8.2"
-            },
-            "require-dev": {
-                "php-coveralls/php-coveralls": "^2.2",
-                "phpstan/phpstan": "2.1.22",
-                "phpunit/phpunit": "^11.5"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Brick\\Math\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Arbitrary-precision arithmetic library",
-            "keywords": [
-                "Arbitrary-precision",
-                "BigInteger",
-                "BigRational",
-                "arithmetic",
-                "bigdecimal",
-                "bignum",
-                "bignumber",
-                "brick",
-                "decimal",
-                "integer",
-                "math",
-                "mathematics",
-                "rational"
-            ],
-            "support": {
-                "issues": "https://github.com/brick/math/issues",
-                "source": "https://github.com/brick/math/tree/0.14.8"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/BenMorel",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-02-10T14:33:43+00:00"
-        },
-        {
             "name": "dragonmantank/cron-expression",
             "version": "v3.6.0",
             "source": {
@@ -5095,68 +5415,6 @@
                 "source": "https://github.com/laravel/framework"
             },
             "time": "2026-02-20T15:20:53+00:00"
-        },
-        {
-            "name": "illuminate/container",
-            "version": "v12.53.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/illuminate/container.git",
-                "reference": "648307e8f54bcd9450c858f99abd11bc50c364a0"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/illuminate/container/zipball/648307e8f54bcd9450c858f99abd11bc50c364a0",
-                "reference": "648307e8f54bcd9450c858f99abd11bc50c364a0",
-                "shasum": ""
-            },
-            "require": {
-                "illuminate/contracts": "^12.0",
-                "illuminate/reflection": "^12.0",
-                "php": "^8.2",
-                "psr/container": "^1.1.1|^2.0.1",
-                "symfony/polyfill-php84": "^1.33",
-                "symfony/polyfill-php85": "^1.33"
-            },
-            "provide": {
-                "psr/container-implementation": "1.1|2.0"
-            },
-            "suggest": {
-                "illuminate/auth": "Required to use the Auth attribute",
-                "illuminate/cache": "Required to use the Cache attribute",
-                "illuminate/config": "Required to use the Config attribute",
-                "illuminate/database": "Required to use the DB attribute",
-                "illuminate/filesystem": "Required to use the Storage attribute",
-                "illuminate/log": "Required to use the Log or Context attributes"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "12.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Illuminate\\Container\\": ""
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Taylor Otwell",
-                    "email": "taylor@laravel.com"
-                }
-            ],
-            "description": "The Illuminate Container package.",
-            "homepage": "https://laravel.com",
-            "support": {
-                "issues": "https://github.com/laravel/framework/issues",
-                "source": "https://github.com/laravel/framework"
-            },
-            "time": "2026-02-12T16:13:27+00:00"
         },
         {
             "name": "illuminate/events",
