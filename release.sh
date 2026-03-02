@@ -124,7 +124,7 @@ if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
 fi
 
 if [ -f ".env" ]; then
-    cp .env .env.bak
+    mv .env .env.bak
     info "Backed up .env to .env.bak"
 fi
 
@@ -132,7 +132,7 @@ info "Building binary..."
 php cloud app:build --build-version="$NEW_TAG"
 
 if [ -f ".env.bak" ]; then
-    cp .env.bak .env
+    mv .env.bak .env
     rm .env.bak
     info "Restored .env from .env.bak"
 fi
