@@ -116,23 +116,30 @@ echo ""
 echo -e "New tag will be: ${BOLD}${GREEN}${NEW_TAG}${RESET}"
 echo ""
 
-read -r -p "Confirm and push tag $NEW_TAG? [y/N] " CONFIRM
+read -r -p "Confirm and release $NEW_TAG? [y/N] " CONFIRM
 
 if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     echo "Aborted."
     exit 0
 fi
 
-git tag -a "$NEW_TAG" -m "Release $NEW_TAG"
-git push origin "$NEW_TAG"
+info "Building binary..."
+php cloud app:build --build-version="$NEW_TAG"
+
+info "Committing build..."
+git add builds/cloud
+git commit -m "Build $NEW_TAG"
+git push origin main
+
+info "Creating release $NEW_TAG..."
+gh release create "$NEW_TAG" builds/cloud --title "$NEW_TAG" --generate-notes
 
 REMOTE_URL=$(git remote get-url origin)
 REPO_PATH=$(echo "$REMOTE_URL" | sed -E 's|.*github\.com[:/]||;s|\.git$||')
 REPO_URL="https://github.com/${REPO_PATH}"
 
 echo ""
-success "Tag $NEW_TAG created and pushed. The release workflow will now build the binary."
+success "Release $NEW_TAG created."
 echo ""
 echo -e "  Release:  ${CYAN}${REPO_URL}/releases/tag/${NEW_TAG}${RESET}"
-echo -e "  Actions:  ${CYAN}${REPO_URL}/actions${RESET}"
 echo ""
