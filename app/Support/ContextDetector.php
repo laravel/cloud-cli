@@ -6,6 +6,14 @@ use App\Enums\Agent;
 
 class ContextDetector
 {
+    protected static ?Agent $resolvedAgent = null;
+
+    protected static bool $agentResolved = false;
+
+    protected static ?string $resolvedTerminal = null;
+
+    protected static bool $terminalResolved = false;
+
     protected static array $envVars = [
         'CLAUDECODE' => Agent::ClaudeCode,
         'CODEX_THREAD_ID' => Agent::Codex,
@@ -32,18 +40,35 @@ class ContextDetector
 
     public static function agent(): ?Agent
     {
-        return static::agentFromEnv() ?? static::agentFromProcessTree();
+        if (! static::$agentResolved) {
+            static::$resolvedAgent = static::agentFromEnv() ?? static::agentFromProcessTree();
+            static::$agentResolved = true;
+        }
+
+        return static::$resolvedAgent;
     }
 
     public static function terminal(): ?string
     {
-        $termProgram = getenv('TERM_PROGRAM');
+        if (! static::$terminalResolved) {
+            $termProgram = getenv('TERM_PROGRAM');
 
-        if ($termProgram === false || $termProgram === '') {
-            return null;
+            static::$resolvedTerminal = ($termProgram === false || $termProgram === '')
+                ? null
+                : (static::$terminals[$termProgram] ?? $termProgram);
+
+            static::$terminalResolved = true;
         }
 
-        return static::$terminals[$termProgram] ?? $termProgram;
+        return static::$resolvedTerminal;
+    }
+
+    public static function flush(): void
+    {
+        static::$agentResolved = false;
+        static::$resolvedAgent = null;
+        static::$terminalResolved = false;
+        static::$resolvedTerminal = null;
     }
 
     protected static function agentFromEnv(): ?Agent
@@ -61,7 +86,9 @@ class ContextDetector
     {
         $pid = getmypid();
 
-        while ($pid > 1) {
+        $depth = 0;
+
+        while ($pid > 1 && $depth++ < 15) {
             $comm = @shell_exec("ps -o comm= -p {$pid} 2>/dev/null");
 
             if ($comm === null || $comm === false) {

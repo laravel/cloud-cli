@@ -21,6 +21,7 @@ use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
+use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
@@ -32,7 +33,6 @@ use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\HasPagination;
 use Saloon\PaginationPlugin\PagedPaginator;
 use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
-use App\Support\ContextDetector;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use SensitiveParameter;
 
