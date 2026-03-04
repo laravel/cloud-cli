@@ -32,6 +32,7 @@ use Saloon\Http\Response;
 use Saloon\PaginationPlugin\Contracts\HasPagination;
 use Saloon\PaginationPlugin\PagedPaginator;
 use Saloon\PaginationPlugin\Paginator as SaloonPaginator;
+use App\Support\ContextDetector;
 use Saloon\Traits\Plugins\AlwaysThrowOnErrors;
 use SensitiveParameter;
 
@@ -84,10 +85,20 @@ class Connector extends SaloonConnector implements HasPagination
 
     protected function defaultHeaders(): array
     {
-        return [
+        $headers = [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'application/vnd.api+json',
         ];
+
+        if ($terminal = ContextDetector::terminal()) {
+            $headers['X-Cloud-Cli-Terminal'] = $terminal;
+        }
+
+        if ($agent = ContextDetector::agent()) {
+            $headers['X-Cloud-Cli-Agent'] = $agent->value;
+        }
+
+        return $headers;
     }
 
     public function applications(): ApplicationsResource
