@@ -4,6 +4,8 @@ namespace App\Commands;
 
 use App\Client\Requests\RunCommandRequestData;
 use App\Prompts\MonitorCommand;
+use Carbon\CarbonInterval;
+use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -84,7 +86,7 @@ class Tinker extends BaseCommand
 
         while (filemtime($this->codeTmpFile) === $this->tmpFileLastModifiedAt) {
             clearstatcache(true, $this->codeTmpFile);
-            usleep(100_000);
+            Sleep::for(CarbonInterval::milliseconds(100));
         }
 
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
