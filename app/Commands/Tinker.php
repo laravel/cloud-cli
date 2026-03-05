@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\RunCommandRequestData;
+use App\Exceptions\CommandExitException;
 use App\Prompts\MonitorCommand;
 use Carbon\CarbonInterval;
 use Exception;
@@ -34,6 +35,8 @@ class Tinker extends BaseCommand
 
     protected const RECENT_SAVE_WINDOW_SECONDS = 2;
 
+    protected ?string $editorUrl = null;
+
     public function handle()
     {
         $this->ensureClient();
@@ -42,15 +45,9 @@ class Tinker extends BaseCommand
 
         $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
 
-        if ($this->option('editor') && ! isset($this->editorHrefs[$this->option('editor')])) {
-            error('Unknown editor. Valid values:');
-            // TODO: Improve this, not sure what it should be
-            info(implode(', ', array_keys($this->editorHrefs)));
+        $this->resolveEditorUrl();
 
-            return self::FAILURE;
-        }
-
-        if ($this->option('editor')) {
+        if ($this->editorUrl) {
             info('Every time you save the file, the code will be executed.');
         }
 
@@ -65,7 +62,7 @@ class Tinker extends BaseCommand
                 continue;
             }
 
-            if ($this->option('editor')) {
+            if ($this->editorUrl) {
                 codeBlock($code);
             }
 
@@ -90,6 +87,39 @@ class Tinker extends BaseCommand
                 $command,
                 showCommand: false,
             ))->display();
+        }
+    }
+
+    protected function resolveEditorUrl()
+    {
+        if ($this->option('editor') === null) {
+            // They didn't pass an editor option
+            return null;
+        }
+
+        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
+
+        if (! $editorKey) {
+            return null;
+        }
+
+        $editorKey = match ($editorKey) {
+            'code' => 'vscode',
+            'subl' => 'sublime',
+            'nvim' => 'neovim',
+            'vim', 'vi' => 'vim',
+            'codium' => 'vscodium',
+            default => $editorKey,
+        };
+
+        $this->editorUrl = $this->editorHrefs[$editorKey] ?? null;
+
+        if (! $this->editorUrl) {
+            error('Unknown editor. Valid values:');
+            // TODO: Improve this, not sure what it should be
+            info(implode(', ', array_keys($this->editorHrefs)));
+
+            throw new CommandExitException(self::FAILURE);
         }
     }
 
@@ -245,7 +275,7 @@ class Tinker extends BaseCommand
             'open '.str_replace(
                 ['{file}', '{line}'],
                 [$this->codeTmpFile, 3],
-                $this->editorHrefs[$this->option('editor')],
+                $this->editorUrl,
             ),
         );
 
