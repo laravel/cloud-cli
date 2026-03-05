@@ -8,6 +8,7 @@ beforeEach(function () {
 });
 
 afterEach(function () {
+    putenv('AMP_CURRENT_THREAD_ID');
     putenv('CLAUDECODE');
     putenv('CODEX_THREAD_ID');
     putenv('CURSOR_AGENT');
@@ -25,7 +26,15 @@ it('detects agent from env vars', function (string $envVar, string $value, Agent
     'Codex' => ['CODEX_THREAD_ID', 'thread-123', Agent::Codex],
     'Cursor' => ['CURSOR_AGENT', '1', Agent::Cursor],
     'OpenCode' => ['OPENCODE', '1', Agent::OpenCode],
+    'Amp' => ['AMP_CURRENT_THREAD_ID', 'T-019cbc12-e5f3-7578-bdb2-535b085bbfff', Agent::Amp],
 ]);
+
+it('detects amp over claude code when both env vars are set', function () {
+    putenv('CLAUDECODE=1');
+    putenv('AMP_CURRENT_THREAD_ID=T-019cbc12-e5f3-7578-bdb2-535b085bbfff');
+
+    expect(ContextDetector::agent())->toBe(Agent::Amp);
+});
 
 it('returns null agent when no env vars are set', function () {
     expect(ContextDetector::agent())->toBeNull();

@@ -8,4 +8,5 @@ enum Agent: string
     case Codex = 'codex';
     case Cursor = 'cursor';
     case OpenCode = 'opencode';
+    case Amp = 'amp';
 }

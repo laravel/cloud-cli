@@ -15,6 +15,7 @@ class ContextDetector
     protected static bool $terminalResolved = false;
 
     protected static array $envVars = [
+        'AMP_CURRENT_THREAD_ID' => Agent::Amp,
         'CLAUDECODE' => Agent::ClaudeCode,
         'CODEX_THREAD_ID' => Agent::Codex,
         'CURSOR_AGENT' => Agent::Cursor,
