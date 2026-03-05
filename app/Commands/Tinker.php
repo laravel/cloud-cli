@@ -43,9 +43,9 @@ class Tinker extends BaseCommand
 
         intro('Tinker');
 
-        $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
-
         $this->resolveEditorUrl();
+        dd($this->editorUrl);
+        $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
 
         if ($this->editorUrl) {
             info('Every time you save the file, the code will be executed.');
@@ -92,12 +92,11 @@ class Tinker extends BaseCommand
 
     protected function resolveEditorUrl()
     {
-        if ($this->option('editor') === null) {
-            // They didn't pass an editor option
+        if ($this->input->getParameterOption('--editor', false) === false) {
             return null;
         }
 
-        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
+        $editorKey = $this->option('editor') ?? getenv('VISUAL') ?: getenv('EDITOR');
 
         if (! $editorKey) {
             return null;
@@ -125,7 +124,7 @@ class Tinker extends BaseCommand
 
     protected function getCodeForCommand()
     {
-        if ($this->option('editor')) {
+        if ($this->editorUrl) {
             return $this->openInEditor();
         }
 
