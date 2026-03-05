@@ -6,9 +6,11 @@ use App\Client\Requests\RunCommandRequestData;
 use App\Prompts\MonitorCommand;
 use Carbon\CarbonInterval;
 use Exception;
+use Illuminate\Foundation\Concerns\ResolvesDumpSource;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -18,9 +20,11 @@ use function Laravel\Prompts\warning;
 
 class Tinker extends BaseCommand
 {
+    use ResolvesDumpSource;
+
     protected $signature = 'tinker
         {environment? : The environment ID or name}
-        {--editor : Open the code in the editor}';
+        {--editor= : Open the code in the editor}';
 
     protected $description = 'Tinker in your Laravel Cloud environment';
 
@@ -37,6 +41,14 @@ class Tinker extends BaseCommand
         intro('Tinker');
 
         $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+
+        if ($this->option('editor') && ! isset($this->editorHrefs[$this->option('editor')])) {
+            error('Unknown editor. Valid values:');
+            // TODO: Improve this, not sure what it should be
+            info(implode(', ', array_keys($this->editorHrefs)));
+
+            return self::FAILURE;
+        }
 
         if ($this->option('editor')) {
             info('Every time you save the file, the code will be executed.');
@@ -229,7 +241,13 @@ class Tinker extends BaseCommand
 
         file_put_contents($this->codeTmpFile, '<?php '.PHP_EOL.PHP_EOL);
 
-        exec('open vscode://file/'.$this->codeTmpFile.':3:1');
+        exec(
+            'open '.str_replace(
+                ['{file}', '{line}'],
+                [$this->codeTmpFile, 3],
+                $this->editorHrefs[$this->option('editor')],
+            ),
+        );
 
         return $this->codeTmpFile;
     }
