@@ -3,6 +3,9 @@
 namespace App\Support;
 
 use App\Enums\Agent;
+use App\Support\ProcessInspector\NullProcessInspector;
+use App\Support\ProcessInspector\ProcessInspector;
+use App\Support\ProcessInspector\UnixProcessInspector;
 
 class ContextDetector
 {
@@ -13,6 +16,8 @@ class ContextDetector
     protected static ?string $resolvedTerminal = null;
 
     protected static bool $terminalResolved = false;
+
+    protected static ?ProcessInspector $processInspector = null;
 
     protected static array $envVars = [
         'CLAUDECODE' => Agent::ClaudeCode,
@@ -27,6 +32,7 @@ class ContextDetector
         'cursor-agent' => Agent::Cursor,
         'Cursor Helper' => Agent::Cursor,
         'Cursor.app' => Agent::Cursor,
+        'opencode' => Agent::OpenCode,
     ];
 
     protected static array $terminals = [
@@ -64,12 +70,25 @@ class ContextDetector
         return static::$resolvedTerminal;
     }
 
+    public static function setProcessInspector(ProcessInspector $inspector): void
+    {
+        static::$processInspector = $inspector;
+    }
+
     public static function flush(): void
     {
         static::$agentResolved = false;
         static::$resolvedAgent = null;
         static::$terminalResolved = false;
         static::$resolvedTerminal = null;
+        static::$processInspector = null;
+    }
+
+    protected static function processInspector(): ProcessInspector
+    {
+        return static::$processInspector ??= PHP_OS_FAMILY === 'Windows'
+            ? new NullProcessInspector
+            : new UnixProcessInspector;
     }
 
     protected static function agentFromEnv(): ?Agent
@@ -85,18 +104,17 @@ class ContextDetector
 
     protected static function agentFromProcessTree(): ?Agent
     {
+        $inspector = static::processInspector();
         $pid = (int) getmypid();
 
         $depth = 0;
 
         while ($pid > 1 && $depth++ < 15) {
-            $comm = @shell_exec("ps -o comm= -p {$pid} 2>/dev/null");
+            $comm = $inspector->getProcessName($pid);
 
-            if ($comm === null || $comm === false) {
+            if ($comm === null) {
                 break;
             }
-
-            $comm = trim($comm);
 
             foreach (static::$processes as $needle => $agent) {
                 if (str_contains($comm, $needle)) {
@@ -104,13 +122,13 @@ class ContextDetector
                 }
             }
 
-            $ppid = @shell_exec("ps -o ppid= -p {$pid} 2>/dev/null");
+            $ppid = $inspector->getParentPid($pid);
 
-            if ($ppid === null || $ppid === false) {
+            if ($ppid === null) {
                 break;
             }
 
-            $pid = (int) trim($ppid);
+            $pid = $ppid;
         }
 
         return null;

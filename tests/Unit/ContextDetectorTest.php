@@ -2,6 +2,7 @@
 
 use App\Enums\Agent;
 use App\Support\ContextDetector;
+use App\Support\ProcessInspector\ProcessInspector;
 
 beforeEach(function () {
     ContextDetector::flush();
@@ -28,9 +29,84 @@ it('detects agent from env vars', function (string $envVar, string $value, Agent
 ]);
 
 it('returns null agent from env when no env vars are set', function () {
-    $method = new ReflectionMethod(ContextDetector::class, 'agentFromEnv');
+    $inspector = new class implements ProcessInspector
+    {
+        public function getProcessName(int $pid): ?string
+        {
+            return null;
+        }
 
-    expect($method->invoke(null))->toBeNull();
+        public function getParentPid(int $pid): ?int
+        {
+            return null;
+        }
+    };
+
+    ContextDetector::setProcessInspector($inspector);
+
+    expect(ContextDetector::agent())->toBeNull();
+});
+
+it('detects agent from process tree', function () {
+    $currentPid = (int) getmypid();
+
+    $inspector = new class($currentPid) implements ProcessInspector
+    {
+        public function __construct(private int $currentPid) {}
+
+        public function getProcessName(int $pid): ?string
+        {
+            return match ($pid) {
+                $this->currentPid => 'php',
+                2 => 'claude',
+                default => null,
+            };
+        }
+
+        public function getParentPid(int $pid): ?int
+        {
+            return match ($pid) {
+                $this->currentPid => 2,
+                2 => 1,
+                default => null,
+            };
+        }
+    };
+
+    ContextDetector::setProcessInspector($inspector);
+
+    expect(ContextDetector::agent())->toBe(Agent::ClaudeCode);
+});
+
+it('returns null from process tree when no known process is found', function () {
+    $currentPid = (int) getmypid();
+
+    $inspector = new class($currentPid) implements ProcessInspector
+    {
+        public function __construct(private int $currentPid) {}
+
+        public function getProcessName(int $pid): ?string
+        {
+            return match ($pid) {
+                $this->currentPid => 'php',
+                2 => 'bash',
+                default => null,
+            };
+        }
+
+        public function getParentPid(int $pid): ?int
+        {
+            return match ($pid) {
+                $this->currentPid => 2,
+                2 => 1,
+                default => null,
+            };
+        }
+    };
+
+    ContextDetector::setProcessInspector($inspector);
+
+    expect(ContextDetector::agent())->toBeNull();
 });
 
 it('detects terminal from TERM_PROGRAM', function (string $termProgram, string $expected) {
