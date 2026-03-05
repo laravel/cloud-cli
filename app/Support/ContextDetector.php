@@ -18,6 +18,7 @@ class ContextDetector
         'CLAUDECODE' => Agent::ClaudeCode,
         'CODEX_THREAD_ID' => Agent::Codex,
         'CURSOR_AGENT' => Agent::Cursor,
+        'OPENCODE' => Agent::OpenCode,
     ];
 
     protected static array $processes = [

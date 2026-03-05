@@ -11,6 +11,7 @@ afterEach(function () {
     putenv('CLAUDECODE');
     putenv('CODEX_THREAD_ID');
     putenv('CURSOR_AGENT');
+    putenv('OPENCODE');
     putenv('TERM_PROGRAM');
     ContextDetector::flush();
 });
@@ -23,6 +24,7 @@ it('detects agent from env vars', function (string $envVar, string $value, Agent
     'Claude Code' => ['CLAUDECODE', '1', Agent::ClaudeCode],
     'Codex' => ['CODEX_THREAD_ID', 'thread-123', Agent::Codex],
     'Cursor' => ['CURSOR_AGENT', '1', Agent::Cursor],
+    'OpenCode' => ['OPENCODE', '1', Agent::OpenCode],
 ]);
 
 it('returns null agent from env when no env vars are set', function () {
