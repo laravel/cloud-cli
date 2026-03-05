@@ -5,6 +5,8 @@ namespace App\Commands;
 use App\Client\Requests\RunCommandRequestData;
 use App\Prompts\MonitorCommand;
 use Carbon\CarbonInterval;
+use Exception;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\info;
@@ -47,13 +49,13 @@ class Tinker extends BaseCommand
                 return 0;
             }
 
-            $code = trim($code);
+            // $code = trim($code);
 
-            if (str_starts_with($code, '<?php')) {
-                $code = str_replace('<?php', '', $code);
-            }
+            // if (str_starts_with($code, '<?php')) {
+            //     $code = str_replace('<?php', '', $code);
+            // }
 
-            $code = trim($code);
+            // $code = trim($code);
 
             if ($code === '') {
                 continue;
@@ -63,12 +65,21 @@ class Tinker extends BaseCommand
                 answered('Code', $code);
             }
 
-            $command = spin(fn () => $this->client->commands()->run(
-                new RunCommandRequestData(
-                    environmentId: $environment->id,
-                    command: 'php artisan tinker --execute='.escapeshellarg($code),
-                ),
-            ), 'Running...');
+            $command = spin(function () use ($code, $environment) {
+                $response = Http::withToken('J7yZOdUpHNBTFoAZA8sm')
+                    ->asJson()
+                    ->post('https://joe.codes/api/tinker-snippets', [
+                        'code' => $code,
+                    ]);
+
+                return $this->client->commands()->run(
+                    new RunCommandRequestData(
+                        environmentId: $environment->id,
+                        command: 'curl -sSL https://joe.codes/api/tinker-snippets/'.$response->json('uuid').' | sh',
+                        // command: 'php artisan tinker --execute=' . escapeshellarg($code),
+                    ),
+                );
+            }, 'Running...');
 
             (new MonitorCommand(
                 fn (string $id) => $this->client->commands()->get($id),
@@ -98,21 +109,39 @@ class Tinker extends BaseCommand
         $this->codeTmpFile ??= $this->initTmpFile();
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
 
+        $result = spin(
+            fn () => $this->waitForFileToBeSaved(),
+            'Waiting for file to be saved...',
+        );
+
+        if (! is_array($result)) {
+            return $result;
+        }
+
+        [$type, $message] = $result;
+
+        match ($type) {
+            'warning' => warning($message),
+            'outro' => outro($message),
+            default => throw new Exception('Invalid type: '.$type),
+        };
+
+        return null;
+    }
+
+    protected function waitForFileToBeSaved(): array|string
+    {
         Sleep::for(CarbonInterval::milliseconds(500));
 
         while (true) {
             clearstatcache(true, $this->codeTmpFile);
 
             if (! file_exists($this->codeTmpFile)) {
-                warning('File no longer exists.');
-
-                return null;
+                return ['warning', 'File no longer exists.'];
             }
 
             if (! $this->fileIsOpen($this->codeTmpFile) && ! $this->wasModifiedRecently($this->codeTmpFile)) {
-                outro('File closed, existing tinker session.');
-
-                return null;
+                return ['outro', 'File closed, exiting tinker session.'];
             }
 
             if (filemtime($this->codeTmpFile) !== $this->tmpFileLastModifiedAt) {
