@@ -11,11 +11,12 @@ enum TimelineSymbol: string
     case FAILURE = '✘';
     case WARNING = '▲';
     case CIRCLE = '●';
+    case GREATER_THAN = '>';
 
     public function color(): string
     {
         return match ($this) {
-            self::DOT, self::CIRCLE => 'cyan',
+            self::DOT, self::CIRCLE, self::GREATER_THAN => 'cyan',
             self::LINE => 'gray',
             self::PENDING, self::WARNING => 'yellow',
             self::SUCCESS => 'green',
