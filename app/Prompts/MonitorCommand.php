@@ -84,6 +84,7 @@ class MonitorCommand extends Prompt
                 usleep($this->interval * 1000);
             }
         } finally {
+            $this->showCursor();
             static::terminal()->restoreTty();
         }
     }

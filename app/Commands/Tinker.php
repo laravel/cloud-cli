@@ -9,8 +9,10 @@ use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\textarea;
+use function Laravel\Prompts\warning;
 
 class Tinker extends BaseCommand
 {
@@ -102,10 +104,14 @@ class Tinker extends BaseCommand
             clearstatcache(true, $this->codeTmpFile);
 
             if (! file_exists($this->codeTmpFile)) {
+                warning('File no longer exists.');
+
                 return null;
             }
 
             if (! $this->fileIsOpen($this->codeTmpFile) && ! $this->wasModifiedRecently($this->codeTmpFile)) {
+                outro('File closed, existing tinker session.');
+
                 return null;
             }
 
