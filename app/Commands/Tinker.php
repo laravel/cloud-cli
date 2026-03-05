@@ -46,23 +46,15 @@ class Tinker extends BaseCommand
             $code = $this->getCodeForCommand();
 
             if ($code === null) {
-                return 0;
+                return self::SUCCESS;
             }
-
-            // $code = trim($code);
-
-            // if (str_starts_with($code, '<?php')) {
-            //     $code = str_replace('<?php', '', $code);
-            // }
-
-            // $code = trim($code);
 
             if ($code === '') {
                 continue;
             }
 
             if ($this->option('editor')) {
-                answered('Code', $code);
+                codeBlock($code);
             }
 
             $command = spin(function () use ($code, $environment) {
