@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\Agent;
 use App\Support\ContextDetector;
 
 beforeEach(function () {
@@ -8,33 +7,27 @@ beforeEach(function () {
 });
 
 afterEach(function () {
-    putenv('AMP_CURRENT_THREAD_ID');
     putenv('CLAUDECODE');
-    putenv('CODEX_THREAD_ID');
+    putenv('CLAUDE_CODE');
+    putenv('CODEX_SANDBOX');
     putenv('CURSOR_AGENT');
+    putenv('CURSOR_TRACE_ID');
     putenv('OPENCODE');
+    putenv('OPENCODE_CLIENT');
     putenv('TERM_PROGRAM');
     ContextDetector::flush();
 });
 
-it('detects agent from env vars', function (string $envVar, string $value, Agent $expected) {
+it('detects agent from env vars', function (string $envVar, string $value, string $expected) {
     putenv("{$envVar}={$value}");
 
     expect(ContextDetector::agent())->toBe($expected);
 })->with([
-    'Claude Code' => ['CLAUDECODE', '1', Agent::ClaudeCode],
-    'Codex' => ['CODEX_THREAD_ID', 'thread-123', Agent::Codex],
-    'Cursor' => ['CURSOR_AGENT', '1', Agent::Cursor],
-    'OpenCode' => ['OPENCODE', '1', Agent::OpenCode],
-    'Amp' => ['AMP_CURRENT_THREAD_ID', 'T-019cbc12-e5f3-7578-bdb2-535b085bbfff', Agent::Amp],
+    'Claude Code' => ['CLAUDECODE', '1', 'claude'],
+    'Codex' => ['CODEX_SANDBOX', '1', 'codex'],
+    'Cursor CLI' => ['CURSOR_AGENT', '1', 'cursor-cli'],
+    'OpenCode' => ['OPENCODE', '1', 'opencode'],
 ]);
-
-it('detects amp over claude code when both env vars are set', function () {
-    putenv('CLAUDECODE=1');
-    putenv('AMP_CURRENT_THREAD_ID=T-019cbc12-e5f3-7578-bdb2-535b085bbfff');
-
-    expect(ContextDetector::agent())->toBe(Agent::Amp);
-});
 
 it('returns null agent when no env vars are set', function () {
     expect(ContextDetector::agent())->toBeNull();
@@ -71,9 +64,9 @@ it('caches agent detection result', function () {
 
     ContextDetector::agent();
     putenv('CLAUDECODE');
-    putenv('CODEX_THREAD_ID=thread-123');
+    putenv('CODEX_SANDBOX=1');
 
-    expect(ContextDetector::agent())->toBe(Agent::ClaudeCode);
+    expect(ContextDetector::agent())->toBe('claude');
 });
 
 it('caches terminal detection result', function () {

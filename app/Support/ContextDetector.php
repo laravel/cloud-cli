@@ -2,25 +2,17 @@
 
 namespace App\Support;
 
-use App\Enums\Agent;
+use AgentDetector\AgentDetector;
 
 class ContextDetector
 {
-    protected static ?Agent $resolvedAgent = null;
+    protected static ?string $resolvedAgent = null;
 
     protected static bool $agentResolved = false;
 
     protected static ?string $resolvedTerminal = null;
 
     protected static bool $terminalResolved = false;
-
-    protected static array $envVars = [
-        'AMP_CURRENT_THREAD_ID' => Agent::Amp,
-        'CLAUDECODE' => Agent::ClaudeCode,
-        'CODEX_THREAD_ID' => Agent::Codex,
-        'CURSOR_AGENT' => Agent::Cursor,
-        'OPENCODE' => Agent::OpenCode,
-    ];
 
     protected static array $terminals = [
         'ghostty' => 'Ghostty',
@@ -32,10 +24,15 @@ class ContextDetector
         'tmux' => 'tmux',
     ];
 
-    public static function agent(): ?Agent
+    public static function agent(): ?string
     {
         if (! static::$agentResolved) {
-            static::$resolvedAgent = static::agentFromEnv();
+            $result = AgentDetector::detect();
+
+            static::$resolvedAgent = $result->isAgent
+                ? ($result->knownAgent()?->value ?? $result->name)
+                : null;
+
             static::$agentResolved = true;
         }
 
@@ -63,16 +60,5 @@ class ContextDetector
         static::$resolvedAgent = null;
         static::$terminalResolved = false;
         static::$resolvedTerminal = null;
-    }
-
-    protected static function agentFromEnv(): ?Agent
-    {
-        foreach (static::$envVars as $envVar => $agent) {
-            if (! empty(getenv($envVar))) {
-                return $agent;
-            }
-        }
-
-        return null;
     }
 }

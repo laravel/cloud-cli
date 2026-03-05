@@ -95,7 +95,7 @@ class Connector extends SaloonConnector implements HasPagination
         }
 
         if ($agent = ContextDetector::agent()) {
-            $headers['X-Cloud-Cli-Agent'] = $agent->value;
+            $headers['X-Cloud-Cli-Agent'] = $agent;
         }
 
         return $headers;
