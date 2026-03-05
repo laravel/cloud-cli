@@ -25,9 +25,21 @@ class MonitorCommandRenderer extends Renderer
     {
         if ($monitor->lastCommand) {
             $command = $monitor->lastCommand;
-            $body = $this->cyan($command->command);
-            $body .= PHP_EOL;
-            $body .= PHP_EOL;
+
+            if (! $monitor->showCommand) {
+                $body = '';
+            } else {
+                $body = $this->cyan(
+                    $this->mbWordwrap(
+                        $command->command,
+                        $monitor->terminal()->cols() - 15,
+                        cut_long_words: true,
+                    ),
+                );
+                $body .= PHP_EOL;
+                $body .= PHP_EOL;
+            }
+
             $body .= 'Completed in <comment>'.$command->totalTime()->format('%I:%S').'</comment>';
 
             if ($command->exitCode !== null) {
@@ -53,9 +65,18 @@ class MonitorCommandRenderer extends Renderer
         }
 
         if ($monitor->command !== null) {
-            $message = 'Running '.$this->cyan($monitor->command->command);
-            $this->lineWithBorder($message);
-            $this->lineWithBorder('');
+            if ($monitor->showCommand) {
+                $message = 'Running '.$this->cyan(
+                    $this->mbWordwrap(
+                        $monitor->command->command,
+                        $monitor->terminal()->cols() - 15,
+                        cut_long_words: true,
+                    ),
+                );
+
+                $this->lineWithBorder($message);
+                $this->lineWithBorder('');
+            }
 
             $this->lineWithBorder(
                 $this->dim($monitor->command->timeElapsed()->format('%I:%S')).' '.
