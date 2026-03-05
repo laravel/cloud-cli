@@ -57,6 +57,10 @@ class Tinker extends BaseCommand
                 continue;
             }
 
+            if ($this->option('editor')) {
+                answered('Code', $code);
+            }
+
             $command = spin(fn () => $this->client->commands()->run(
                 new RunCommandRequestData(
                     environmentId: $environment->id,
@@ -67,6 +71,7 @@ class Tinker extends BaseCommand
             (new MonitorCommand(
                 fn (string $id) => $this->client->commands()->get($id),
                 $command,
+                showCommand: false,
             ))->display();
         }
     }

@@ -34,7 +34,7 @@ class MonitorCommand extends Prompt
     /**
      * @param  Closure(string): ?Command  $getCommand
      */
-    public function __construct(public Closure $getCommand, public ?Command $command)
+    public function __construct(public Closure $getCommand, public ?Command $command, public bool $showCommand = true)
     {
         $this->resetIdentifier = str()->random(10);
     }
