@@ -24,6 +24,8 @@ class Tinker extends BaseCommand
 
     protected $tmpFileLastModifiedAt;
 
+    protected const RECENT_SAVE_WINDOW_SECONDS = 2;
+
     public function handle()
     {
         $this->ensureClient();
@@ -38,6 +40,11 @@ class Tinker extends BaseCommand
 
         while (true) {
             $code = $this->getCodeForCommand();
+
+            if ($code === null) {
+                return 0;
+            }
+
             $code = trim($code);
 
             if (str_starts_with($code, '<?php')) {
@@ -79,19 +86,109 @@ class Tinker extends BaseCommand
         );
     }
 
-    protected function openInEditor()
+    protected function openInEditor(): ?string
     {
         $this->codeTmpFile ??= $this->initTmpFile();
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
 
-        while (filemtime($this->codeTmpFile) === $this->tmpFileLastModifiedAt) {
+        Sleep::for(CarbonInterval::milliseconds(500));
+
+        while (true) {
             clearstatcache(true, $this->codeTmpFile);
+
+            if (! file_exists($this->codeTmpFile)) {
+                return null;
+            }
+
+            if (! $this->fileIsOpen($this->codeTmpFile) && ! $this->wasModifiedRecently($this->codeTmpFile)) {
+                return null;
+            }
+
+            if (filemtime($this->codeTmpFile) !== $this->tmpFileLastModifiedAt) {
+                break;
+            }
+
             Sleep::for(CarbonInterval::milliseconds(100));
         }
 
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
 
         return file_get_contents($this->codeTmpFile);
+    }
+
+    protected function fileIsOpen(string $path): bool
+    {
+        if (PHP_OS_FAMILY === 'Darwin') {
+            $output = [];
+            exec('lsof '.escapeshellarg($path).' 2>/dev/null', $output);
+
+            return $output !== [];
+        }
+
+        if (PHP_OS_FAMILY === 'Linux') {
+            $output = [];
+            exec('lsof '.escapeshellarg($path).' 2>/dev/null', $output);
+
+            if ($output !== []) {
+                return true;
+            }
+
+            return $this->fileIsOpenViaProc($path);
+        }
+
+        return true;
+    }
+
+    protected function wasModifiedRecently(string $path): bool
+    {
+        $mtime = filemtime($path);
+
+        if ($mtime === false) {
+            return false;
+        }
+
+        return $mtime >= time() - static::RECENT_SAVE_WINDOW_SECONDS;
+    }
+
+    protected function fileIsOpenViaProc(string $path): bool
+    {
+        $resolved = realpath($path);
+
+        if ($resolved === false) {
+            return false;
+        }
+
+        $procFds = glob('/proc/*/fd');
+
+        if ($procFds === false) {
+            return true;
+        }
+
+        foreach ($procFds as $fdDir) {
+            $fds = @scandir($fdDir);
+
+            if ($fds === false) {
+                continue;
+            }
+
+            foreach ($fds as $fd) {
+                if ($fd === '.' || $fd === '..') {
+                    continue;
+                }
+
+                $target = @readlink($fdDir.DIRECTORY_SEPARATOR.$fd);
+
+                if ($target !== false && str_starts_with($target, '/')) {
+                    $targetResolved = realpath($target);
+
+                    if ($targetResolved !== false && $targetResolved === $resolved) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     protected function initTmpFile(): string
