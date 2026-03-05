@@ -43,9 +43,9 @@ class Tinker extends BaseCommand
 
         intro('Tinker');
 
-        $this->resolveEditorUrl();
-        dd($this->editorUrl);
         $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+
+        $this->resolveEditorUrl();
 
         if ($this->editorUrl) {
             info('Every time you save the file, the code will be executed.');
