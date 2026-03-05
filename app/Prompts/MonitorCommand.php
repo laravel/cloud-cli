@@ -52,35 +52,39 @@ class MonitorCommand extends Prompt
 
         $keyPressListener = KeyPressListener::for($this)->listenForQuit();
 
-        while (true) {
-            $this->render();
+        try {
+            while (true) {
+                $this->render();
 
-            $this->count++;
+                $this->count++;
 
-            if ($this->count % 10 === 0) {
-                $this->ellipsisCount++;
-            }
+                if ($this->count % 10 === 0) {
+                    $this->ellipsisCount++;
+                }
 
-            if ($this->lastCheck === null || $this->lastCheck->diffInSeconds(CarbonImmutable::now()) >= $this->checkEvery) {
-                $this->lastCheck = CarbonImmutable::now();
+                if ($this->lastCheck === null || $this->lastCheck->diffInSeconds(CarbonImmutable::now()) >= $this->checkEvery) {
+                    $this->lastCheck = CarbonImmutable::now();
 
-                if ($updated = ($this->getCommand)($this->command->id)) {
-                    $this->command = $updated;
+                    if ($updated = ($this->getCommand)($this->command->id)) {
+                        $this->command = $updated;
 
-                    if ($this->command->isFinished()) {
-                        $this->lastCommand = ($this->getCommand)($this->command->id);
-                        $this->command = null;
-                        $this->state = 'submit';
-                        $this->render();
+                        if ($this->command->isFinished()) {
+                            $this->lastCommand = ($this->getCommand)($this->command->id);
+                            $this->command = null;
+                            $this->state = 'submit';
+                            $this->render();
 
-                        break;
+                            break;
+                        }
                     }
                 }
+
+                $keyPressListener->once();
+
+                usleep($this->interval * 1000);
             }
-
-            $keyPressListener->once();
-
-            usleep($this->interval * 1000);
+        } finally {
+            static::terminal()->restoreTty();
         }
     }
 
