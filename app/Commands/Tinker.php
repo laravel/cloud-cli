@@ -4,11 +4,11 @@ namespace App\Commands;
 
 use App\Client\Requests\RunCommandRequestData;
 use App\Prompts\MonitorCommand;
-use App\Prompts\TinkerPrompt;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\textarea;
 
 class Tinker extends BaseCommand
 {
@@ -36,6 +36,7 @@ class Tinker extends BaseCommand
 
         while (true) {
             $code = $this->getCodeForCommand();
+            $code = trim($code);
 
             if (str_starts_with($code, '<?php')) {
                 $code = str_replace('<?php', '', $code);
@@ -67,7 +68,13 @@ class Tinker extends BaseCommand
             return $this->openInEditor();
         }
 
-        return (new TinkerPrompt)->prompt();
+        return textarea(
+            'Code',
+            default: '<?php '.PHP_EOL.PHP_EOL,
+            rows: 10,
+            placeholder: 'Type your code here...',
+            required: true,
+        );
     }
 
     protected function openInEditor()
@@ -76,7 +83,7 @@ class Tinker extends BaseCommand
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
 
         while (filemtime($this->codeTmpFile) === $this->tmpFileLastModifiedAt) {
-            // info(filemtime($this->codeTmpFile));
+            clearstatcache(true, $this->codeTmpFile);
             usleep(100_000);
         }
 
