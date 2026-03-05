@@ -85,7 +85,7 @@ class ContextDetector
 
     protected static function agentFromProcessTree(): ?Agent
     {
-        $pid = getmypid();
+        $pid = (int) getmypid();
 
         $depth = 0;
 
