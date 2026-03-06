@@ -96,7 +96,7 @@ class Tinker extends BaseCommand
             return null;
         }
 
-        $editorKey = $this->option('editor') ?? getenv('VISUAL') ?: getenv('EDITOR');
+        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
 
         if (! $editorKey) {
             return null;
