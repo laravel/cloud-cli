@@ -23,7 +23,7 @@ class InstanceResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $instance) {
-            $this->failAndExit('Unable to resolve instance: ' . ($idOrName ?? 'Provide a valid instance ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name as an argument.'));
         }
 
         $this->displayResolved('Instance', $instance->name, $instance->id);
@@ -35,8 +35,8 @@ class InstanceResolver extends Resolver
     {
         return $this->resolveFromIdentifier(
             $identifier,
-            fn() => spin(
-                fn() => $this->client->instances()->include('environment')->get($identifier),
+            fn () => spin(
+                fn () => $this->client->instances()->include('environment')->get($identifier),
                 'Fetching instance...',
             ),
         );
@@ -52,7 +52,7 @@ class InstanceResolver extends Resolver
         $instances = $this->client->instances()->include('environment')->list($environment->id)->collect();
 
         if ($instances->isEmpty()) {
-            $this->failAndExit('No instances found for environment ' . $environment->name);
+            $this->failAndExit('No instances found for environment '.$environment->name);
         }
 
         if ($instances->hasSole()) {
@@ -65,7 +65,7 @@ class InstanceResolver extends Resolver
 
         $selected = selectWithContext(
             label: 'Instance',
-            options: $instances->mapWithKeys(fn($instance) => [
+            options: $instances->mapWithKeys(fn ($instance) => [
                 $instance->id => $instance->name,
             ])->toArray(),
         );
