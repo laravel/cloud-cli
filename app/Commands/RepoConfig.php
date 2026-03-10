@@ -103,7 +103,7 @@ class RepoConfig extends BaseCommand
                 $application->id => $application->id === $currentApplicationId
                     ? $application->name.$this->dim(' (current default)')
                     : $application->name,
-            ]),
+            ])->toArray(),
         );
 
         return $applications->firstWhere('id', $selected);
