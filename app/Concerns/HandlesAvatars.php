@@ -67,7 +67,7 @@ trait HandlesAvatars
     }
 
     /**
-     * @return list<string, string>
+     * @return list<string>
      */
     protected function getAvatarFromPath(string $path): array
     {

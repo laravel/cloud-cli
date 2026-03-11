@@ -5,7 +5,7 @@ namespace App\Client\Requests;
 class UpdateDatabaseClusterRequestData extends RequestData
 {
     /**
-     * @param  array<string, mixed>|null  $config
+     * @param  array<string, mixed>  $config
      */
     public function __construct(
         public readonly string $clusterId,

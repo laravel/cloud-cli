@@ -150,7 +150,7 @@ class ApplicationUpdate extends BaseCommand
         $this->form()->define(
             'slack_channel',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => $this->getNewSlackChannel($value ?? $application->slackChannel),
+                fn ($value) => $value ?? $application->slackChannel,
             ),
         )->setPreviousValue($application->slackChannel);
     }
