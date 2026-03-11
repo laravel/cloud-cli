@@ -66,7 +66,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
     protected function renderOptions(SelectPrompt $prompt): string
     {
         return implode(PHP_EOL, $this->scrollbar(
-            array_values(array_map(function ($label, $key) use ($prompt) {
+            array_map(function ($label, $key) use ($prompt) {
                 $label = $this->truncate($label, $prompt->terminal()->cols() - 12);
 
                 $index = array_search($key, array_keys($prompt->options));
@@ -82,7 +82,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
                 return $prompt->highlighted === $index
                     ? "{$this->cyan('›')} {$this->cyan('●')} {$label}  "
                     : "  {$this->dim('○')} {$this->dim($label)}  ";
-            }, $visible = $prompt->visible(), array_keys($visible))),
+            }, $visible = $prompt->visible(), array_keys($visible)),
             $prompt->firstVisible,
             $prompt->scroll,
             count($prompt->options),
