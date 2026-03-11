@@ -46,7 +46,7 @@ class CommandMiddlewareManager
             return;
         }
 
-        $shouldContinue = true;
+        $shouldContinue = false;
 
         $this->executeMiddleware($command, function () use (&$shouldContinue) {
             $shouldContinue = true;
