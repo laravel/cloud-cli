@@ -645,7 +645,7 @@ class Ship extends BaseCommand
         $cluster = select(
             label: 'Websocket cluster',
             options: $options->toArray(),
-            default: $clusters->first()?->id ?? null,
+            default: $clusters->first()->id ?? null,
             required: true,
         );
 
@@ -674,7 +674,7 @@ class Ship extends BaseCommand
         $schema = select(
             label: 'Database',
             options: $options,
-            default: $database->schemas[0]?->id ?? null,
+            default: $database->schemas[0]->id ?? null,
             required: true,
         );
 
@@ -712,7 +712,7 @@ class Ship extends BaseCommand
         $database = select(
             label: 'Database cluster',
             options: $options->toArray(),
-            default: $databases->first()?->id ?? null,
+            default: $databases->first()->id ?? null,
             required: true,
         );
 
