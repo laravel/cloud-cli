@@ -57,7 +57,7 @@ class Auth extends BaseCommand implements NoAuthRequired
                 'Creating auth session...',
             );
         } catch (SaloonRequestException $e) {
-            if ($e->getResponse()?->status() === 422) {
+            if ($e->getResponse()->status() === 422) {
                 $errors = $e->getResponse()->json('errors', []);
 
                 foreach ($errors as $field => $messages) {
@@ -90,7 +90,7 @@ class Auth extends BaseCommand implements NoAuthRequired
                 'Exchanging code for tokens...',
             );
         } catch (SaloonRequestException $e) {
-            if ($e->getResponse()?->status() === 422) {
+            if ($e->getResponse()->status() === 422) {
                 $message = $e->getResponse()->json('message', 'Invalid exchange code.');
 
                 error($message);
@@ -141,13 +141,15 @@ class Auth extends BaseCommand implements NoAuthRequired
 
     protected function startServer(): void
     {
-        $this->serverSocket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
+        $socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
 
-        if ($this->serverSocket === false) {
+        if ($socket === false) {
             error('Failed to create server socket.');
 
             return;
         }
+
+        $this->serverSocket = $socket;
 
         socket_set_option($this->serverSocket, SOL_SOCKET, SO_REUSEADDR, 1);
 
