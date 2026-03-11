@@ -23,12 +23,11 @@ trait Validates
      */
     protected function loopUntilValid(callable $callback, int $maxAttempts = 20, bool|callable $suppressOutput = false, ?callable $handleNonInteractiveErrors = null): mixed
     {
-        $result = null;
         $this->errors ??= new ValidationErrors;
         $attempts = 0;
         $this->form()->errors($this->errors);
 
-        while (! $result) {
+        while (true) { // @phpstan-ignore while.alwaysTrue
             if ($attempts >= $maxAttempts) {
                 throw new RuntimeException('Maximum attempts reached');
             }
@@ -38,13 +37,11 @@ trait Validates
             $attempts++;
 
             try {
-                $result = $callback($this->errors);
-
-                return $result;
+                return $callback($this->errors);
             } catch (RequestException $e) {
                 $this->errors->clear();
 
-                if ($e->getResponse()?->status() === 422) {
+                if ($e->getResponse()->status() === 422) {
                     $responseErrors = $e->getResponse()->json('errors', []);
 
                     if (count($responseErrors) > 0) {
@@ -63,11 +60,6 @@ trait Validates
                 }
             }
         }
-
-        $this->errors->clear();
-        $this->form()->clear();
-
-        return $result;
     }
 
     protected function displayValidationError(string $message, bool|callable $suppressOutput): void
