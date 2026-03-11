@@ -80,13 +80,13 @@ class DynamicSpinner extends Prompt
 
         pcntl_signal(SIGINT, fn () => exit());
 
-        $this->sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
+        $sockets = stream_socket_pair(STREAM_PF_UNIX, STREAM_SOCK_STREAM, STREAM_IPPROTO_IP);
 
-        if ($this->sockets === false) {
-            $this->sockets = null;
-
+        if ($sockets === false) {
             return $this->renderStatically($callback);
         }
+
+        $this->sockets = $sockets;
 
         try {
             $this->hideCursor();
@@ -98,7 +98,7 @@ class DynamicSpinner extends Prompt
                 fclose($this->sockets[0]);
                 stream_set_blocking($this->sockets[1], false);
 
-                while (true) {
+                while (true) { // @phpstan-ignore while.alwaysTrue
                     $this->checkForMessageUpdate();
                     $this->render();
 
