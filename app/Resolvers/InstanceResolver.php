@@ -56,7 +56,7 @@ class InstanceResolver extends Resolver
         }
 
         if ($instances->hasSole()) {
-            answered(label: 'Instance', answer: $instances->first());
+            answered(label: 'Instance', answer: $instances->first()->name);
 
             return $instances->first();
         }
