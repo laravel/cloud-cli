@@ -28,41 +28,49 @@ abstract class Renderer extends BaseRenderer
         self::$commandAlreadyShowedOutro = false;
     }
 
-    protected function lineWithBorder(string $message): self
+    protected function lineWithBorder(string $message): static
     {
-        return $this->line(TimelineSymbol::LINE->value.'  '.$message);
+        $this->line(TimelineSymbol::LINE->value.'  '.$message);
+
+        return $this;
     }
 
     /**
      * Render a warning message.
      */
-    protected function bullet(string $message, TimelineSymbol $symbol = TimelineSymbol::DOT): self
+    protected function bullet(string $message, TimelineSymbol $symbol = TimelineSymbol::DOT): static
     {
         $color = $symbol->color();
 
-        return $this->line($this->{$color}($symbol->value).'  '.$message);
+        $this->line($this->{$color}($symbol->value).'  '.$message);
+
+        return $this;
     }
 
     /**
      * Render a warning message.
      */
-    protected function warning(string $message): self
+    protected function warning(string $message): static
     {
-        return $this->line(TimelineSymbol::LINE->value.$this->yellow("   {$message}"));
+        $this->line(TimelineSymbol::LINE->value.$this->yellow("   {$message}"));
+
+        return $this;
     }
 
     /**
      * Render an error message.
      */
-    protected function error(string $message): self
+    protected function error(string $message): static
     {
-        return $this->line(TimelineSymbol::LINE->value.$this->red("   {$message}"));
+        $this->line(TimelineSymbol::LINE->value.$this->red("   {$message}"));
+
+        return $this;
     }
 
     /**
      * Render an hint message.
      */
-    protected function hint(string $message): self
+    protected function hint(string $message): static
     {
         if ($message === '') {
             return $this;
@@ -70,7 +78,9 @@ abstract class Renderer extends BaseRenderer
 
         $message = $this->truncate($message, $this->prompt->terminal()->cols() - 6);
 
-        return $this->line(TimelineSymbol::LINE->value.$this->gray("   {$message}"));
+        $this->line(TimelineSymbol::LINE->value.$this->gray("   {$message}"));
+
+        return $this;
     }
 
     /**

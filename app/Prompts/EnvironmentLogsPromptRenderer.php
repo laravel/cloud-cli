@@ -85,7 +85,7 @@ class EnvironmentLogsPromptRenderer extends Renderer
     }
 
     /**
-     * @return array{title: string, body: ?string, info: string, footer: string}
+     * @return array{title?: string, body?: string, info?: string, footer?: string}
      */
     protected function getBoxParams(EnvironmentLog $log): array
     {
