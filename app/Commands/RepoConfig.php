@@ -42,12 +42,6 @@ class RepoConfig extends BaseCommand
 
         $organization = $this->resolveOrganization();
 
-        if (! $organization) {
-            error('No organization selected');
-
-            return self::FAILURE;
-        }
-
         $application = $this->selectApplication($localConfig->get('application_id'));
 
         if ($application === null) {
