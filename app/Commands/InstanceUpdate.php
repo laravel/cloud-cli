@@ -209,11 +209,11 @@ class InstanceUpdate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
                     label: 'Use sleep mode?',
-                    default: $value ?? $instance->environment?->usesHibernation ?? true,
+                    default: $value ?? $instance->environment->usesHibernation ?? true,
                 ),
             ),
             'hibernation',
-        )->setPreviousValue($instance->environment?->usesHibernation)->setLabel('Hibernation');
+        )->setPreviousValue($instance->environment->usesHibernation)->setLabel('Hibernation');
 
         $this->form()->define(
             'sleep_timeout',
