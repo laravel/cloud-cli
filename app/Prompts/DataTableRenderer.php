@@ -125,11 +125,7 @@ class DataTableRenderer extends Renderer
             return;
         }
 
-        if ($prompt->query !== '') {
-            $this->withPageCount($prompt, ' Search: '.$prompt->query);
-
-            return;
-        }
+        $this->withPageCount($prompt, ' Search: '.$prompt->query);
     }
 
     protected function withPageCount(DataTable $prompt, string $content): void
