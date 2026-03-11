@@ -74,7 +74,7 @@ class EnvironmentLogsPrompt extends Prompt
         $this->from = $this->to;
         $this->to = CarbonImmutable::now()->toIso8601String();
 
-        while (true) {
+        while (true) { // @phpstan-ignore while.alwaysTrue
             $this->count++;
 
             $now = CarbonImmutable::now();
