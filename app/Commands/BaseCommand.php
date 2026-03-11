@@ -176,6 +176,7 @@ abstract class BaseCommand extends Command
     {
         return new ValueResolver(
             $argument,
+            $argument,
             $this->isInteractive(),
             match (true) {
                 $this->hasOption($argument) => $this->option($argument),
