@@ -33,7 +33,6 @@ class AppServiceProvider extends ServiceProvider
             'DataListRenderer',
             'DataTableRenderer',
             'EnvironmentLogsPromptRenderer',
-            'HybRenderer',
             'MonitorCommandRenderer',
             'MonitorDeploymentsRenderer',
             'MultiSelectPromptRenderer',

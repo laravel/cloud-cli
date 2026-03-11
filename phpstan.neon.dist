@@ -1,0 +1,5 @@
+parameters:
+  paths:
+    - app
+
+  level: 5
