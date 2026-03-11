@@ -29,6 +29,6 @@ class MetaResource extends Resource
     {
         $response = $this->send(new ListIpAddressesRequest);
 
-        return $response->json() ?? [];
+        return $response->json();
     }
 }
