@@ -22,7 +22,7 @@ class JsonApiPaginator extends BasePaginator
     {
         $links = $response->json('links', []);
 
-        return ! isset($links['next']) || is_null($links['next']);
+        return ! isset($links['next']);
     }
 
     protected function getPageItems(Response $response, Request $request): array
@@ -49,7 +49,7 @@ class JsonApiPaginator extends BasePaginator
         if ($this->currentResponse instanceof Response) {
             $links = $this->currentResponse->json('links', []);
 
-            if (isset($links['next']) && ! is_null($links['next'])) {
+            if (isset($links['next'])) {
                 $nextUrl = parse_url($links['next']);
                 parse_str($nextUrl['query'] ?? '', $queryParams);
 
