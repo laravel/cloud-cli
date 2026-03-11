@@ -10,6 +10,9 @@ class SelectWithContextPrompt extends SelectPrompt
 {
     public array $context = [];
 
+    /**
+     * @param  array<string|int, string|array{string, string}>|Collection<string|int, string|array{string, string}>  $options
+     */
     public function __construct(
         string $label,
         array|Collection $options,
