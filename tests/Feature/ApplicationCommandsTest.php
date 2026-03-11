@@ -33,7 +33,7 @@ afterEach(function () {
 // ---- application:list ----
 
 it('lists applications successfully in interactive mode', function () {
-    Prompt::fake(["\n"]);
+    Prompt::fake();
 
     setupApplicationListMocks();
 
