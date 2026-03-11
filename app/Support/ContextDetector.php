@@ -30,7 +30,7 @@ class ContextDetector
             $result = AgentDetector::detect();
 
             static::$resolvedAgent = $result->isAgent
-                ? ($result->knownAgent()?->value ?? $result->name)
+                ? ($result->knownAgent()->value ?? $result->name)
                 : null;
 
             static::$agentResolved = true;
