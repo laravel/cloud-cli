@@ -12,7 +12,7 @@ class RequiresAuthToken implements CommandMiddleware
 
     public function handle($command, callable $next)
     {
-        if (in_array($command, ['list', 'help', 'app:build'])) {
+        if (in_array($command, ['list', 'help', 'app:build', '_complete', 'completion'])) {
             return $next();
         }
 
