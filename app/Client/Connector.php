@@ -88,6 +88,7 @@ class Connector extends SaloonConnector implements HasPagination
         $headers = [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'application/vnd.api+json',
+            'X-Cloud-Cli-Version' => config('app.version'),
         ];
 
         if ($terminal = ContextDetector::terminal()) {
