@@ -18,6 +18,8 @@ abstract class Resolver
         protected Connector $client,
         protected LocalConfig $localConfig,
         protected bool $isInteractive,
+        protected ?string $applicationFlag = null,
+        protected ?string $environmentFlag = null,
     ) {
         //
     }
@@ -71,6 +73,8 @@ abstract class Resolver
             'client' => $this->client,
             'localConfig' => $this->localConfig,
             'isInteractive' => $this->isInteractive,
+            'applicationFlag' => $this->applicationFlag,
+            'environmentFlag' => $this->environmentFlag,
         ]);
     }
 

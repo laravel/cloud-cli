@@ -25,7 +25,7 @@ class EnvironmentResolver extends Resolver
     {
         $this->include('application', 'branch', 'deployments', 'currentDeployment', 'primaryDomain', 'instances');
 
-        $identifier = $idOrName ?? $this->localConfig->environmentId();
+        $identifier = $idOrName ?? $this->environmentFlag ?? $this->localConfig->environmentId();
         $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromBranch() ?? $this->fromInput();
 
         if (! $environment) {

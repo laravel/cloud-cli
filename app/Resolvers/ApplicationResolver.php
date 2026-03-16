@@ -19,7 +19,7 @@ class ApplicationResolver extends Resolver
 
     public function from(?string $idOrName = null): ?Application
     {
-        $identifier = $idOrName ?? $this->localConfig->applicationId();
+        $identifier = $idOrName ?? $this->applicationFlag ?? $this->localConfig->applicationId();
 
         $app = ($identifier ? $this->fromIdentifier($identifier) : null)
             ?? $this->fromRepo()

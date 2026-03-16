@@ -11,6 +11,8 @@ class Resolvers
         protected Connector $client,
         protected LocalConfig $localConfig,
         protected bool $isInteractive,
+        protected ?string $applicationFlag = null,
+        protected ?string $environmentFlag = null,
     ) {
         //
     }
@@ -98,6 +100,6 @@ class Resolvers
      */
     protected function make(string $resolver): Resolver
     {
-        return new $resolver($this->client, $this->localConfig, $this->isInteractive);
+        return new $resolver($this->client, $this->localConfig, $this->isInteractive, $this->applicationFlag, $this->environmentFlag);
     }
 }
