@@ -35,12 +35,12 @@ class ConfigRepository
      */
     public function apiTokens(): Collection
     {
-        return collect($this->get('api_tokens', []));
+        return collect($this->get('api_tokens', []))->unique()->values();
     }
 
     public function addApiToken(string $token): void
     {
-        $this->config['api_tokens'] = $this->apiTokens()->push($token);
+        $this->config['api_tokens'] = $this->apiTokens()->push($token)->unique()->values();
         $this->save();
     }
 
