@@ -100,6 +100,9 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud auth` | Authenticate with Laravel Cloud (browser OAuth) |
 | `cloud auth:token` | Manage API tokens |
 | `cloud repo:config` | Configure defaults for the current repository |
+| `cloud use` | Set default application/environment for the current directory |
+| `cloud env:pull` | Download environment variables as a .env file |
+| `cloud env:push` | Upload a local .env file to an environment |
 
 ### Applications
 
@@ -120,8 +123,11 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:create` | Create an environment |
 | `cloud environment:update` | Update an environment |
 | `cloud environment:delete` | Delete an environment |
-| `cloud environment:variables` | Manage environment variables (append, set, replace) |
+| `cloud environment:variables` | Manage environment variables (append, set, replace, delete) |
 | `cloud environment:logs` | View environment logs |
+| `cloud environment:start` | Start a stopped environment |
+| `cloud environment:stop` | Stop a running environment |
+| `cloud environment:metrics` | View environment metrics |
 
 ### Deploy & ship
 
@@ -132,6 +138,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud deploy:monitor` | Monitor deployments |
 | `cloud deployment:list` | List deployments |
 | `cloud deployment:get` | Get deployment details |
+| `cloud deployment:logs` | View deployment build/deploy output |
 
 ### Instances
 
@@ -153,6 +160,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud database-cluster:create` | Create a database cluster |
 | `cloud database-cluster:update` | Update a database cluster |
 | `cloud database-cluster:delete` | Delete a database cluster |
+| `cloud database-cluster:metrics` | View database cluster metrics |
 | `cloud database:list` | List databases (schemas) in a cluster |
 | `cloud database:get` | Get database details |
 | `cloud database:create` | Create a database |
@@ -174,6 +182,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud cache:update` | Update a cache |
 | `cloud cache:delete` | Delete a cache |
 | `cloud cache:types` | List available cache types |
+| `cloud cache:metrics` | View cache metrics |
 
 ### Object storage (buckets)
 
@@ -210,11 +219,13 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud websocket-cluster:create` | Create a WebSocket cluster |
 | `cloud websocket-cluster:update` | Update a WebSocket cluster |
 | `cloud websocket-cluster:delete` | Delete a WebSocket cluster |
+| `cloud websocket-cluster:metrics` | View WebSocket cluster metrics |
 | `cloud websocket-application:list` | List WebSocket applications |
 | `cloud websocket-application:get` | Get application details |
 | `cloud websocket-application:create` | Create a WebSocket application |
 | `cloud websocket-application:update` | Update a WebSocket application |
 | `cloud websocket-application:delete` | Delete a WebSocket application |
+| `cloud websocket-application:metrics` | View WebSocket application metrics |
 
 ### Background processes
 
