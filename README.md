@@ -109,6 +109,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud application:get` | Get application details |
 | `cloud application:create` | Create an application |
 | `cloud application:update` | Update an application |
+| `cloud application:delete` | Delete an application |
 
 ### Environments
 
@@ -119,7 +120,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:create` | Create an environment |
 | `cloud environment:update` | Update an environment |
 | `cloud environment:delete` | Delete an environment |
-| `cloud environment:variables` | Replace env vars from a file |
+| `cloud environment:variables` | Manage environment variables (append, set, replace) |
 | `cloud environment:logs` | View environment logs |
 
 ### Deploy & ship

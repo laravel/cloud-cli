@@ -5,20 +5,20 @@ This document outlines best practices for AI systems consuming and using the Lar
 ## 1. Understanding Error Handling
 
 ### Exception-Based Error Handling
-The `CloudClient` uses `->throw()` which means **all HTTP errors throw exceptions**. You must wrap API calls in try-catch blocks:
+The `Connector` uses Saloon's exception handling which means **all HTTP errors throw exceptions**. You must wrap API calls in try-catch blocks:
 
 ```php
 try {
     $application = $client->getApplication($applicationId);
-} catch (Illuminate\Http\Client\RequestException $e) {
+} catch (Saloon\Exceptions\Request\RequestException $e) {
     // Handle error
-    $statusCode = $e->response->status();
-    $errorBody = $e->response->json();
+    $statusCode = $e->getResponse()->status();
+    $errorBody = $e->getResponse()->json();
 }
 ```
 
 ### Common HTTP Status Codes
-- **422 Unprocessable Entity**: Validation errors - check `$e->response->json()['errors']`
+- **422 Unprocessable Entity**: Validation errors - check `$e->getResponse()->json()['errors']`
 - **404 Not Found**: Resource doesn't exist
 - **401 Unauthorized**: Invalid or expired API token
 - **403 Forbidden**: Insufficient permissions
@@ -224,7 +224,7 @@ $deployments = $client->listDeployments($envId);
 try {
     $app = $client->getApplication($appId);
 } catch (RequestException $e) {
-    if ($e->response->status() === 404) {
+    if ($e->getResponse()->status() === 404) {
         // Application doesn't exist
     }
 }
@@ -317,11 +317,11 @@ if (!in_array($status, DeploymentStatus::cases())) {
 
 ### Pattern: Safe Resource Access
 ```php
-function safeGetEnvironment(CloudClient $client, string $envId): ?Environment {
+function safeGetEnvironment(Connector $client, string $envId): ?Environment {
     try {
         return $client->getEnvironment($envId);
     } catch (RequestException $e) {
-        if ($e->response->status() === 404) {
+        if ($e->getResponse()->status() === 404) {
             return null;
         }
         throw $e;
@@ -331,7 +331,7 @@ function safeGetEnvironment(CloudClient $client, string $envId): ?Environment {
 
 ### Pattern: Wait for Deployment
 ```php
-function waitForDeployment(CloudClient $client, string $deploymentId, int $maxWait = 600): Deployment {
+function waitForDeployment(Connector $client, string $deploymentId, int $maxWait = 600): Deployment {
     $start = time();
 
     while (true) {
