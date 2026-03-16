@@ -18,6 +18,7 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
@@ -29,6 +30,18 @@ abstract class BaseCommand extends Command
     use DetectsNonInteractiveEnvironments;
     use HasAClient;
     use Validates;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption(
+            'token',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Laravel Cloud API token (overrides stored tokens and LARAVEL_CLOUD_API_TOKEN env var)',
+        );
+    }
 
     protected Form $form;
 
