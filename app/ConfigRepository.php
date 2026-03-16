@@ -50,6 +50,17 @@ class ConfigRepository
         $this->save();
     }
 
+    /**
+     * Replace all stored API tokens with the given set.
+     *
+     * @param  Collection<int, string>  $tokens
+     */
+    public function setApiTokens(Collection $tokens): void
+    {
+        $this->config['api_tokens'] = $tokens->unique()->values();
+        $this->save();
+    }
+
     public function set(string $key, mixed $value): void
     {
         $this->config[$key] = $value;

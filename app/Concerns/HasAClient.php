@@ -5,10 +5,12 @@ namespace App\Concerns;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\LocalConfig;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 trait HasAClient
 {
@@ -38,38 +40,67 @@ trait HasAClient
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
 
+        // When there's a single token, validate it before using it
         if ($apiTokens->hasSole()) {
-            return $apiTokens->first();
+            $token = $apiTokens->first();
+
+            if ($this->isValidToken($token)) {
+                return $token;
+            }
+
+            // Token is invalid/expired, remove it and fall through to prompt
+            warning('Your stored API token is no longer valid. Please re-authenticate.');
+            $config->removeApiToken($token);
+            $apiTokens = collect();
         }
 
         if ($apiTokens->containsManyItems()) {
+            // Validate all tokens and remove invalid ones
+            $validTokens = collect();
             $orgs = spin(
-                function () use ($apiTokens) {
-                    return $apiTokens->mapWithKeys(function ($token) {
-                        $client = new Connector($token);
+                function () use ($apiTokens, &$validTokens) {
+                    return $apiTokens->mapWithKeys(function ($token) use (&$validTokens) {
+                        try {
+                            $client = new Connector($token);
+                            $org = $client->meta()->organization();
+                            $validTokens->push($token);
 
-                        return [$token => $client->meta()->organization()];
-                    });
+                            return [$token => $org];
+                        } catch (RequestException) {
+                            return [];
+                        }
+                    })->filter();
                 },
                 'Fetching token details',
             );
 
-            if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
-                foreach ($orgs as $token => $organization) {
-                    if ($organization->id === $defaultOrganizationId) {
-                        return $token;
-                    }
-                }
+            // Persist cleanup if any tokens were removed
+            if ($validTokens->count() < $apiTokens->count()) {
+                $config->setApiTokens($validTokens);
             }
 
-            $apiToken = select(
-                label: 'Organization',
-                options: $orgs->mapWithKeys(fn ($organization, $token) => [
-                    $token => $organization->name,
-                ]),
-            );
+            if ($orgs->isEmpty()) {
+                warning('All stored API tokens are no longer valid. Please re-authenticate.');
+            } elseif ($orgs->count() === 1) {
+                return $orgs->keys()->first();
+            } else {
+                if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
+                    foreach ($orgs as $token => $organization) {
+                        if ($organization->id === $defaultOrganizationId) {
+                            return $token;
+                        }
+                    }
+                }
 
-            return $apiToken;
+                $apiToken = select(
+                    label: 'Organization',
+                    options: $orgs->mapWithKeys(fn ($organization, $token) => [
+                        $token => $organization->name,
+                    ]),
+                );
+
+                return $apiToken;
+            }
         }
 
         info('No API tokens found.');
@@ -85,5 +116,19 @@ trait HasAClient
         info('API token saved to '.$config->path());
 
         return $apiToken;
+    }
+
+    /**
+     * Check whether a token is still valid by making a lightweight API call.
+     */
+    protected function isValidToken(string $token): bool
+    {
+        try {
+            (new Connector($token))->meta()->organization();
+
+            return true;
+        } catch (RequestException) {
+            return false;
+        }
     }
 }
