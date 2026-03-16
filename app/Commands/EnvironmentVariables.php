@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\AddEnvironmentVariablesRequestData;
+use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
 use App\Dto\Environment;
 
@@ -15,8 +16,8 @@ class EnvironmentVariables extends BaseCommand
 {
     protected $signature = 'environment:variables
                             {environment? : The environment ID or name}
-                            {--action= : append, set, or replace}
-                            {--key= : Variable key}
+                            {--action= : append, set, replace, or delete}
+                            {--key=* : Variable key(s)}
                             {--value= : Variable value}
                             {--force : Force update without confirmation}
                             {--json : Output as JSON}';
@@ -48,13 +49,20 @@ class EnvironmentVariables extends BaseCommand
                     'append' => ['Append', 'Add without checking for duplicates'],
                     'set' => ['Set', 'Check for duplicates and update existing variables'],
                     'replace' => ['Replace', 'Replace all existing variable'],
+                    'delete' => ['Delete', 'Remove variables by key'],
                 ],
                 default: $value ?? 'add',
             )),
         );
 
-        if (! in_array($this->form()->get('action'), ['append', 'set', 'replace'])) {
-            $this->failAndExit('Invalid action, must be either `append`, `set` or `replace`');
+        if (! in_array($this->form()->get('action'), ['append', 'set', 'replace', 'delete'])) {
+            $this->failAndExit('Invalid action, must be either `append`, `set`, `replace` or `delete`');
+        }
+
+        if ($this->form()->get('action') === 'delete') {
+            $this->deleteVariables($environment);
+
+            return;
         }
 
         if ($this->form()->get('action') === 'replace' && ! $this->option('force')) {
@@ -99,11 +107,67 @@ class EnvironmentVariables extends BaseCommand
         }
     }
 
+    protected function deleteVariables(Environment $environment): void
+    {
+        $keys = $this->option('key');
+
+        if (empty($keys)) {
+            if (! $this->isInteractive()) {
+                $this->failAndExit('You must provide at least one --key to delete.');
+            }
+
+            $keys = [];
+            $adding = true;
+
+            while ($adding) {
+                $key = text(
+                    label: 'Key to delete',
+                    required: true,
+                );
+
+                $keys[] = $key;
+
+                $adding = confirm(
+                    'Delete another variable?',
+                    no: 'No, done',
+                    yes: 'Yes, delete another',
+                    default: false,
+                );
+            }
+        }
+
+        if (! $this->option('force')) {
+            if (! $this->isInteractive()) {
+                $this->failAndExit('Cancelled. Use --force to force deletion.');
+            }
+
+            if (! confirm(
+                label: 'Are you sure you want to delete '.count($keys).' variable(s)?',
+                yes: 'Yes, delete',
+                no: 'No, cancel',
+            )) {
+                $this->failAndExit('Cancelled');
+            }
+        }
+
+        spin(
+            fn () => $this->client->environments()->deleteVariables(
+                new DeleteEnvironmentVariablesRequestData(
+                    environmentId: $environment->id,
+                    keys: $keys,
+                ),
+            ),
+            'Deleting variables...',
+        );
+    }
+
     protected function collectVariablesFromOptions(): array
     {
+        $keys = $this->option('key');
+
         return [
             [
-                'key' => $this->option('key'),
+                'key' => $keys[0] ?? null,
                 'value' => $this->option('value'),
             ],
         ];

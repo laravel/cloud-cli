@@ -6,6 +6,7 @@ use App\Client\Requests\CreateDatabaseClusterRequestData;
 use App\Client\Requests\UpdateDatabaseClusterRequestData;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\DeleteDatabaseClusterRequest;
+use App\Client\Resources\DatabaseClusters\GetDatabaseClusterMetricsRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
@@ -49,6 +50,14 @@ class DatabaseClustersResource extends Resource
     public function delete(string $clusterId): void
     {
         $this->send(new DeleteDatabaseClusterRequest($clusterId));
+    }
+
+    public function metrics(string $clusterId): array
+    {
+        $request = new GetDatabaseClusterMetricsRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function types(): array

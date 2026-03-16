@@ -6,6 +6,7 @@ use App\Client\Requests\CreateWebSocketApplicationRequestData;
 use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Client\Resources\WebSocketApplications\CreateWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\DeleteWebSocketApplicationRequest;
+use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationMetricsRequest;
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\ListWebSocketApplicationsRequest;
 use App\Client\Resources\WebSocketApplications\UpdateWebSocketApplicationRequest;
@@ -52,5 +53,13 @@ class WebSocketApplicationsResource extends Resource
         $this->send(new DeleteWebSocketApplicationRequest(
             applicationId: $applicationId,
         ));
+    }
+
+    public function metrics(string $applicationId): array
+    {
+        $request = new GetWebSocketApplicationMetricsRequest($applicationId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }
