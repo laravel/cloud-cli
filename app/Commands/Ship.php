@@ -30,7 +30,7 @@ use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
-use Throwable;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
@@ -95,6 +95,8 @@ class Ship extends BaseCommand
                 $this->outputErrorOrThrow(
                     'Repository already has an application. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
                 );
+
+                return self::FAILURE;
             }
 
             info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for this repository.');
@@ -169,7 +171,7 @@ class Ship extends BaseCommand
             'url' => $environment->url,
         ]);
 
-        if (confirm('Open site in browser?')) {
+        if ($this->isInteractive() && confirm('Open site in browser?')) {
             $isReady = spin(
                 fn () => $this->waitForUrlToBeReady($environment),
                 'Waiting for site to be ready...',
@@ -210,19 +212,40 @@ class Ship extends BaseCommand
                 applicationId: $application->id,
                 avatar: $this->getAvatarFromPath($path),
             ));
-        } catch (Throwable $e) {
+        } catch (RequestException $e) {
             // All good, this is a nice bonus but not critical
         }
     }
 
     protected function waitForUrlToBeReady(Environment $environment): bool
     {
+        $attempts = 0;
+
         do {
             $response = Http::get($environment->url);
             Sleep::for(CarbonInterval::seconds(2));
-        } while (! $response->successful() && ! $response->serverError());
+            $attempts++;
+        } while ($attempts < 60 && ! $response->successful() && ! $response->redirect() && ! $response->serverError());
 
-        return $response->successful();
+        return $response->successful() || $response->redirect();
+    }
+
+    protected function waitForInstance(Environment $environment): string
+    {
+        $attempts = 0;
+        $maxAttempts = 30;
+
+        while (empty($environment->instances)) {
+            if ($attempts >= $maxAttempts) {
+                throw new \RuntimeException('Timed out waiting for instance to be provisioned.');
+            }
+
+            Sleep::for(CarbonInterval::seconds(2));
+            $environment = $this->client->environments()->include('instances')->get($environment->id);
+            $attempts++;
+        }
+
+        return $environment->instances[0];
     }
 
     protected function createApplicationNonInteractively(string $repository, string $defaultRegion): Application
@@ -230,13 +253,19 @@ class Ship extends BaseCommand
         $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
         $region = $this->option('region') ?? $defaultRegion;
 
-        return $this->client->applications()->create(
-            new CreateApplicationRequestData(
-                repository: $repository,
-                name: $name,
-                region: $region,
-            ),
-        );
+        try {
+            return $this->client->applications()->create(
+                new CreateApplicationRequestData(
+                    repository: $repository,
+                    name: $name,
+                    region: $region,
+                ),
+            );
+        } catch (RequestException $e) {
+            $message = $e->getResponse()->json('message', $e->getMessage());
+
+            throw new \RuntimeException('Failed to create application: '.$message);
+        }
     }
 
     protected function createApplication(string $defaultRegion, string $repository): ?Application
@@ -366,10 +395,12 @@ class Ship extends BaseCommand
         }
 
         if (count($instanceParams) > 0) {
+            $instanceId = $this->waitForInstance($environment);
+
             $this->loopUntilValid(
                 fn () => spin(
                     fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
-                        instanceId: $environment->instances[0],
+                        instanceId: $instanceId,
                         usesScheduler: $instanceParams['uses_scheduler'] ?? null,
                         usesOctane: $instanceParams['uses_octane'] ?? null,
                         usesInertiaSsr: $instanceParams['uses_inertia_ssr'] ?? null,
@@ -440,9 +471,11 @@ class Ship extends BaseCommand
             }
         }
 
+        $instanceId = $this->waitForInstance($environment);
+
         $this->client->instances()->update(
             new UpdateInstanceRequestData(
-                instanceId: $environment->instances[0],
+                instanceId: $instanceId,
                 usesScheduler: $instanceParams['uses_scheduler'],
                 usesOctane: $instanceParams['uses_octane'],
                 usesInertiaSsr: null,
@@ -564,14 +597,13 @@ class Ship extends BaseCommand
 
         return $this->loopUntilValid(
             fn () => $this->createDatabaseWithName($cluster, $databaseName)->id,
+            maxAttempts: 30,
             handleNonInteractiveErrors: function ($errors) {
-                if ($errors->messageContains('database', 'please wait')) {
-                    Sleep::for(CarbonInterval::seconds(5));
+                // During provisioning, retry on any error (not just "please wait")
+                // since the cluster may still be initializing
+                Sleep::for(CarbonInterval::seconds(5));
 
-                    return true;
-                }
-
-                return false;
+                return true;
             },
         );
     }
@@ -743,7 +775,9 @@ class Ship extends BaseCommand
 
         try {
             $variables = Dotenv::parse(file_get_contents($envPath));
-        } catch (Throwable $e) {
+        } catch (\Throwable $e) {
+            warning('Could not parse .env file: '.$e->getMessage());
+
             return;
         }
 
