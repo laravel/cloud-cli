@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class CacheList extends BaseCommand
 {
@@ -30,13 +29,11 @@ class CacheList extends BaseCommand
 
         $items = collect($caches);
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No caches found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No caches found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Name', 'Type', 'Status', 'Region', 'Size'],

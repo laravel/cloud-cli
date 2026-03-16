@@ -6,7 +6,6 @@ use App\Dto\DedicatedCluster;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DedicatedClusterList extends BaseCommand
 {
@@ -29,13 +28,11 @@ class DedicatedClusterList extends BaseCommand
 
         $items = $clusters->collect();
 
-        $this->outputJsonIfWanted($items->toArray());
-
         if ($items->isEmpty()) {
-            warning('No dedicated clusters found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No dedicated clusters found.');
         }
+
+        $this->outputJsonIfWanted($items->toArray());
 
         $rows = $items->map(fn (DedicatedCluster $cluster) => [
             $cluster->id,

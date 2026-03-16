@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class WebsocketApplicationList extends BaseCommand
 {
@@ -32,13 +31,11 @@ class WebsocketApplicationList extends BaseCommand
 
         $items = collect($apps);
 
-        $this->outputJsonIfWanted($items->toArray());
-
         if ($items->isEmpty()) {
-            warning('No WebSocket applications found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No WebSocket applications found.');
         }
+
+        $this->outputJsonIfWanted($items->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'App ID', 'Max connections', 'Created At'],

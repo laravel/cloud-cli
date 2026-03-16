@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DeploymentList extends BaseCommand
 {
@@ -29,13 +28,11 @@ class DeploymentList extends BaseCommand
 
         $items = $deployments->collect();
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No deployments found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No deployments found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Status', 'Branch', 'Commit', 'Started'],

@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DomainList extends BaseCommand
 {
@@ -29,13 +28,11 @@ class DomainList extends BaseCommand
 
         $items = $domains->collect();
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No domains found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No domains found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Name', 'Status', 'Primary'],

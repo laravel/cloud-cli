@@ -7,7 +7,6 @@ use App\Dto\CacheType;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\table;
-use function Laravel\Prompts\warning;
 
 class CacheTypes extends BaseCommand
 {
@@ -28,13 +27,11 @@ class CacheTypes extends BaseCommand
 
         $items = collect($types);
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No cache types found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No cache types found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         $rows = collect($types)->map(fn (CacheType $type, $index) => [
             $type->label,

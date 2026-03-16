@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DatabaseSnapshotList extends BaseCommand
 {
@@ -32,13 +31,11 @@ class DatabaseSnapshotList extends BaseCommand
 
         $items = collect($snapshots);
 
-        $this->outputJsonIfWanted($items->toArray());
-
         if ($items->isEmpty()) {
-            warning('No snapshots found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No snapshots found.');
         }
+
+        $this->outputJsonIfWanted($items->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'Created At', 'Status'],

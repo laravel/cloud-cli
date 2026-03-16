@@ -4,7 +4,6 @@ namespace App\Commands;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class InstanceSizes extends BaseCommand
 {
@@ -23,13 +22,11 @@ class InstanceSizes extends BaseCommand
             'Fetching instance sizes...',
         );
 
-        $this->outputJsonIfWanted($sizes->toArray());
-
         if (count($sizes->all()) === 0) {
-            warning('No instance sizes found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No instance sizes found.');
         }
+
+        $this->outputJsonIfWanted($sizes->toArray());
 
         dataTable(
             headers: [
