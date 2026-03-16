@@ -37,9 +37,8 @@ beforeEach(function () {
 
 afterEach(fn () => MockClient::destroyGlobal());
 
-it('returns failure when no logs are found', function () {
-    Prompt::fake();
-
+function setupEnvironmentLogsMocks(array $logsData = []): void
+{
     MockClient::global([
         GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
         ListApplicationsRequest::class => MockResponse::make([
@@ -58,12 +57,108 @@ it('returns failure when no logs are found', function () {
             'data' => createEnvironmentResponse(),
         ], 200),
         ListEnvironmentLogsRequest::class => MockResponse::make([
-            'data' => [],
+            'data' => $logsData,
         ], 200),
     ]);
+}
+
+it('returns failure when no logs are found', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
 
     $this->artisan('environment:logs', [
         'application' => 'My App',
         'environment' => 'production',
     ])->assertFailed();
+});
+
+it('returns failure when no logs are found with --hours filter', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--hours' => 2,
+    ])->assertFailed();
+});
+
+it('returns failure when no logs are found with --minutes filter', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--minutes' => 30,
+    ])->assertFailed();
+});
+
+it('returns failure when no logs are found with --days filter', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--days' => 7,
+    ])->assertFailed();
+});
+
+it('returns failure when no logs are found with --from filter', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--from' => '2025-01-01 00:00:00',
+    ])->assertFailed();
+});
+
+it('returns failure when no logs are found with --from and --to filters', function () {
+    Prompt::fake();
+
+    setupEnvironmentLogsMocks([]);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--from' => '2025-01-01 00:00:00',
+        '--to' => '2025-01-02 00:00:00',
+    ])->assertFailed();
+});
+
+it('outputs logs as JSON when --json flag is used', function () {
+    Prompt::fake();
+
+    $logsData = [
+        [
+            'message' => 'Test log entry 1',
+            'level' => 'info',
+            'type' => 'application',
+            'logged_at' => '2025-01-01T00:00:00Z',
+            'data' => null,
+        ],
+        [
+            'message' => 'Test log entry 2',
+            'level' => 'warning',
+            'type' => 'application',
+            'logged_at' => '2025-01-01T00:01:00Z',
+            'data' => null,
+        ],
+    ];
+
+    setupEnvironmentLogsMocks($logsData);
+
+    $this->artisan('environment:logs', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--json' => true,
+    ])->assertSuccessful();
 });
