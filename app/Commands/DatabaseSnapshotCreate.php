@@ -14,6 +14,8 @@ class DatabaseSnapshotCreate extends BaseCommand
 {
     protected $signature = 'database-snapshot:create
                             {cluster? : The database cluster ID or name}
+                            {--name= : Snapshot name}
+                            {--description= : Snapshot description}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a database snapshot';
@@ -48,12 +50,14 @@ class DatabaseSnapshotCreate extends BaseCommand
 
         $this->form()->prompt(
             'description',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => textarea(
-                    label: 'Description',
-                    default: $value ?? '',
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn (?string $value) => textarea(
+                        label: 'Description',
+                        default: $value ?? '',
+                    ),
+                )
+                ->nonInteractively(fn () => ''),
         );
 
         return spin(

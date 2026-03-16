@@ -70,10 +70,7 @@ function dbRestoreCreatedResponse(): array
     ];
 }
 
-// BUG: DatabaseRestoreCreate calls $this->form()->prompt('name', ...) directly in handle()
-// without first calling loopUntilValid() or form()->errors(), which means Form::$errors
-// is an uninitialized typed property. This causes a TypeError at runtime.
-it('throws error due to uninitialized Form errors property', function () {
+it('creates a restore from a snapshot by cluster id', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -81,15 +78,15 @@ it('throws error due to uninitialized Form errors property', function () {
         CreateDatabaseRestoreRequest::class => MockResponse::make(dbRestoreCreatedResponse(), 200),
     ]);
 
-    expect(fn () => $this->artisan('database-restore:create', [
+    $this->artisan('database-restore:create', [
         'cluster' => 'db-cluster-1',
         'name' => 'my-restore',
         '--snapshot' => 'snap-123',
         '--no-interaction' => true,
-    ]))->toThrow(Error::class, 'must not be accessed before initialization');
+    ])->assertSuccessful();
 });
 
-it('resolves cluster for restore but hits same Form errors bug', function () {
+it('creates a restore from a snapshot by cluster name', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -116,10 +113,10 @@ it('resolves cluster for restore but hits same Form errors bug', function () {
         CreateDatabaseRestoreRequest::class => MockResponse::make(dbRestoreCreatedResponse(), 200),
     ]);
 
-    expect(fn () => $this->artisan('database-restore:create', [
+    $this->artisan('database-restore:create', [
         'cluster' => 'my-cluster',
         'name' => 'my-restore',
         '--snapshot' => 'snap-123',
         '--no-interaction' => true,
-    ]))->toThrow(Error::class, 'must not be accessed before initialization');
+    ])->assertSuccessful();
 });

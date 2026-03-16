@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateDatabaseRestoreRequestData;
+use App\Dto\ValidationErrors;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
@@ -31,6 +32,9 @@ class DatabaseRestoreCreate extends BaseCommand
 
         $snapshotId = $this->option('snapshot');
         $pointInTime = $this->option('point-in-time');
+
+        $this->errors ??= new ValidationErrors;
+        $this->form()->errors($this->errors);
 
         $this->form()->prompt(
             'name',
