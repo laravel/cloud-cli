@@ -8,7 +8,9 @@ use App\Concerns\HandlesAvatars;
 use App\Dto\Application;
 use App\Exceptions\CommandExitException;
 use App\Git;
+use Saloon\Exceptions\Request\RequestException;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
@@ -62,30 +64,40 @@ class ApplicationUpdate extends BaseCommand
 
     protected function updateApplication(Application $application): Application
     {
-        spin(
-            fn () => $this->client->applications()->update(
-                new UpdateApplicationRequestData(
-                    applicationId: $application->id,
-                    name: $this->form()->get('name'),
-                    slug: $this->form()->get('slug'),
-                    defaultEnvironmentId: $this->form()->get('default_environment_id'),
-                    repository: $this->form()->get('repository'),
-                    slackChannel: $this->form()->get('slack_channel'),
-                ),
-            ),
-            'Updating application...',
-        );
-
-        if ($this->form()->get('avatar')) {
+        try {
             spin(
-                fn () => $this->client->applications()->updateAvatar(
-                    new UpdateApplicationAvatarRequestData(
+                fn () => $this->client->applications()->update(
+                    new UpdateApplicationRequestData(
                         applicationId: $application->id,
-                        avatar: $this->getAvatarFromPath($this->form()->get('avatar')),
+                        name: $this->form()->get('name'),
+                        slug: $this->form()->get('slug'),
+                        defaultEnvironmentId: $this->form()->get('default_environment_id'),
+                        repository: $this->form()->get('repository'),
+                        slackChannel: $this->form()->get('slack_channel'),
                     ),
                 ),
-                'Updating application avatar...',
+                'Updating application...',
             );
+        } catch (RequestException $e) {
+            error('Failed to update application: '.$e->getMessage());
+
+            throw new CommandExitException(self::FAILURE);
+        }
+
+        if ($this->form()->get('avatar')) {
+            try {
+                spin(
+                    fn () => $this->client->applications()->updateAvatar(
+                        new UpdateApplicationAvatarRequestData(
+                            applicationId: $application->id,
+                            avatar: $this->getAvatarFromPath($this->form()->get('avatar')),
+                        ),
+                    ),
+                    'Updating application avatar...',
+                );
+            } catch (RequestException $e) {
+                error('Failed to update avatar: '.$e->getMessage());
+            }
         }
 
         return $this->client->applications()->get($application->id);
