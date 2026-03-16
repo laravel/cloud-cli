@@ -35,18 +35,29 @@ class ConfigRepository
      */
     public function apiTokens(): Collection
     {
-        return collect($this->get('api_tokens', []));
+        return collect($this->get('api_tokens', []))->unique()->values();
     }
 
     public function addApiToken(string $token): void
     {
-        $this->config['api_tokens'] = $this->apiTokens()->push($token);
+        $this->config['api_tokens'] = $this->apiTokens()->push($token)->unique()->values();
         $this->save();
     }
 
     public function removeApiToken(string $token): void
     {
         $this->config['api_tokens'] = $this->apiTokens()->reject(fn ($t) => $t === $token)->values();
+        $this->save();
+    }
+
+    /**
+     * Replace all stored API tokens with the given set.
+     *
+     * @param  Collection<int, string>  $tokens
+     */
+    public function setApiTokens(Collection $tokens): void
+    {
+        $this->config['api_tokens'] = $tokens->unique()->values();
         $this->save();
     }
 
