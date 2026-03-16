@@ -18,6 +18,7 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
@@ -30,9 +31,39 @@ abstract class BaseCommand extends Command
     use HasAClient;
     use Validates;
 
+    /**
+     * Sensitive field names that should be redacted when --hide-secrets is used.
+     */
+    protected const SENSITIVE_FIELD_NAMES = [
+        'password',
+        'secret',
+        'api_key',
+        'apiKey',
+        'access_key',
+        'accessKey',
+        'secret_key',
+        'secretKey',
+        'secret_access_key',
+        'secretAccessKey',
+        'token',
+        'private_key',
+        'privateKey',
+    ];
+
+    protected const REDACTED_VALUE = '********';
+
     protected Form $form;
 
     protected ?Resolvers $resolvers;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->getDefinition()->addOption(
+            new InputOption('hide-secrets', null, InputOption::VALUE_NONE, 'Redact sensitive values in output')
+        );
+    }
 
     protected function form(): Form
     {
@@ -161,15 +192,94 @@ abstract class BaseCommand extends Command
             return;
         }
 
+        if ($this->shouldHideSecrets()) {
+            $data = $this->redactSecrets($data);
+        }
+
         if (is_string($data)) {
             $this->line(json_encode(['message' => $data]));
         } elseif ($data instanceof Jsonable) {
-            $this->line($data->toJson());
+            $jsonData = json_decode($data->toJson(), true);
+            if ($this->shouldHideSecrets() && is_array($jsonData)) {
+                $jsonData = $this->redactSecrets($jsonData);
+            }
+            $this->line(json_encode($jsonData));
         } else {
             $this->line(json_encode($data));
         }
 
         throw new CommandExitException(self::SUCCESS);
+    }
+
+    /**
+     * Determine whether secrets should be hidden in output.
+     */
+    protected function shouldHideSecrets(): bool
+    {
+        return $this->hasOption('hide-secrets') && $this->option('hide-secrets');
+    }
+
+    /**
+     * Recursively redact sensitive values from the given data.
+     *
+     * Redacts:
+     * - Arrays with 'key' + 'value' structure (environment variables) where key looks sensitive
+     * - Any field whose name matches a known sensitive field name (password, secret, etc.)
+     */
+    protected function redactSecrets(mixed $data): mixed
+    {
+        if ($data instanceof Jsonable) {
+            $decoded = json_decode($data->toJson(), true);
+
+            return is_array($decoded) ? $this->redactSecrets($decoded) : $data;
+        }
+
+        if (! is_array($data)) {
+            return $data;
+        }
+
+        // Handle environment variable style arrays: [{key: "DB_PASSWORD", value: "secret"}]
+        if (isset($data['key'], $data['value']) && is_string($data['key'])) {
+            if ($this->isSensitiveKeyName($data['key'])) {
+                $data['value'] = self::REDACTED_VALUE;
+            }
+
+            return $data;
+        }
+
+        foreach ($data as $key => $value) {
+            if (is_string($key) && $this->isSensitiveFieldName($key) && is_string($value)) {
+                $data[$key] = self::REDACTED_VALUE;
+            } elseif (is_array($value) || $value instanceof Jsonable) {
+                $data[$key] = $this->redactSecrets($value);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Check if a field name is a known sensitive credential field.
+     */
+    protected function isSensitiveFieldName(string $name): bool
+    {
+        return in_array($name, self::SENSITIVE_FIELD_NAMES, true);
+    }
+
+    /**
+     * Check if an environment variable key name looks sensitive.
+     */
+    protected function isSensitiveKeyName(string $key): bool
+    {
+        $normalized = strtolower($key);
+
+        foreach (['password', 'secret', 'api_key', 'token', 'private_key', 'access_key'] as $sensitive) {
+            if (str_contains($normalized, $sensitive)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function resolve(string $argument): ValueResolver
