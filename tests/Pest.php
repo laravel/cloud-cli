@@ -16,7 +16,7 @@ use Tests\TestCase;
 |
 */
 
-uses(TestCase::class)->in('Feature', 'Unit');
+uses(TestCase::class)->in('Feature', 'Unit', 'Integration');
 
 afterEach(function () {
     PromptRenderer::$suppressOutput = false;
