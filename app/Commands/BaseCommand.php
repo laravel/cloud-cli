@@ -18,6 +18,7 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
@@ -33,6 +34,13 @@ abstract class BaseCommand extends Command
     protected Form $form;
 
     protected ?Resolvers $resolvers;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption('hide-secrets', null, InputOption::VALUE_NONE, 'Redact environment variable values in output');
+    }
 
     protected function form(): Form
     {
@@ -162,14 +170,54 @@ abstract class BaseCommand extends Command
         }
 
         if (is_string($data)) {
-            $this->line(json_encode(['message' => $data]));
+            $json = json_encode(['message' => $data]);
         } elseif ($data instanceof Jsonable) {
-            $this->line($data->toJson());
+            $json = $data->toJson();
         } else {
-            $this->line(json_encode($data));
+            $json = json_encode($data);
         }
 
+        if ($this->shouldHideSecrets()) {
+            $decoded = json_decode($json, true);
+            $decoded = $this->redactSecrets($decoded);
+            $json = json_encode($decoded);
+        }
+
+        $this->line($json);
+
         throw new CommandExitException(self::SUCCESS);
+    }
+
+    protected function shouldHideSecrets(): bool
+    {
+        return $this->hasOption('hide-secrets') && $this->option('hide-secrets');
+    }
+
+    /**
+     * Recursively redact environment variable values in the data structure.
+     *
+     * Looks for arrays containing 'key' and 'value' keys (the shape used by
+     * environmentVariables in the JSON:API responses) and replaces the value
+     * with a redacted placeholder.
+     */
+    protected function redactSecrets(mixed $data): mixed
+    {
+        if (! is_array($data)) {
+            return $data;
+        }
+
+        // If this array has exactly 'key' and 'value' string entries, redact the value.
+        if (array_key_exists('key', $data) && array_key_exists('value', $data) && is_string($data['key'])) {
+            $data['value'] = '********';
+
+            return $data;
+        }
+
+        foreach ($data as $k => $v) {
+            $data[$k] = $this->redactSecrets($v);
+        }
+
+        return $data;
     }
 
     protected function resolve(string $argument): ValueResolver
