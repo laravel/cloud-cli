@@ -89,6 +89,50 @@ it('removes a specific token with removeApiToken', function () {
     expect($this->config->apiTokens()->toArray())->toBe(['token-A', 'token-C']);
 });
 
+// === Multi-organization support ===
+// Users with multiple orgs get one token per org from the auth session.
+// setApiTokens must preserve all of them, and re-auth must replace the
+// full set without losing tokens for other orgs.
+
+it('preserves multiple tokens for users with multiple organizations', function () {
+    // Auth session returns one token per org
+    $this->config->setApiTokens(collect(['token-org-A', 'token-org-B']));
+
+    expect($this->config->apiTokens())->toHaveCount(2);
+    expect($this->config->apiTokens()->toArray())->toBe(['token-org-A', 'token-org-B']);
+});
+
+it('replaces all org tokens atomically on re-auth', function () {
+    // First auth: 2 orgs
+    $this->config->setApiTokens(collect(['token-org-A-v1', 'token-org-B-v1']));
+    expect($this->config->apiTokens())->toHaveCount(2);
+
+    // Re-auth: same 2 orgs, fresh tokens
+    $this->config->setApiTokens(collect(['token-org-A-v2', 'token-org-B-v2']));
+
+    // Should have exactly 2 fresh tokens, no stale ones
+    expect($this->config->apiTokens())->toHaveCount(2);
+    expect($this->config->apiTokens()->toArray())->toBe(['token-org-A-v2', 'token-org-B-v2']);
+    expect($this->config->apiTokens()->contains('token-org-A-v1'))->toBeFalse();
+    expect($this->config->apiTokens()->contains('token-org-B-v1'))->toBeFalse();
+});
+
+it('handles org count changing between auth sessions', function () {
+    // First auth: user has 2 orgs
+    $this->config->setApiTokens(collect(['token-org-A', 'token-org-B']));
+    expect($this->config->apiTokens())->toHaveCount(2);
+
+    // Re-auth: user was removed from org B, now only 1 org
+    $this->config->setApiTokens(collect(['token-org-A-new']));
+    expect($this->config->apiTokens())->toHaveCount(1);
+    expect($this->config->apiTokens()->toArray())->toBe(['token-org-A-new']);
+
+    // Re-auth: user joined org C, now 2 orgs again
+    $this->config->setApiTokens(collect(['token-org-A-new2', 'token-org-C']));
+    expect($this->config->apiTokens())->toHaveCount(2);
+    expect($this->config->apiTokens()->toArray())->toBe(['token-org-A-new2', 'token-org-C']);
+});
+
 it('returns empty collection when no tokens exist', function () {
     expect($this->config->apiTokens())->toHaveCount(0);
     expect($this->config->apiTokens()->isEmpty())->toBeTrue();
