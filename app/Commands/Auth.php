@@ -172,7 +172,9 @@ class Auth extends BaseCommand implements NoAuthRequired
             if ($clientSocket !== false) {
                 $this->handleRequest($clientSocket);
 
-                break;
+                if ($this->exchangeCode !== null) {
+                    break;
+                }
             }
 
             if (time() - $startTime > $timeout) {
