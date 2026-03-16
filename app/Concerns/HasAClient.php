@@ -72,7 +72,7 @@ trait HasAClient
                 // Use cached org metadata — no API calls needed
                 $orgs = $tokenEntries->mapWithKeys(fn (array $e) => [
                     $e['token'] => new \App\Dto\Organization(
-                        id: $e['organization_id'],
+                        id: $e['organization_id'] ?? '',
                         name: $e['organization_name'],
                         slug: '',
                     ),
@@ -130,7 +130,7 @@ trait HasAClient
                     label: 'Organization',
                     options: $orgs->mapWithKeys(fn ($organization, $token) => [
                         $token => $organization->name,
-                    ]),
+                    ])->all(),
                 );
 
                 return $apiToken;

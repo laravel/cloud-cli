@@ -107,8 +107,7 @@ class Auth extends BaseCommand implements NoAuthRequired
         // so resolveApiToken() can show the org picker without API calls.
         $newTokens = collect($tokens)->map(fn ($t) => [
             'token' => $t['token'],
-            'organization_name' => $t['organization_name'] ?? '',
-            'organization_id' => $t['organization_id'] ?? '',
+            'organization_name' => $t['organization_name'],
         ]);
         $this->config->setApiTokens($newTokens);
 

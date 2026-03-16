@@ -34,7 +34,7 @@ class ConfigRepository
      * Get all API tokens as plain strings (backwards-compatible).
      *
      * Handles both legacy format (plain strings) and new format (associative arrays
-     * with 'token', 'organization_name', 'organization_id' keys).
+     * with 'token', 'organization_name', and optionally 'organization_id' keys).
      *
      * @return Collection<int, string>
      */
@@ -46,10 +46,10 @@ class ConfigRepository
     /**
      * Get all API token entries with their metadata.
      *
-     * Each entry is an associative array with keys: token, organization_name, organization_id.
+     * Each entry is an associative array with keys: token, organization_name, and optionally organization_id.
      * Legacy plain-string tokens are normalized to this format with empty metadata.
      *
-     * @return Collection<int, array{token: string, organization_name: string, organization_id: string}>
+     * @return Collection<int, array{token: string, organization_name: string, organization_id?: string}>
      */
     public function apiTokenEntries(): Collection
     {
