@@ -65,28 +65,52 @@ trait HasAClient
         }
 
         if ($apiTokens->containsManyItems()) {
-            // Validate all tokens and remove invalid ones
-            $validTokens = collect();
-            $orgs = spin(
-                function () use ($apiTokens, &$validTokens) {
-                    return $apiTokens->mapWithKeys(function ($token) use (&$validTokens) {
-                        try {
-                            $client = new Connector($token);
-                            $org = $client->meta()->organization();
-                            $validTokens->push($token);
+            $tokenEntries = $config->apiTokenEntries();
+            $hasCachedOrgNames = $tokenEntries->every(fn (array $e) => $e['organization_name'] !== '');
 
-                            return [$token => $org];
-                        } catch (RequestException) {
-                            return [];
-                        }
-                    })->filter();
-                },
-                'Fetching token details',
-            );
+            if ($hasCachedOrgNames) {
+                // Use cached org metadata — no API calls needed
+                $orgs = $tokenEntries->mapWithKeys(fn (array $e) => [
+                    $e['token'] => new \App\Dto\Organization(
+                        id: $e['organization_id'],
+                        name: $e['organization_name'],
+                        slug: '',
+                    ),
+                ]);
+            } else {
+                // Backwards compatibility: legacy tokens without cached org names
+                $validTokens = collect();
+                $orgs = spin(
+                    function () use ($apiTokens, &$validTokens) {
+                        return $apiTokens->mapWithKeys(function ($token) use (&$validTokens) {
+                            try {
+                                $client = new Connector($token);
+                                $org = $client->meta()->organization();
+                                $validTokens->push($token);
 
-            // Persist cleanup if any tokens were removed
-            if ($validTokens->count() < $apiTokens->count()) {
-                $config->setApiTokens($validTokens);
+                                return [$token => $org];
+                            } catch (RequestException) {
+                                return [];
+                            }
+                        })->filter();
+                    },
+                    'Fetching token details',
+                );
+
+                // Persist cleanup if any tokens were removed
+                if ($validTokens->count() < $apiTokens->count()) {
+                    $config->setApiTokens($validTokens);
+                }
+
+                // Upgrade legacy tokens: cache the org names we just fetched
+                if ($orgs->isNotEmpty()) {
+                    $upgradedTokens = $orgs->map(fn ($org, $token) => [
+                        'token' => $token,
+                        'organization_name' => $org->name,
+                        'organization_id' => $org->id,
+                    ])->values();
+                    $config->setApiTokens($upgradedTokens);
+                }
             }
 
             if ($orgs->isEmpty()) {

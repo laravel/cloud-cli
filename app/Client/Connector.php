@@ -42,12 +42,12 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function resolveCacheDriver(): Driver
     {
-        return new LaravelCacheDriver(Cache::store('array'));
+        return new LaravelCacheDriver(Cache::store('file'));
     }
 
     public function cacheExpiryInSeconds(): int
     {
-        return 60 * 60 * 24;
+        return 60 * 5;
     }
 
     public function __construct(

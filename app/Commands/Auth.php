@@ -103,8 +103,13 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         // Replace all existing tokens with the fresh set from this auth session.
         // This prevents stale/expired tokens from accumulating in config.json
-        // when the user re-authenticates.
-        $newTokens = collect($tokens)->pluck('token');
+        // when the user re-authenticates. Store org metadata alongside tokens
+        // so resolveApiToken() can show the org picker without API calls.
+        $newTokens = collect($tokens)->map(fn ($t) => [
+            'token' => $t['token'],
+            'organization_name' => $t['organization_name'] ?? '',
+            'organization_id' => $t['organization_id'] ?? '',
+        ]);
         $this->config->setApiTokens($newTokens);
 
         foreach ($tokens as $tokenData) {
