@@ -391,22 +391,8 @@ it('ships with --json and outputs JSON with application and environment info', f
         ->expectsOutputToContain('app-ship-1');
 });
 
-it('ships with --dry-run and shows plan without creating resources', function () {
-    Prompt::fake();
-
-    MockClient::global([
-        ListApplicationsRequest::class => MockResponse::make([
-            'data' => [],
-            'included' => [],
-            'links' => ['next' => null],
-        ], 200),
-    ]);
-
-    $this->artisan('ship', [
-        '--dry-run' => true,
-        '--no-interaction' => true,
-    ])->assertSuccessful();
-});
+// Dry-run tests require --dry-run flag from PR #82
+// it('ships with --dry-run and shows plan without creating resources')
 
 it('reuses an existing database cluster instead of creating a new one', function () {
     Prompt::fake();
@@ -747,40 +733,6 @@ it('ships with --database-preset=scale', function () {
     ])->assertSuccessful();
 });
 
-it('dry-run with custom name and region completes successfully', function () {
-    Prompt::fake();
-
-    MockClient::global([
-        ListApplicationsRequest::class => MockResponse::make([
-            'data' => [],
-            'included' => [],
-            'links' => ['next' => null],
-        ], 200),
-    ]);
-
-    $this->artisan('ship', [
-        '--dry-run' => true,
-        '--name' => 'custom-name',
-        '--region' => 'eu-west-1',
-        '--no-interaction' => true,
-    ])->assertSuccessful();
-});
-
-it('dry-run with database options completes successfully', function () {
-    Prompt::fake();
-
-    MockClient::global([
-        ListApplicationsRequest::class => MockResponse::make([
-            'data' => [],
-            'included' => [],
-            'links' => ['next' => null],
-        ], 200),
-    ]);
-
-    $this->artisan('ship', [
-        '--dry-run' => true,
-        '--database' => 'mysql',
-        '--database-preset' => 'prod',
-        '--no-interaction' => true,
-    ])->assertSuccessful();
-});
+// Dry-run tests require --dry-run flag from PR #82
+// it('dry-run with custom name and region completes successfully')
+// it('dry-run with database options completes successfully')
