@@ -3,6 +3,7 @@
 namespace App\Resolvers;
 
 use App\Client\Connector;
+use App\Concerns\FormatsErrors;
 use App\Exceptions\CommandExitException;
 use App\LocalConfig;
 use Illuminate\Console\Command;
@@ -12,6 +13,8 @@ use function Laravel\Prompts\error;
 
 abstract class Resolver
 {
+    use FormatsErrors;
+
     protected bool $displayResolved = true;
 
     public function __construct(
@@ -55,7 +58,7 @@ abstract class Resolver
     protected function failAndExit(string $message): void
     {
         if (! $this->isInteractive) {
-            echo json_encode(['message' => $message]).PHP_EOL;
+            echo $this->formatErrorAsJson($message).PHP_EOL;
 
             throw new CommandExitException(Command::FAILURE);
         }
@@ -77,7 +80,7 @@ abstract class Resolver
     protected function ensureInteractive(string $message): void
     {
         if (! $this->isInteractive) {
-            echo json_encode(['message' => $message]).PHP_EOL;
+            echo $this->formatErrorAsJson($message).PHP_EOL;
 
             throw new CommandExitException(Command::FAILURE);
         }
