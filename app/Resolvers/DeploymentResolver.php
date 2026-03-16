@@ -23,7 +23,7 @@ class DeploymentResolver extends Resolver
 
         if (! $deployment) {
             if ($id) {
-                $this->failAndExit('Unable to resolve deployment: '.$id);
+                $this->failAndExit("Deployment '{$id}' not found. Verify the ID is correct and belongs to your environment.");
             }
 
             return null;

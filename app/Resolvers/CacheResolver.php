@@ -21,7 +21,13 @@ class CacheResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $cache) {
-            $this->failAndExit('Unable to resolve cache: '.($idOrName ?? 'Provide a valid cache ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No cache could be resolved. Provide a valid cache ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Cache '{$idOrName}' not found. Verify the ID is correct and belongs to your organization.");
+            } else {
+                $this->failAndExit("No cache named '{$idOrName}' found in your organization.");
+            }
         }
 
         $this->displayResolved('Cache', $cache->name, $cache->id);

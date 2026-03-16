@@ -26,7 +26,18 @@ class ApplicationResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $app) {
-            $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name as an argument.'));
+            if ($identifier && $this->looksLikeId($identifier)) {
+                $this->failAndExit("Application '{$identifier}' not found. Verify the ID is correct and belongs to your organization.");
+            } elseif ($identifier) {
+                $this->failAndExit("No application named '{$identifier}' found in your organization.");
+            } else {
+                $repository = app(Git::class)->remoteRepo();
+                if ($repository) {
+                    $this->failAndExit("No application found matching repository '{$repository}'. Create one or provide an application ID or name as an argument.");
+                } else {
+                    $this->failAndExit('No application could be resolved. Provide a valid application ID or name as an argument.');
+                }
+            }
         }
 
         $this->displayResolved('Application', $app->name, $app->id);

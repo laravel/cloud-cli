@@ -16,7 +16,13 @@ class BucketKeyResolver extends Resolver
             ?? $this->fromInput($bucket);
 
         if (! $key) {
-            $this->failAndExit('Unable to resolve bucket key: '.($keyIdOrName ?? 'Provide a valid key ID or name as an argument.'));
+            if ($keyIdOrName === null) {
+                $this->failAndExit('No bucket key could be resolved. Provide a valid key ID or name as an argument.');
+            } elseif ($this->looksLikeId($keyIdOrName)) {
+                $this->failAndExit("Bucket key '{$keyIdOrName}' not found. Verify the ID is correct and belongs to this bucket.");
+            } else {
+                $this->failAndExit("No bucket key named '{$keyIdOrName}' found for this bucket.");
+            }
         }
 
         $this->displayResolved('Key', $key->name, $key->id);

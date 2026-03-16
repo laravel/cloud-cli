@@ -29,7 +29,13 @@ class EnvironmentResolver extends Resolver
         $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromBranch() ?? $this->fromInput();
 
         if (! $environment) {
-            $this->failAndExit('Unable to resolve environment: '.($idOrName ?? 'Provide a valid environment ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No environment could be resolved. Provide a valid environment ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Environment '{$idOrName}' not found. Verify the ID is correct and belongs to your application.");
+            } else {
+                $this->failAndExit("No environment named '{$idOrName}' found for this application.");
+            }
         }
 
         if (! $this->fetched) {
