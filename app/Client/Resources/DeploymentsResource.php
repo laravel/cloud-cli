@@ -3,6 +3,7 @@
 namespace App\Client\Resources;
 
 use App\Client\Requests\InitiateDeploymentRequestData;
+use App\Client\Resources\Deployments\GetDeploymentLogsRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
@@ -29,6 +30,17 @@ class DeploymentsResource extends Resource
     public function initiate(InitiateDeploymentRequestData $data): Deployment
     {
         $request = new InitiateDeploymentRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    /**
+     * @return array<int, array{type: string, timestamp: string|null, output: string}>
+     */
+    public function logs(string $deploymentId): array
+    {
+        $request = new GetDeploymentLogsRequest($deploymentId);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
