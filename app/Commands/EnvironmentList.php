@@ -10,6 +10,8 @@ use function Laravel\Prompts\warning;
 
 class EnvironmentList extends BaseCommand
 {
+    protected $aliases = ['envs'];
+
     protected $signature = 'environment:list
                             {application? : The application ID or name}
                             {--json : Output as JSON}';
