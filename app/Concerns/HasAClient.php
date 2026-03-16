@@ -45,17 +45,8 @@ trait HasAClient
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
 
-        // When there's a single token, validate it before using it
         if ($apiTokens->hasSole()) {
-            $token = $apiTokens->first();
-
-            if ($this->isValidToken($token)) {
-                return $token;
-            }
-
-            // Token is invalid/expired, remove it and fall through to re-auth
-            $config->removeApiToken($token);
-            $apiTokens = collect();
+            return $apiTokens->first();
         }
 
         if ($apiTokens->hasMany()) {
@@ -119,19 +110,5 @@ trait HasAClient
         Artisan::call(Auth::class);
 
         return $this->resolveApiToken($ignoreLocalConfig);
-    }
-
-    /**
-     * Check whether a token is still valid by making a lightweight API call.
-     */
-    protected function isValidToken(string $token): bool
-    {
-        try {
-            (new Connector($token))->meta()->organization();
-
-            return true;
-        } catch (RequestException) {
-            return false;
-        }
     }
 }
