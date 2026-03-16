@@ -18,8 +18,12 @@ class InstanceCreate extends BaseCommand
                             {--name= : Instance name}
                             {--type=service : Instance type (app|worker)}
                             {--size= : Instance size}
+                            {--scaling-type= : Scaling type (custom|none)}
                             {--min-replicas= : Minimum replicas}
                             {--max-replicas= : Maximum replicas}
+                            {--scaling-cpu-threshold-percentage= : Scaling CPU threshold percentage (50-95)}
+                            {--scaling-memory-threshold-percentage= : Scaling memory threshold percentage (50-95)}
+                            {--uses-scheduler= : Use scheduler (true|false)}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a new instance';
@@ -56,74 +60,86 @@ class InstanceCreate extends BaseCommand
 
         $this->form()->prompt(
             'size',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => search(
-                    label: 'Size',
-                    options: fn ($query) => collect($sizes->all())
-                        ->filter(
-                            fn ($size) => $query === ''
-                                || str_contains(strtolower($size->name), strtolower($query))
-                                || str_contains(strtolower($size->description), strtolower($query)),
-                        )
-                        ->mapWithKeys(fn ($size) => [$size->name => $size->description])
-                        ->toArray(),
-                    required: true,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => search(
+                        label: 'Size',
+                        options: fn ($query) => collect($sizes->all())
+                            ->filter(
+                                fn ($size) => $query === ''
+                                    || str_contains(strtolower($size->name), strtolower($query))
+                                    || str_contains(strtolower($size->description), strtolower($query)),
+                            )
+                            ->mapWithKeys(fn ($size) => [$size->name => $size->description])
+                            ->toArray(),
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => null),
         );
 
         $this->form()->prompt(
             'scaling_type',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? 'custom' : 'none'),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? 'custom' : 'none'),
+                )
+                ->nonInteractively(fn () => 'custom'),
         );
 
         $isCustom = $this->form()->get('scaling_type') === 'custom';
 
         $this->form()->prompt(
             'min_replicas',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => $isCustom ? number(
-                    label: 'Minimum replicas',
-                    default: $value ?? '1',
-                    min: 1,
-                    max: 10,
-                ) : 1,
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => $isCustom ? number(
+                        label: 'Minimum replicas',
+                        default: $value ?? '1',
+                        min: 1,
+                        max: 10,
+                    ) : 1,
+                )
+                ->nonInteractively(fn () => 1),
         );
 
         $this->form()->prompt(
             'max_replicas',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => $isCustom ? number(
-                    label: 'Maximum replicas',
-                    default: $value ?? $this->form()->get('min_replicas'),
-                    min: $this->form()->integer('min_replicas'),
-                    max: 10,
-                ) : $this->form()->integer('min_replicas'),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => $isCustom ? number(
+                        label: 'Maximum replicas',
+                        default: $value ?? $this->form()->get('min_replicas'),
+                        min: $this->form()->integer('min_replicas'),
+                        max: 10,
+                    ) : $this->form()->integer('min_replicas'),
+                )
+                ->nonInteractively(fn () => $this->form()->integer('min_replicas')),
         );
 
         if ($isCustom) {
             $this->form()->prompt(
                 'scaling_cpu_threshold_percentage',
-                fn ($resolver) => $resolver->fromInput(fn ($value) => number(
-                    label: 'Scaling CPU threshold percentage',
-                    default: $value ?? '50',
-                    min: 50,
-                    max: 95,
-                )),
+                fn ($resolver) => $resolver
+                    ->fromInput(fn ($value) => number(
+                        label: 'Scaling CPU threshold percentage',
+                        default: $value ?? '50',
+                        min: 50,
+                        max: 95,
+                    ))
+                    ->nonInteractively(fn () => 50),
             );
 
             $this->form()->prompt(
                 'scaling_memory_threshold_percentage',
-                fn ($resolver) => $resolver->fromInput(fn ($value) => number(
-                    label: 'Scaling memory threshold percentage',
-                    default: $value ?? '50',
-                    min: 50,
-                    max: 95,
-                )),
+                fn ($resolver) => $resolver
+                    ->fromInput(fn ($value) => number(
+                        label: 'Scaling memory threshold percentage',
+                        default: $value ?? '50',
+                        min: 50,
+                        max: 95,
+                    ))
+                    ->nonInteractively(fn () => 50),
             );
         }
 
@@ -134,12 +150,14 @@ class InstanceCreate extends BaseCommand
 
         $this->form()->prompt(
             'uses_scheduler',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => confirm(
-                    label: 'Use scheduler?',
-                    default: false,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => confirm(
+                        label: 'Use scheduler?',
+                        default: $value ?? false,
+                    ),
+                )
+                ->nonInteractively(fn () => false),
         );
 
         return spin(
