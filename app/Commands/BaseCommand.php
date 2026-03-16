@@ -221,7 +221,7 @@ abstract class BaseCommand extends Command
             throw new CommandExitException(self::FAILURE);
         }
 
-        // TODO: When would we ever get here?
+        // Interactive mode with pre-filled values (CLI flags) and user confirmed
         return $noninteractiveCallback();
     }
 
