@@ -6,7 +6,6 @@ use App\Dto\Database;
 use App\Dto\DatabaseCluster;
 use Illuminate\Support\Facades\Process;
 
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 
 class DatabaseOpen extends BaseCommand
@@ -25,8 +24,6 @@ class DatabaseOpen extends BaseCommand
         $database = $this->resolvers()->database()->withCluster($cluster)->from($this->argument('database'));
 
         $url = $this->buildUrl($cluster, $database);
-
-        info($url);
 
         Process::run(['open', $url]);
 
