@@ -52,11 +52,8 @@ function wsClusterCreateResponse(): array
     ];
 }
 
-// WebsocketClusterCreate uses CreatesWebSocketCluster trait which prompts for
-// name, region (via select), and max_connections (via select).
-// The max_connections field has no CLI option, so non-interactive mode fails.
-// This test verifies the non-interactive failure behavior.
-it('fails in non-interactive mode because max_connections has no CLI option', function () {
+// Non-interactive mode now defaults max_connections so creation proceeds
+it('creates websocket cluster in non-interactive mode with default max_connections', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -73,13 +70,14 @@ it('fails in non-interactive mode because max_connections has no CLI option', fu
                 ['region' => 'us-east-1', 'label' => 'US East', 'flag' => 'us'],
             ],
         ], 200),
+        CreateWebSocketClusterRequest::class => MockResponse::make(wsClusterCreateResponse(), 201),
     ]);
 
     $this->artisan('websocket-cluster:create', [
         '--name' => 'my-cluster',
         '--region' => 'us-east-1',
         '--no-interaction' => true,
-    ])->assertFailed();
+    ])->assertSuccessful();
 });
 
 it('handles validation errors on websocket cluster create', function () {

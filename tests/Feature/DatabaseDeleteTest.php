@@ -88,7 +88,7 @@ function dbDeleteDatabaseListResponse(): array
 // treats it as an error and returns FAILURE. The delete itself succeeds, but the exit code
 // is wrong. See BUGS_FOUND.md for details.
 
-it('deletes a database (returns failure due to catch-Throwable bug)', function () {
+it('deletes a database successfully', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -110,16 +110,14 @@ it('deletes a database (returns failure due to catch-Throwable bug)', function (
         DeleteDatabaseRequest::class => MockResponse::make([], 200),
     ]);
 
-    // BUG: This should assertSuccessful() but the catch(Throwable) in DatabaseDelete
-    // catches the CommandExitException from outputJsonIfWanted and returns FAILURE
     $this->artisan('database:delete', [
         'cluster' => 'db-cluster-1',
         'database' => 'my-database',
         '--force' => true,
-    ])->assertFailed();
+    ])->assertSuccessful();
 });
 
-it('deletes a database by numeric ID (returns failure due to catch-Throwable bug)', function () {
+it('deletes a database by numeric ID', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -128,28 +126,26 @@ it('deletes a database by numeric ID (returns failure due to catch-Throwable bug
         DeleteDatabaseRequest::class => MockResponse::make([], 200),
     ]);
 
-    // BUG: Same catch(Throwable) issue as above
     $this->artisan('database:delete', [
         'cluster' => 'db-cluster-1',
         'database' => '1',
         '--force' => true,
-    ])->assertFailed();
+    ])->assertSuccessful();
 });
 
-it('outputs JSON when deleting with --json (catches CommandExitException bug)', function () {
+it('outputs JSON when deleting with --json', function () {
     MockClient::global([
         GetDatabaseClusterRequest::class => MockResponse::make(dbDeleteClusterResponse(), 200),
         GetDatabaseRequest::class => MockResponse::make(dbDeleteDatabaseGetResponse(), 200),
         DeleteDatabaseRequest::class => MockResponse::make([], 200),
     ]);
 
-    // BUG: Same catch(Throwable) issue
     $this->artisan('database:delete', [
         'cluster' => 'db-cluster-1',
         'database' => '1',
         '--force' => true,
         '--json' => true,
-    ])->assertFailed();
+    ])->assertSuccessful();
 });
 
 it('fails when cluster not found', function () {

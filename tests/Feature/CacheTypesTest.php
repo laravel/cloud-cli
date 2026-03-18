@@ -69,9 +69,9 @@ it('outputs empty JSON when no cache types found in non-interactive mode', funct
         ListCacheTypesRequest::class => MockResponse::make(['data' => []], 200),
     ]);
 
-    // In non-interactive mode (test env), outputJsonIfWanted exits with SUCCESS before reaching warning
+    // Empty list now returns failure
     $this->artisan('cache:types', ['--json' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('lists multiple cache types', function () {

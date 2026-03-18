@@ -137,12 +137,11 @@ it('returns empty json when no domains found with --json', function () {
 
     setupListDomainMocks([]);
 
-    // BUG: Same as EnvironmentList - outputJsonIfWanted exits with SUCCESS
-    // before the empty check, so --json with empty list returns success.
+    // Empty list now returns failure
     $this->artisan('domain:list', [
         'environment' => 'env-1',
         '--json' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('lists multiple domains', function () {

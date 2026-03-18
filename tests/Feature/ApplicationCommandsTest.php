@@ -54,7 +54,7 @@ it('outputs empty JSON array when list is empty in non-interactive mode', functi
     setupApplicationListMocks([]);
 
     $this->artisan('application:list', ['--no-interaction' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 // ---- application:get ----

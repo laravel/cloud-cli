@@ -124,12 +124,11 @@ it('returns empty json when no environments found with --json', function () {
 
     setupListEnvMocks([]);
 
-    // BUG: outputJsonIfWanted exits with SUCCESS before empty check,
-    // so --json with empty list returns success with empty array instead of failure.
+    // Empty list now returns failure
     $this->artisan('environment:list', [
         'application' => 'app-123',
         '--json' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('lists multiple environments', function () {

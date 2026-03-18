@@ -47,9 +47,9 @@ it('registers the apps alias for application:list', function () {
     expect($command['apps'])->toBeInstanceOf(\App\Commands\ApplicationList::class);
 });
 
-it('registers the status alias for environment:get', function () {
+it('registers the status command', function () {
     $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
 
     expect($command)->toHaveKey('status');
-    expect($command['status'])->toBeInstanceOf(\App\Commands\EnvironmentGet::class);
+    expect($command['status'])->toBeInstanceOf(\App\Commands\Status::class);
 });

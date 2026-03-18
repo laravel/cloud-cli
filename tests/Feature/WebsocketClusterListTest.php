@@ -74,10 +74,9 @@ it('outputs empty JSON in non-interactive mode when no clusters found', function
         ], 200),
     ]);
 
-    // In non-interactive mode (test env), wantsJson() returns true,
-    // so outputJsonIfWanted exits with SUCCESS before the empty check.
+    // Empty list now returns failure
     $this->artisan('websocket-cluster:list', ['--no-interaction' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('lists multiple websocket clusters', function () {

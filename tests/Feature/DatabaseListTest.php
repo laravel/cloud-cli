@@ -108,11 +108,11 @@ it('outputs empty JSON when no databases found in non-interactive mode', functio
         ], 200),
     ]);
 
-    // In non-interactive mode, outputJsonIfWanted exits with SUCCESS before reaching the warning
+    // Empty list now returns failure
     $this->artisan('database:list', [
         'cluster' => 'db-cluster-1',
         '--json' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('auto-selects sole cluster when no cluster argument given', function () {

@@ -104,13 +104,11 @@ it('outputs empty items as JSON in non-interactive mode when no instances found'
         ], 200),
     ]));
 
-    // In non-interactive mode (test env), wantsJson() returns true,
-    // so outputJsonIfWanted exits with SUCCESS before the empty check.
-    // This is expected behavior - JSON output always succeeds with data.
+    // Empty list now returns failure
     $this->artisan('instance:list', [
         'environment' => 'env-1',
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('lists multiple instances', function () {

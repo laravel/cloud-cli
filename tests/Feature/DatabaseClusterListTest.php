@@ -68,9 +68,9 @@ it('outputs empty JSON when no database clusters exist in non-interactive mode',
         ], 200),
     ]);
 
-    // Non-interactive mode outputs JSON (empty collection) and exits successfully
+    // Empty list now returns failure
     $this->artisan('database-cluster:list', ['--no-interaction' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('outputs empty JSON with --json when no database clusters exist', function () {
@@ -83,7 +83,7 @@ it('outputs empty JSON with --json when no database clusters exist', function ()
     ]);
 
     $this->artisan('database-cluster:list', ['--json' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('lists database clusters with JSON output', function () {

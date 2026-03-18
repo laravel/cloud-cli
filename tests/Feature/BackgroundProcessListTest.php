@@ -112,12 +112,11 @@ it('outputs empty items as JSON in non-interactive mode when no processes found'
         ], 200),
     ]);
 
-    // In non-interactive mode (test env), wantsJson() returns true,
-    // so outputJsonIfWanted exits with SUCCESS before the empty check.
+    // Empty list now returns failure
     $this->artisan('background-process:list', [
         'instance' => 'inst-123',
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('lists multiple background processes', function () {

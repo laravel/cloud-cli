@@ -86,9 +86,9 @@ it('outputs empty JSON when no buckets found with --json', function () {
         ], 200),
     ]);
 
-    // In non-interactive mode, outputJsonIfWanted exits with SUCCESS before reaching warning
+    // Empty list now returns failure
     $this->artisan('bucket:list', ['--json' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('lists buckets with JSON output', function () {

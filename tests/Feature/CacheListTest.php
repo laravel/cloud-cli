@@ -81,9 +81,9 @@ it('outputs empty JSON when no caches found in non-interactive mode', function (
         ], 200),
     ]);
 
-    // In non-interactive mode, outputJsonIfWanted exits with SUCCESS before reaching warning
+    // Empty list now returns failure
     $this->artisan('cache:list', ['--json' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('lists caches with JSON output', function () {

@@ -166,7 +166,7 @@ it('returns failure with JSON error when no fields to update', function () {
 // in an unhandled exception rather than a graceful error message.
 // See BUGS_FOUND.md for details.
 
-it('throws unhandled exception when update API returns 422', function () {
+it('returns failure when update API returns 422', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -182,12 +182,12 @@ it('throws unhandled exception when update API returns 422', function () {
         '--name' => 'Taken',
         '--force' => true,
         '--json' => true,
-    ]);
-})->throws(Saloon\Exceptions\Request\ClientException::class);
+    ])->assertFailed();
+});
 
 // ---- Server error on update ----
 
-it('throws unhandled exception when update API returns 500', function () {
+it('returns failure when update API returns 500', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -200,8 +200,8 @@ it('throws unhandled exception when update API returns 500', function () {
         '--name' => 'New Name',
         '--force' => true,
         '--json' => true,
-    ]);
-})->throws(Saloon\Exceptions\Request\ServerException::class);
+    ])->assertFailed();
+});
 
 // ---- Application not found ----
 

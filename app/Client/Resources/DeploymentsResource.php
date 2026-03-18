@@ -27,14 +27,6 @@ class DeploymentsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function logs(string $deploymentId): array
-    {
-        $request = new GetDeploymentLogsRequest($deploymentId);
-        $response = $this->send($request);
-
-        return $request->createDtoFromResponse($response);
-    }
-
     public function initiate(InitiateDeploymentRequestData $data): Deployment
     {
         $request = new InitiateDeploymentRequest($data);

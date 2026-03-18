@@ -111,12 +111,11 @@ it('returns failure when no keys found in interactive mode', function () {
         ], 200),
     ]);
 
-    // In test env, isInteractive() returns false so wantsJson() returns true.
-    // outputJsonIfWanted exits with SUCCESS before reaching the empty check.
+    // Empty list now returns failure
     $this->artisan('bucket-key:list', [
         'bucket' => 'fls-bucket-1',
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('outputs empty JSON when no keys found with --json', function () {
@@ -128,11 +127,11 @@ it('outputs empty JSON when no keys found with --json', function () {
         ], 200),
     ]);
 
-    // outputJsonIfWanted exits with SUCCESS before the empty warning
+    // Empty list now returns failure
     $this->artisan('bucket-key:list', [
         'bucket' => 'fls-bucket-1',
         '--json' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 // ---- Multiple keys ----

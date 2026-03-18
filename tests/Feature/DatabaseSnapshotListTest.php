@@ -108,11 +108,11 @@ it('outputs empty JSON when no snapshots found in non-interactive mode', functio
         ], 200),
     ]);
 
-    // In non-interactive mode (test env), outputJsonIfWanted exits with SUCCESS before reaching warning
+    // Empty list now returns failure
     $this->artisan('database-snapshot:list', [
         'cluster' => 'db-cluster-1',
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('lists multiple snapshots', function () {
@@ -162,5 +162,5 @@ it('outputs empty JSON when no snapshots with --json flag', function () {
     $this->artisan('database-snapshot:list', [
         'cluster' => 'db-cluster-1',
         '--json' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });

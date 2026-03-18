@@ -140,7 +140,7 @@ it('handles empty websocket applications list gracefully', function () {
 
     $this->artisan('websocket-application:list', [
         'cluster' => 'ws-123',
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('outputs JSON in non-interactive mode when no applications found', function () {
@@ -154,12 +154,11 @@ it('outputs JSON in non-interactive mode when no applications found', function (
         ], 200),
     ]);
 
-    // In non-interactive mode (test env), wantsJson() returns true,
-    // so outputJsonIfWanted exits with SUCCESS before the empty check.
+    // Empty list now returns failure
     $this->artisan('websocket-application:list', [
         'cluster' => 'ws-123',
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 });
 
 it('resolves cluster by name when listing applications', function () {

@@ -116,10 +116,9 @@ it('returns failure when no applications found in non-interactive mode', functio
         ),
     ]);
 
-    // In non-interactive mode, outputJsonIfWanted outputs empty JSON and exits with SUCCESS.
-    // The warning + FAILURE path is only reached in truly interactive mode.
+    // Empty list now returns failure with error message
     $this->artisan('application:list', ['--no-interaction' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 it('outputs empty JSON when no applications found with --json', function () {
@@ -131,9 +130,9 @@ it('outputs empty JSON when no applications found with --json', function () {
         ),
     ]);
 
-    // outputJsonIfWanted exits with SUCCESS before the empty warning
+    // Empty list now returns failure
     $this->artisan('application:list', ['--json' => true])
-        ->assertSuccessful();
+        ->assertFailed();
 });
 
 // ---- Multiple applications ----
