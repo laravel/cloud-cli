@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use Carbon\CarbonInterval;
-use Illuminate\Http\Client\RequestException;
+use Saloon\Exceptions\Request\RequestException;
 use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\confirm;
