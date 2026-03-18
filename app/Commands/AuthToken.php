@@ -85,7 +85,7 @@ class AuthToken extends BaseCommand implements NoAuthRequired
      */
     protected function addToken(Collection $existingTokens): void
     {
-        info('Learn how to create an API token: https://cloud.laravel.com/docs/api/authentication#create-an-api-token');
+        info('Learn how to create an API token: '.config('app.base_url').'/docs/api/authentication#create-an-api-token');
 
         $newToken = password(
             label: 'Laravel Cloud API token',

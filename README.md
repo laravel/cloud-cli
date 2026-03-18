@@ -260,6 +260,19 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 - **User config:** `~/.config/cloud/config.json` (auth tokens and preferences).
 - **Repo defaults:** After `cloud repo:config`, the current Git repo stores which application and environment to use so you can run `cloud deploy` and similar without selecting every time.
 
+## Private Cloud / Custom Base URL
+
+If you are using a private or self-hosted Laravel Cloud instance, set the `CLOUD_BASE_URL` environment variable:
+
+```sh
+export CLOUD_BASE_URL=https://my-cloud.example.com
+cloud auth
+```
+
+The CLI will store separate tokens per instance in `~/.config/cloud/`.
+
+> **Note:** Private Cloud support via the CLI is undocumented and may not be fully supported. The browser-based OAuth flow may require additional configuration on your instance. If you encounter issues, use `cloud auth:token` to manually add an API token instead.
+
 ## Development
 
 - **Code style:** Laravel/PSR-12. Format with [Laravel Pint](https://laravel.com/docs/pint):
