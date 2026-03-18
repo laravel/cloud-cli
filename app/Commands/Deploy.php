@@ -27,7 +27,8 @@ class Deploy extends BaseCommand
     protected $signature = 'deploy
                             {application? : The application ID or name}
                             {environment? : The name of the environment to deploy}
-                            {--open : Open the site in the browser after a successful deployment}';
+                            {--open : Open the site in the browser after a successful deployment}
+                            {--dry-run : Show what would happen without deploying}';
 
     protected $description = 'Deploy the application to Laravel Cloud';
 
@@ -59,6 +60,17 @@ class Deploy extends BaseCommand
         }
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
+
+        if ($this->option('dry-run')) {
+            intro('Dry run — no changes will be made.');
+
+            info('Application: '.$app->name.' ('.$app->id.')');
+            info('Environment: '.$environment->name.' ('.$environment->id.')');
+            info('Branch: '.($environment->branch ?? app(\App\Git::class)->currentBranch()));
+            info('Would deploy to: '.$environment->url);
+
+            return self::SUCCESS;
+        }
 
         $deployment = $this->client->deployments()->initiate(
             new InitiateDeploymentRequestData($environment->id),

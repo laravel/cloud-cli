@@ -58,7 +58,8 @@ class Ship extends BaseCommand
                             {--database-preset= : Preset tier for the database (dev, prod, scale — case-insensitive). Default: dev}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
-                            {--json : Output application_id, environment_id, and url as JSON}';
+                            {--json : Output application_id, environment_id, and url as JSON}
+                            {--dry-run : Show what would happen without creating anything}';
 
     protected $description = 'Ship the application to Laravel Cloud';
 
@@ -120,6 +121,28 @@ class Ship extends BaseCommand
 
         $mostUsedRegion = $applications->collect()->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
+
+        if ($this->option('dry-run')) {
+            $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
+            $region = $this->option('region') ?? $defaultRegion;
+            $databaseType = $this->resolveDatabaseType();
+            $databasePreset = $databaseType ? $this->resolveDatabasePreset($databaseType) : null;
+
+            intro('Dry run — no changes will be made.');
+
+            info('Would create application: '.$name);
+            info('Repository: '.$repository);
+            info('Region: '.$region);
+
+            if ($databaseType) {
+                info('Database type: '.$databaseType);
+                info('Database preset: '.($databasePreset ?? 'Dev'));
+            }
+
+            info('Would deploy after creation');
+
+            return self::SUCCESS;
+        }
 
         $application = $this->isInteractive()
             ? $this->loopUntilValid(fn () => $this->createApplication($defaultRegion, $repository))
