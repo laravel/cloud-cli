@@ -67,3 +67,61 @@ it('updates a domain with verification method using --force', function () {
         '--force' => true,
     ])->assertSuccessful();
 });
+
+it('updates a domain with real_time verification method using --force', function () {
+    Prompt::fake();
+
+    MockClient::global([
+        GetDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+        UpdateDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+    ]);
+
+    $this->artisan('domain:update', [
+        'domain' => 'domain-123',
+        '--verification-method' => 'real_time',
+        '--force' => true,
+    ])->assertSuccessful();
+});
+
+it('outputs domain as JSON when --json flag is used', function () {
+    Prompt::fake();
+
+    MockClient::global([
+        GetDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+        UpdateDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+    ]);
+
+    $this->artisan('domain:update', [
+        'domain' => 'domain-123',
+        '--verification-method' => 'pre_verification',
+        '--force' => true,
+        '--json' => true,
+    ])->assertSuccessful();
+});
+
+it('updates domain by name lookup', function () {
+    Prompt::fake();
+
+    MockClient::global([
+        GetDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+        UpdateDomainRequest::class => MockResponse::make([
+            'data' => domainUpdateData(),
+        ], 200),
+    ]);
+
+    $this->artisan('domain:update', [
+        'domain' => 'domain-123',
+        '--verification-method' => 'pre_verification',
+        '--force' => true,
+    ])->assertSuccessful();
+});
