@@ -19,6 +19,7 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
@@ -36,6 +37,14 @@ abstract class BaseCommand extends Command
 
     protected ?Resolvers $resolvers;
 
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption('application', null, InputOption::VALUE_REQUIRED, 'The application ID or name');
+        $this->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment ID or name');
+    }
+
     protected function form(): Form
     {
         return $this->form ??= (new Form)
@@ -46,7 +55,12 @@ abstract class BaseCommand extends Command
 
     protected function resolvers(): Resolvers
     {
-        return $this->resolvers ??= app(Resolvers::class, ['client' => $this->client, 'isInteractive' => $this->isInteractive()]);
+        return $this->resolvers ??= app(Resolvers::class, [
+            'client' => $this->client,
+            'isInteractive' => $this->isInteractive(),
+            'applicationFlag' => $this->option('application'),
+            'environmentFlag' => $this->option('environment'),
+        ]);
     }
 
     protected function runningAsSubcommand(): bool
