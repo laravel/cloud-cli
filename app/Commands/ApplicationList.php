@@ -10,6 +10,8 @@ use function Laravel\Prompts\spin;
 
 class ApplicationList extends BaseCommand
 {
+    protected $aliases = ['apps'];
+
     protected $signature = 'application:list {--json : Output as JSON}';
 
     protected $description = 'List all applications';

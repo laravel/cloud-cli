@@ -12,6 +12,8 @@ use function Laravel\Prompts\warning;
 
 class EnvironmentLogs extends BaseCommand
 {
+    protected $aliases = ['logs'];
+
     protected $signature = 'environment:logs
                             {application? : The application ID or name}
                             {environment? : The name or ID of the environment}

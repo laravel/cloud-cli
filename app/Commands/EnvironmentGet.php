@@ -6,6 +6,8 @@ use function Laravel\Prompts\intro;
 
 class EnvironmentGet extends BaseCommand
 {
+    protected $aliases = ['status'];
+
     protected $signature = 'environment:get {environment? : The environment ID or name} {--json : Output as JSON}';
 
     protected $description = 'Get environment details';

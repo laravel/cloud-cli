@@ -13,6 +13,8 @@ use function Laravel\Prompts\text;
 
 class EnvironmentVariables extends BaseCommand
 {
+    protected $aliases = ['vars'];
+
     protected $signature = 'environment:variables
                             {environment? : The environment ID or name}
                             {--action= : append, set, or replace}
