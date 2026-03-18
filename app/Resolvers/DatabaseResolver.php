@@ -24,7 +24,13 @@ class DatabaseResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $database) {
-            $this->failAndExit('Unable to resolve database: '.($idOrName ?? 'Provide a valid database ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No database could be resolved. Provide a valid database ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Database '{$idOrName}' not found. Verify the ID is correct and belongs to this cluster.");
+            } else {
+                $this->failAndExit("No database named '{$idOrName}' found in this cluster.");
+            }
         }
 
         $this->displayResolved('Database', $database->name, $database->id);

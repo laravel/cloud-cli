@@ -7,6 +7,7 @@ use App\Concerns\FormatsErrors;
 use App\Exceptions\CommandExitException;
 use App\LocalConfig;
 use Illuminate\Console\Command;
+use Saloon\Exceptions\Request\RequestException;
 use Throwable;
 
 use function Laravel\Prompts\error;
@@ -16,6 +17,8 @@ abstract class Resolver
     use FormatsErrors;
 
     protected bool $displayResolved = true;
+
+    protected ?string $lastResolutionError = null;
 
     public function __construct(
         protected Connector $client,
@@ -29,23 +32,49 @@ abstract class Resolver
 
     abstract protected function idPrefix(): string|callable;
 
+    protected function looksLikeId(string $identifier): bool
+    {
+        $idPrefix = $this->idPrefix();
+
+        if (is_string($idPrefix)) {
+            return str_starts_with($identifier, $idPrefix);
+        }
+
+        return (bool) $idPrefix($identifier);
+    }
+
     protected function resolveFromIdentifier(string $identifier, callable $ifIdCallback, ?callable $ifNotIdCallback = null): mixed
     {
         $ifNotIdCallback = $ifNotIdCallback ?? fn () => null;
 
-        $idPrefix = $this->idPrefix();
-
-        if (is_string($idPrefix) && ! str_starts_with($identifier, $idPrefix)) {
-            return $ifNotIdCallback();
-        }
-
-        if (is_callable($idPrefix) && ! $idPrefix($identifier)) {
+        if (! $this->looksLikeId($identifier)) {
             return $ifNotIdCallback();
         }
 
         try {
             return $ifIdCallback();
+        } catch (RequestException $e) {
+            $status = $e->getResponse()->status();
+
+            if ($status === 404) {
+                $this->lastResolutionError = "No resource found with ID '{$identifier}'.";
+
+                return $ifNotIdCallback();
+            }
+
+            if ($status === 403) {
+                $this->lastResolutionError = "You do not have permission to access '{$identifier}'.";
+
+                throw $e;
+            }
+
+            $message = $e->getResponse()->json('message') ?? $e->getMessage();
+            $this->lastResolutionError = "API error ({$status}) while fetching '{$identifier}': {$message}";
+
+            throw $e;
         } catch (Throwable $e) {
+            $this->lastResolutionError = $e->getMessage();
+
             return $ifNotIdCallback();
         }
     }

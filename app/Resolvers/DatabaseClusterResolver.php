@@ -20,7 +20,13 @@ class DatabaseClusterResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $database) {
-            $this->failAndExit('Unable to resolve database cluster: '.($idOrName ?? 'Provide a valid database cluster ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No database cluster could be resolved. Provide a valid database cluster ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Database cluster '{$idOrName}' not found. Verify the ID is correct and belongs to your organization.");
+            } else {
+                $this->failAndExit("No database cluster named '{$idOrName}' found in your organization.");
+            }
         }
 
         $this->displayResolved('Database', $database->name, $database->id);

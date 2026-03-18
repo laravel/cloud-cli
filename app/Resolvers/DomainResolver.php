@@ -17,7 +17,13 @@ class DomainResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $domain) {
-            $this->failAndExit('Unable to resolve domain: '.($idOrName ?? 'Provide a valid domain ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No domain could be resolved. Provide a valid domain ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Domain '{$idOrName}' not found. Verify the ID is correct and belongs to your environment.");
+            } else {
+                $this->failAndExit("No domain named '{$idOrName}' found for this environment.");
+            }
         }
 
         $this->displayResolved('Domain', $domain->name, $domain->id);

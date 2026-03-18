@@ -23,7 +23,13 @@ class InstanceResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $instance) {
-            $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No instance could be resolved. Provide a valid instance ID or name as an argument.');
+            } elseif ($this->looksLikeId($idOrName)) {
+                $this->failAndExit("Instance '{$idOrName}' not found. Verify the ID is correct and belongs to your environment.");
+            } else {
+                $this->failAndExit("No instance named '{$idOrName}' found for this environment.");
+            }
         }
 
         $this->displayResolved('Instance', $instance->name, $instance->id);

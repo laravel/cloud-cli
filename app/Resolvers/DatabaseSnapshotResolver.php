@@ -17,7 +17,13 @@ class DatabaseSnapshotResolver extends Resolver
             ?? $this->fromInput($cluster);
 
         if (! $snapshot) {
-            $this->failAndExit('Unable to resolve snapshot: '.($snapshotIdOrName ?? 'Provide a valid snapshot ID or name as an argument.'));
+            if ($snapshotIdOrName === null) {
+                $this->failAndExit('No snapshot could be resolved. Provide a valid snapshot ID or name as an argument.');
+            } elseif ($this->looksLikeId($snapshotIdOrName)) {
+                $this->failAndExit("Snapshot '{$snapshotIdOrName}' not found. Verify the ID is correct and belongs to this database cluster.");
+            } else {
+                $this->failAndExit("No snapshot named '{$snapshotIdOrName}' found for this database cluster.");
+            }
         }
 
         $this->displayResolved('Snapshot', $snapshot->name, $snapshot->id);

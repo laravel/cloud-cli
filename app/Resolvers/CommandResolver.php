@@ -25,7 +25,11 @@ class CommandResolver extends Resolver
         $command = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromInput();
 
         if (! $command) {
-            $this->failAndExit('Unable to resolve command: '.($idOrName ?? 'Provide a valid command ID as an argument.'));
+            if ($idOrName === null) {
+                $this->failAndExit('No command could be resolved. Provide a valid command ID as an argument.');
+            } else {
+                $this->failAndExit("Command '{$idOrName}' not found. Verify the ID is correct and belongs to your environment.");
+            }
         }
 
         $this->displayResolved('Command', $command->command, $command->id);
