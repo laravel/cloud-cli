@@ -33,26 +33,30 @@ trait CreatesWebSocketCluster
 
         $this->form()->prompt(
             'region',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => select(
-                    label: 'Region',
-                    options: collect($regions)->mapWithKeys(fn (Region $r) => [$r->value => $r->label])->toArray(),
-                    default: $value ?? $defaults['region'] ?? null,
-                    required: true,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn (?string $value) => select(
+                        label: 'Region',
+                        options: collect($regions)->mapWithKeys(fn (Region $r) => [$r->value => $r->label])->toArray(),
+                        default: $value ?? $defaults['region'] ?? null,
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['region'] ?? null),
         );
 
         $this->form()->prompt(
             'max_connections',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => select(
-                    label: 'Max connections',
-                    options: collect(WebsocketServerMaxConnection::cases())->mapWithKeys(fn ($case) => [$case->value => $case->value])->toArray(),
-                    default: $value ?? $defaults['max_connections'] ?? WebsocketServerMaxConnection::ONE_HUNDRED->value,
-                    required: true,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => select(
+                        label: 'Max connections',
+                        options: collect(WebsocketServerMaxConnection::cases())->mapWithKeys(fn ($case) => [$case->value => $case->value])->toArray(),
+                        default: $value ?? $defaults['max_connections'] ?? WebsocketServerMaxConnection::ONE_HUNDRED->value,
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['max_connections'] ?? WebsocketServerMaxConnection::ONE_HUNDRED->value),
         );
 
         return spin(

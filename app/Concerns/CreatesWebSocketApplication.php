@@ -28,45 +28,52 @@ trait CreatesWebSocketApplication
 
         $this->form()->prompt(
             'allowed_origins',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => textarea(
-                    label: 'Allowed origins',
-                    default: $value ?? $defaults['allowed_origins'] ?? '',
-                    hint: 'Origins that are allowed to connect to the application, separated by new lines, prefixed with the protocol (https://)',
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn (?string $value) => textarea(
+                        label: 'Allowed origins',
+                        default: $value ?? $defaults['allowed_origins'] ?? '',
+                        hint: 'Origins that are allowed to connect to the application, separated by new lines, prefixed with the protocol (https://)',
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['allowed_origins'] ?? null),
         );
 
         $this->form()->prompt(
             'ping_interval',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => number(
-                    label: 'Ping interval',
-                    default: $value ?? $defaults['ping_interval'] ?? 60,
-                    min: 1,
-                    max: 60,
-                    required: true,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => number(
+                        label: 'Ping interval',
+                        default: $value ?? $defaults['ping_interval'] ?? 60,
+                        min: 1,
+                        max: 60,
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['ping_interval'] ?? 60),
         );
 
         $this->form()->prompt(
             'activity_timeout',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => number(
-                    label: 'Activity timeout',
-                    default: $value ?? $defaults['activity_timeout'] ?? 30,
-                    min: 1,
-                    max: 60,
-                    required: true,
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => number(
+                        label: 'Activity timeout',
+                        default: $value ?? $defaults['activity_timeout'] ?? 30,
+                        min: 1,
+                        max: 60,
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['activity_timeout'] ?? 30),
         );
 
         $allowedOrigins = $this->form()->get('allowed_origins');
 
         if ($allowedOrigins !== null && $allowedOrigins !== '') {
-            $allowedOrigins = collect(explode(PHP_EOL, $allowedOrigins))->filter(fn ($origin) => $origin !== '')->values()->toArray();
+            $separator = str_contains($allowedOrigins, PHP_EOL) ? PHP_EOL : ',';
+            $allowedOrigins = collect(explode($separator, $allowedOrigins))->map(fn ($origin) => trim($origin))->filter(fn ($origin) => $origin !== '')->values()->toArray();
         } else {
             $allowedOrigins = null;
         }

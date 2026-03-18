@@ -15,6 +15,7 @@ class WebsocketClusterCreate extends BaseCommand
     protected $signature = 'websocket-cluster:create
                             {--name= : Cluster name}
                             {--region= : Region}
+                            {--max-connections= : Max connections (100, 200, 500, 2000, 5000, 10000)}
                             {--json : Output as JSON}';
 
     protected $description = 'Create a WebSocket cluster';
@@ -28,6 +29,7 @@ class WebsocketClusterCreate extends BaseCommand
         $defaults = array_filter([
             'name' => $this->option('name'),
             'region' => $this->option('region') ?: $this->getDefaultRegion(),
+            'max_connections' => $this->option('max-connections'),
         ]);
 
         $cluster = $this->loopUntilValid(
