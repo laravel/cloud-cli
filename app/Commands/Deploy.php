@@ -7,10 +7,12 @@ use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Enums\DeploymentStatus;
 use App\Dto\Deployment;
+use App\Dto\Environment;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 
@@ -111,6 +113,8 @@ class Deploy extends BaseCommand
 
         success('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
 
+        $this->runHealthCheck($environment);
+
         if ($this->option('open')) {
             Process::run('open '.$environment->url);
         }
@@ -124,6 +128,38 @@ class Deploy extends BaseCommand
         ]);
 
         outro($environment->url);
+    }
+
+    protected function runHealthCheck(Environment $environment): void
+    {
+        if (empty($environment->url)) {
+            return;
+        }
+
+        try {
+            $response = Http::timeout(10)->get($environment->url.'/up');
+
+            if ($response->status() === 200) {
+                success('Health check: /up returned 200');
+            } else {
+                warning('Health check: /up returned '.$response->status());
+
+                try {
+                    $from = CarbonImmutable::now()->subMinutes(2);
+                    $to = CarbonImmutable::now();
+                    $logs = $this->client->environments()->logs($environment->id, $from, $to);
+                    $recentLogs = array_slice($logs, -3);
+
+                    foreach ($recentLogs as $log) {
+                        $this->line('  '.($log['message'] ?? ''));
+                    }
+                } catch (\Throwable) {
+                    // Don't fail on log fetch errors
+                }
+            }
+        } catch (\Throwable) {
+            warning('Health check: Could not reach '.$environment->url.'/up');
+        }
     }
 
     protected function updateDeploymentStatus(Deployment $deployment, callable $updateMessage): void
