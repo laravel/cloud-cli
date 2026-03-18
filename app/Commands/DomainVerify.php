@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\Domain;
-use Illuminate\Http\Client\RequestException;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
