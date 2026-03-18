@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\FormatsErrors;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
@@ -27,6 +28,7 @@ abstract class BaseCommand extends Command
 {
     use Colors;
     use DetectsNonInteractiveEnvironments;
+    use FormatsErrors;
     use HasAClient;
     use Validates;
 
@@ -74,7 +76,7 @@ abstract class BaseCommand extends Command
     protected function outputError(string $message): void
     {
         if ($this->wantsJson()) {
-            $this->line(json_encode(['message' => $message]));
+            $this->line($this->formatErrorAsJson($message));
         } else {
             error($message);
         }
