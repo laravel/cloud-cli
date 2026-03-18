@@ -30,6 +30,7 @@ class DatabaseClusterUpdate extends BaseCommand
                             {--uses-pitr= : Whether point-in-time recovery is enabled}
                             {--maintenance-window= : UTC maintenance window}
                             {--deployment-option= : single-az or multi-az}
+                            {--config= : JSON object of config fields to update, e.g. \'{"max_connections": 200}\'}
                             {--force : Force update without confirmation}
                             {--json : Output as JSON}';
 
@@ -50,6 +51,7 @@ class DatabaseClusterUpdate extends BaseCommand
 
         $type = collect($types)->firstWhere('type', $cluster->type);
 
+        $this->applyConfigOption($type);
         $this->defineFields($cluster, $type);
 
         foreach ($this->form()->filled() as $value) {
@@ -215,6 +217,38 @@ class DatabaseClusterUpdate extends BaseCommand
         }
 
         return $this->updateCluster($database, $type);
+    }
+
+    protected function applyConfigOption(DatabaseType $type): void
+    {
+        $configJson = $this->option('config');
+
+        if (! $configJson) {
+            return;
+        }
+
+        $configValues = json_decode($configJson, true);
+
+        if (! is_array($configValues)) {
+            throw new CommandExitException(self::FAILURE);
+        }
+
+        $validNames = collect($type->configSchema)->map(fn ($field) => is_array($field) ? $field['name'] : $field->toArray()['name'])->toArray();
+
+        $mergeOptions = [];
+
+        foreach ($configValues as $key => $value) {
+            if (! in_array($key, $validNames)) {
+                $this->outputErrorOrThrow("Unknown config field: {$key}");
+
+                throw new CommandExitException(self::FAILURE);
+            }
+
+            $optionName = 'config.'.str_replace('_', '-', $key);
+            $mergeOptions[$optionName] = (string) $value;
+        }
+
+        $this->form()->mergeOptions($mergeOptions);
     }
 
     protected function coerceConfigValue(string $key, mixed $value, DatabaseType $type): mixed

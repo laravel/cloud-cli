@@ -88,6 +88,13 @@ class Form
         return $this;
     }
 
+    public function mergeOptions(array $options): self
+    {
+        $this->options = array_merge($this->options, $options);
+
+        return $this;
+    }
+
     public function arguments($arguments): self
     {
         $this->arguments = $arguments;
