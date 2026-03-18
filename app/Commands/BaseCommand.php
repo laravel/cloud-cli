@@ -33,6 +33,18 @@ abstract class BaseCommand extends Command
     use HasAClient;
     use Validates;
 
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption(
+            'token',
+            null,
+            InputOption::VALUE_REQUIRED,
+            'Laravel Cloud API token (overrides stored tokens and LARAVEL_CLOUD_API_TOKEN env var)',
+        );
+    }
+
     protected Form $form;
 
     protected ?Resolvers $resolvers;
