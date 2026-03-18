@@ -101,9 +101,13 @@ class Auth extends BaseCommand implements NoAuthRequired
             return 1;
         }
 
-        foreach ($tokens as $tokenData) {
-            $this->config->addApiToken($tokenData['token']);
+        // Replace all existing tokens with the fresh set from this auth session.
+        // This prevents stale/expired tokens from accumulating in config.json
+        // when the user re-authenticates.
+        $newTokens = collect($tokens)->pluck('token');
+        $this->config->setApiTokens($newTokens);
 
+        foreach ($tokens as $tokenData) {
             info("✓ Authenticated with {$tokenData['organization_name']}");
         }
 
