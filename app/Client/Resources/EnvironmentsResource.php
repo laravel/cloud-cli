@@ -4,6 +4,7 @@ namespace App\Client\Resources;
 
 use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use App\Client\Requests\CreateEnvironmentRequestData;
+use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
@@ -11,6 +12,8 @@ use App\Client\Requests\UpdateEnvironmentRequestData;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
+use App\Client\Resources\Environments\DeleteEnvironmentVariablesRequest;
+use App\Client\Resources\Environments\GetEnvironmentMetricsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
@@ -83,6 +86,19 @@ class EnvironmentsResource extends Resource
     public function replaceVariables(ReplaceEnvironmentVariablesRequestData $data): void
     {
         $this->send(new ReplaceEnvironmentVariablesRequest($data));
+    }
+
+    public function deleteVariables(DeleteEnvironmentVariablesRequestData $data): void
+    {
+        $this->send(new DeleteEnvironmentVariablesRequest($data));
+    }
+
+    public function metrics(string $environmentId): array
+    {
+        $request = new GetEnvironmentMetricsRequest($environmentId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function start(string $environmentId): void

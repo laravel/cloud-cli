@@ -6,6 +6,7 @@ use App\Client\Requests\CreateCacheRequestData;
 use App\Client\Requests\UpdateCacheRequestData;
 use App\Client\Resources\Caches\CreateCacheRequest;
 use App\Client\Resources\Caches\DeleteCacheRequest;
+use App\Client\Resources\Caches\GetCacheMetricsRequest;
 use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
@@ -50,6 +51,14 @@ class CachesResource extends Resource
     public function delete(string $cacheId): void
     {
         $this->send(new DeleteCacheRequest($cacheId));
+    }
+
+    public function metrics(string $cacheId): array
+    {
+        $request = new GetCacheMetricsRequest($cacheId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     /**

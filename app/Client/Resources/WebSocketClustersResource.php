@@ -6,6 +6,7 @@ use App\Client\Requests\CreateWebSocketClusterRequestData;
 use App\Client\Requests\UpdateWebSocketClusterRequestData;
 use App\Client\Resources\WebSocketClusters\CreateWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\DeleteWebSocketClusterRequest;
+use App\Client\Resources\WebSocketClusters\GetWebSocketClusterMetricsRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\ListWebSocketClustersRequest;
 use App\Client\Resources\WebSocketClusters\UpdateWebSocketClusterRequest;
@@ -48,5 +49,13 @@ class WebSocketClustersResource extends Resource
     public function delete(string $clusterId): void
     {
         $this->send(new DeleteWebSocketClusterRequest($clusterId));
+    }
+
+    public function metrics(string $clusterId): array
+    {
+        $request = new GetWebSocketClusterMetricsRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 }
