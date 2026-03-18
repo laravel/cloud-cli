@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class EnvironmentList extends BaseCommand
 {
@@ -33,13 +32,11 @@ class EnvironmentList extends BaseCommand
 
         $envItems = $environments->collect();
 
-        $this->outputJsonIfWanted($envItems);
-
         if ($envItems->isEmpty()) {
-            warning('No environments found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No environments found.');
         }
+
+        $this->outputJsonIfWanted($envItems);
 
         dataTable(
             headers: ['ID', 'Name', 'Branch', 'Status'],

@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
 {
@@ -27,13 +26,11 @@ class DatabaseClusterList extends BaseCommand
 
         $items = $databases->collect();
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No databases found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No databases found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Name', 'Type', 'Status', 'Region', 'Schemas'],

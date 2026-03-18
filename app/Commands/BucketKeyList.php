@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class BucketKeyList extends BaseCommand
 {
@@ -32,13 +31,11 @@ class BucketKeyList extends BaseCommand
 
         $items = collect($keys);
 
-        $this->outputJsonIfWanted($items->toArray());
-
         if ($items->isEmpty()) {
-            warning('No keys found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No keys found.');
         }
+
+        $this->outputJsonIfWanted($items->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'Permission', 'Created At'],

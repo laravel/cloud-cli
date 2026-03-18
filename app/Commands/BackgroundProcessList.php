@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class BackgroundProcessList extends BaseCommand
 {
@@ -29,13 +28,11 @@ class BackgroundProcessList extends BaseCommand
 
         $items = $processes->collect();
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No background processes found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No background processes found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Command', 'Type', 'Processes'],

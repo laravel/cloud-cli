@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DatabaseList extends BaseCommand
 {
@@ -29,13 +28,11 @@ class DatabaseList extends BaseCommand
             'Fetching databases...',
         );
 
-        $this->outputJsonIfWanted($databases->toArray());
-
         if ($databases->isEmpty()) {
-            warning('No databases found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No databases found.');
         }
+
+        $this->outputJsonIfWanted($databases->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'Created At'],

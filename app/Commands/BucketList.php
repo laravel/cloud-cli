@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class BucketList extends BaseCommand
 {
@@ -36,13 +35,11 @@ class BucketList extends BaseCommand
             'Fetching buckets...',
         );
 
-        $this->outputJsonIfWanted($buckets->toArray());
-
         if ($buckets->isEmpty()) {
-            warning('No buckets found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No buckets found.');
         }
+
+        $this->outputJsonIfWanted($buckets->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'Type', 'Status', 'Visibility', 'Region'],

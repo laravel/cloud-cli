@@ -6,7 +6,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class InstanceList extends BaseCommand
 {
@@ -31,13 +30,11 @@ class InstanceList extends BaseCommand
 
         $items = $instances->collect();
 
-        $this->outputJsonIfWanted($items);
-
         if ($items->isEmpty()) {
-            warning('No instances found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No instances found.');
         }
+
+        $this->outputJsonIfWanted($items);
 
         dataTable(
             headers: ['ID', 'Name', 'Type', 'Size', 'Replicas', 'Scheduler'],

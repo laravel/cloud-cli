@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class ApplicationList extends BaseCommand
 {
@@ -28,13 +27,11 @@ class ApplicationList extends BaseCommand
             'Fetching applications...',
         )->collect();
 
-        $this->outputJsonIfWanted($applications);
-
         if ($applications->isEmpty()) {
-            warning('No applications found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No applications found.');
         }
+
+        $this->outputJsonIfWanted($applications);
 
         dataTable(
             headers: ['ID', 'Name', 'Region', 'Repository'],

@@ -7,7 +7,6 @@ use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class WebsocketClusterList extends BaseCommand
 {
@@ -30,13 +29,11 @@ class WebsocketClusterList extends BaseCommand
 
         $items = $clusters->collect();
 
-        $this->outputJsonIfWanted($items->toArray());
-
         if ($items->isEmpty()) {
-            warning('No WebSocket clusters found.');
-
-            return self::FAILURE;
+            $this->failAndExit('No WebSocket clusters found.');
         }
+
+        $this->outputJsonIfWanted($items->toArray());
 
         dataTable(
             headers: ['ID', 'Name', 'Region', 'Status'],

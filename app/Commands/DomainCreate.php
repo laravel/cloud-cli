@@ -69,7 +69,8 @@ class DomainCreate extends BaseCommand
                 ->fromInput(fn ($value) => confirm(
                     label: 'Enable wildcard',
                     default: $value ?? false,
-                )),
+                ))
+                ->nonInteractively(fn () => false),
         );
 
         $this->form()->prompt(
@@ -83,7 +84,8 @@ class DomainCreate extends BaseCommand
                     ],
                     default: $value ?? 'pre_verification',
                     required: true,
-                )),
+                ))
+                ->nonInteractively(fn () => 'pre_verification'),
         );
 
         return spin(
