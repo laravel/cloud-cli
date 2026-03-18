@@ -1,6 +1,7 @@
 <?php
 
 use App\Client\Resources\Applications\ListApplicationsRequest;
+use App\Client\Resources\Deployments\GetDeploymentLogsRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
@@ -39,7 +40,7 @@ function createDeploymentResponse(string $status = 'pending', array $overrides =
             'attributes' => [
                 'status' => $status,
                 'started_at' => now()->toISOString(),
-                'finished_at' => $status === 'deployment.succeeded' || $status === 'deployment.failed'
+                'finished_at' => in_array($status, ['deployment.succeeded', 'deployment.failed', 'build.failed'])
                     ? now()->toISOString()
                     : null,
             ],
@@ -315,4 +316,92 @@ it('deploys to specific application by ID', function () {
         'application' => 'app-123',
         'environment' => 'production',
     ])->assertSuccessful();
+});
+
+function setupFailedDeployMocks(string $failureStatus = 'build.failed', string $failureReason = 'Build failed', array $logs = []): void
+{
+    MockClient::global([
+        ListApplicationsRequest::class => MockResponse::make([
+            'data' => [createApplicationResponse()],
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org']],
+                createEnvironmentResponse(),
+            ],
+            'links' => ['next' => null],
+        ], 200),
+
+        ListEnvironmentsRequest::class => MockResponse::make([
+            'data' => [createEnvironmentResponse()],
+            'links' => ['next' => null],
+        ], 200),
+
+        GetEnvironmentRequest::class => MockResponse::make([
+            'data' => createEnvironmentResponse(),
+        ], 200),
+
+        InitiateDeploymentRequest::class => MockResponse::make(
+            createDeploymentResponse('pending'),
+            200,
+        ),
+
+        GetDeploymentRequest::class => MockResponse::make(
+            createDeploymentResponse($failureStatus, [
+                'attributes' => [
+                    'status' => $failureStatus,
+                    'failure_reason' => $failureReason,
+                    'started_at' => now()->toISOString(),
+                    'finished_at' => now()->toISOString(),
+                ],
+            ]),
+            200,
+        ),
+
+        GetDeploymentLogsRequest::class => MockResponse::make([
+            'data' => $logs,
+        ], 200),
+    ]);
+}
+
+it('displays build logs when deployment fails with build error', function () {
+    Prompt::fake();
+
+    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupFailedDeployMocks('build.failed', 'Build failed', [
+        ['type' => 'build', 'timestamp' => now()->toISOString(), 'output' => "Installing dependencies...\nnpm ERR! Could not resolve dependency"],
+    ]);
+
+    $this->artisan('deploy', ['--no-interaction' => true])
+        ->expectsOutputToContain('Build output:')
+        ->expectsOutputToContain('npm ERR! Could not resolve dependency')
+        ->assertFailed();
+});
+
+it('displays deploy logs when deployment fails with deploy error', function () {
+    Prompt::fake();
+
+    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupFailedDeployMocks('deployment.failed', 'Deploy failed', [
+        ['type' => 'deploy', 'timestamp' => now()->toISOString(), 'output' => "Running migrations...\nSQLSTATE[42S02]: Table not found"],
+    ]);
+
+    $this->artisan('deploy', ['--no-interaction' => true])
+        ->expectsOutputToContain('Deploy output:')
+        ->expectsOutputToContain('SQLSTATE[42S02]: Table not found')
+        ->assertFailed();
+});
+
+it('handles failed deployment when logs endpoint returns empty', function () {
+    Prompt::fake();
+
+    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupFailedDeployMocks('build.failed', 'Build failed', []);
+
+    $this->artisan('deploy', ['--no-interaction' => true])
+        ->assertFailed();
 });

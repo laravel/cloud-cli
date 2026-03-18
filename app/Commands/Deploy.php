@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
+use App\Enums\DeploymentStatus;
 use App\Dto\Deployment;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
@@ -84,7 +85,10 @@ class Deploy extends BaseCommand
         $deployment = $this->client->deployments()->get($deployment->id);
 
         if ($deployment->failed()) {
-            error('Deployment failed: '.$deployment->failureReason);
+            $phase = $deployment->status === DeploymentStatus::BUILD_FAILED ? 'Build' : 'Deploy';
+            error('Deployment failed: '.($deployment->failureReason ?: $phase.' failed'));
+
+            $this->displayDeploymentLogs($deployment, $phase);
 
             if ($this->isInteractive()) {
                 if (confirm('Do you want to edit the build and deploy commands and try again?')) {
@@ -154,6 +158,32 @@ class Deploy extends BaseCommand
             $count++;
             $checkApi = $count % $checkInterval === 0;
         } while ($deploymentStatus->isInProgress());
+    }
+
+    protected function displayDeploymentLogs(Deployment $deployment, string $phase): void
+    {
+        try {
+            $logs = $this->client->deployments()->logs($deployment->id);
+        } catch (\Throwable) {
+            return;
+        }
+
+        if (empty($logs)) {
+            return;
+        }
+
+        $this->newLine();
+        $this->line("  <comment>{$phase} output:</comment>");
+
+        foreach ($logs as $log) {
+            $output = $log['output'];
+
+            foreach (explode("\n", rtrim($output)) as $line) {
+                $this->line('  <fg=gray>|</> '.$line);
+            }
+        }
+
+        $this->newLine();
     }
 
     protected function getDeploymentMessage(Deployment $deployment): string
