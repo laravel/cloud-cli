@@ -53,7 +53,9 @@ class ConfigRepository
      */
     public function apiTokenEntries(): Collection
     {
-        return collect($this->get('api_tokens', []))->map(function ($entry) {
+        $raw = collect($this->get('api_tokens', []));
+
+        $entries = $raw->map(function ($entry) {
             // Backwards compatibility: plain string tokens become arrays
             if (is_string($entry)) {
                 return [
@@ -69,6 +71,14 @@ class ConfigRepository
                 'organization_id' => $entry['organization_id'] ?? '',
             ];
         })->unique('token')->values();
+
+        // Persist cleanup if duplicates were found
+        if ($entries->count() < $raw->count()) {
+            $this->config['api_tokens'] = $entries->toArray();
+            $this->save();
+        }
+
+        return $entries;
     }
 
     public function addApiToken(string $token, string $organizationName = '', string $organizationId = ''): void
