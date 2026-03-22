@@ -63,6 +63,12 @@ class AuthToken extends BaseCommand implements NoAuthRequired
             return self::SUCCESS;
         }
 
+        if (! $this->isInteractive()) {
+            $this->listTokens($tokens);
+
+            return self::SUCCESS;
+        }
+
         $action = select(
             label: 'What would you like to do?',
             options: [
