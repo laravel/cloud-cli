@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\LocalConfig;
+use Symfony\Component\Console\Command\Command;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -23,8 +24,16 @@ trait HasAClient
 
     protected function ensureApiTokenExists(): void
     {
+        // --token flag takes highest priority (check argv since middleware doesn't have command context)
+        foreach ($_SERVER['argv'] ?? [] as $arg) {
+            if (str_starts_with($arg, '--token=') || $arg === '--token') {
+                return;
+            }
+        }
+
         // If a token is available via env var, no need to check config
         $envToken = getenv('LARAVEL_CLOUD_API_TOKEN');
+
         if ($envToken !== false && $envToken !== '') {
             return;
         }
@@ -42,7 +51,7 @@ trait HasAClient
     protected function resolveApiToken(bool $ignoreLocalConfig = false): string
     {
         // --token flag takes highest priority
-        if ($this instanceof \Symfony\Component\Console\Command\Command
+        if ($this instanceof Command
             && $this->getDefinition()->hasOption('token')
             && ($flagToken = $this->option('token'))
         ) {
@@ -51,6 +60,7 @@ trait HasAClient
 
         // LARAVEL_CLOUD_API_TOKEN env var takes second priority
         $envToken = getenv('LARAVEL_CLOUD_API_TOKEN');
+
         if ($envToken !== false && $envToken !== '') {
             return $envToken;
         }
