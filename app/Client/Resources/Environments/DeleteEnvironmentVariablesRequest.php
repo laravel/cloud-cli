@@ -12,7 +12,7 @@ class DeleteEnvironmentVariablesRequest extends Request implements HasBody
 {
     use HasJsonBody;
 
-    protected Method $method = Method::DELETE;
+    protected Method $method = Method::POST;
 
     public function __construct(
         protected DeleteEnvironmentVariablesRequestData $data,
@@ -22,7 +22,7 @@ class DeleteEnvironmentVariablesRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->data->environmentId}/variables";
+        return "/environments/{$this->data->environmentId}/variables/delete";
     }
 
     protected function defaultBody(): array
