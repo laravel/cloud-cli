@@ -66,19 +66,4 @@ class LocalConfig
         $this->setMany([$key => $value]);
     }
 
-    public function remove(string ...$keys): void
-    {
-        $config = $this->getConfig();
-
-        foreach ($keys as $key) {
-            unset($config[$key]);
-        }
-
-        File::ensureDirectoryExists(dirname($this->configPath));
-
-        File::put(
-            $this->configPath,
-            json_encode($config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES).PHP_EOL,
-        );
-    }
 }

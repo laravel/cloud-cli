@@ -8,7 +8,6 @@ use App\ConfigRepository;
 use App\Git;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Prompt;
-use Saloon\Exceptions\Request\ClientException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -209,7 +208,7 @@ it('fails when key not found', function () {
 
 // ---- API error ----
 
-it('throws exception when update API returns 422', function () {
+it('shows error when update API returns 422', function () {
     Prompt::fake();
 
     MockClient::global([
@@ -226,5 +225,5 @@ it('throws exception when update API returns 422', function () {
         '--name' => 'taken',
         '--force' => true,
         '--json' => true,
-    ]);
-})->throws(ClientException::class);
+    ])->assertFailed();
+});

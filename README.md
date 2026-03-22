@@ -100,7 +100,6 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud auth` | Authenticate with Laravel Cloud (browser OAuth) |
 | `cloud auth:token` | Manage API tokens |
 | `cloud repo:config` | Configure defaults for the current repository |
-| `cloud use` | Set default application/environment for the current directory |
 | `cloud env:pull` | Download environment variables as a .env file |
 | `cloud env:push` | Upload a local .env file to an environment |
 

@@ -4,7 +4,10 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateBucketKeyRequestData;
 use App\Dto\BucketKey;
+use App\Exceptions\CommandExitException;
+use Saloon\Exceptions\Request\RequestException;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -50,15 +53,21 @@ class BucketKeyUpdate extends BaseCommand
 
     protected function updateKey(BucketKey $key): BucketKey
     {
-        spin(
-            fn () => $this->client->bucketKeys()->update(
-                new UpdateBucketKeyRequestData(
-                    filesystemKey: $key->id,
-                    name: $this->form()->get('name'),
+        try {
+            spin(
+                fn () => $this->client->bucketKeys()->update(
+                    new UpdateBucketKeyRequestData(
+                        filesystemKey: $key->id,
+                        name: $this->form()->get('name'),
+                    ),
                 ),
-            ),
-            'Updating key...',
-        );
+                'Updating key...',
+            );
+        } catch (RequestException $e) {
+            error('Failed to update bucket key: '.$e->getMessage());
+
+            throw new CommandExitException(self::FAILURE);
+        }
 
         return $this->client->bucketKeys()->get($key->id);
     }

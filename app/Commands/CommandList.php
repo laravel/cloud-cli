@@ -21,6 +21,11 @@ class CommandList extends BaseCommand
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
         $commands = $this->client->commands()->list($environment->id)->collect();
 
+        if ($commands->isEmpty()) {
+            $this->outputJsonIfWanted($commands);
+            $this->failAndExit('No commands found for this environment.');
+        }
+
         $this->outputJsonIfWanted($commands);
 
         dataTable(

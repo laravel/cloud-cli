@@ -5,7 +5,9 @@ namespace App\Commands;
 use App\Client\Requests\UpdateObjectStorageBucketRequestData;
 use App\Dto\ObjectStorageBucket;
 use App\Exceptions\CommandExitException;
+use Saloon\Exceptions\Request\RequestException;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\select;
@@ -53,16 +55,22 @@ class BucketUpdate extends BaseCommand
 
     protected function updateBucket(ObjectStorageBucket $bucket): ObjectStorageBucket
     {
-        spin(
-            fn () => $this->client->objectStorageBuckets()->update(
-                new UpdateObjectStorageBucketRequestData(
-                    bucketId: $bucket->id,
-                    name: $this->form()->get('name'),
-                    visibility: $this->form()->get('visibility'),
+        try {
+            spin(
+                fn () => $this->client->objectStorageBuckets()->update(
+                    new UpdateObjectStorageBucketRequestData(
+                        bucketId: $bucket->id,
+                        name: $this->form()->get('name'),
+                        visibility: $this->form()->get('visibility'),
+                    ),
                 ),
-            ),
-            'Updating bucket...',
-        );
+                'Updating bucket...',
+            );
+        } catch (RequestException $e) {
+            error('Failed to update bucket: '.$e->getMessage());
+
+            throw new CommandExitException(self::FAILURE);
+        }
 
         return $this->client->objectStorageBuckets()->get($bucket->id);
     }
