@@ -10,10 +10,10 @@ permissions:
   contents: read
 
 jobs:
-  tests:
+  unit-and-feature:
     runs-on: ubuntu-latest
 
-    name: Tests
+    name: Unit & Feature Tests
 
     steps:
       - name: Checkout code
@@ -33,5 +33,66 @@ jobs:
           max_attempts: 5
           command: composer install --prefer-dist --no-interaction --no-progress
 
-      - name: Run tests
-        run: vendor/bin/pest
+      - name: Run unit and feature tests
+        run: vendor/bin/pest --exclude-group=integration
+
+  contract:
+    runs-on: ubuntu-latest
+
+    name: API Contract Tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run contract tests
+        run: vendor/bin/pest tests/Unit/ApiContractTest.php
+
+  integration:
+    runs-on: ubuntu-latest
+
+    name: Integration Tests
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.4
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 5
+          max_attempts: 5
+          command: composer install --prefer-dist --no-interaction --no-progress
+
+      - name: Run integration tests
+        if: env.LARAVEL_CLOUD_API_TOKEN != ''
+        env:
+          CLOUD_CLI_INTEGRATION: 'true'
+          LARAVEL_CLOUD_API_TOKEN: ${{ secrets.LARAVEL_CLOUD_API_TOKEN }}
+        run: vendor/bin/pest tests/Integration/ --group=read-only
+
+      - name: Skip integration tests
+        if: env.LARAVEL_CLOUD_API_TOKEN == ''
+        run: echo "Skipped — LARAVEL_CLOUD_API_TOKEN secret not configured"
