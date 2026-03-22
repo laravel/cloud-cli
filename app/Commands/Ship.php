@@ -80,6 +80,21 @@ class Ship extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
+        if ($this->option('dry-run')) {
+            intro('Dry run — no changes will be made.');
+
+            $repository = $this->git->remoteRepo();
+            $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
+            $region = $this->option('region') ?? 'us-east-2';
+
+            info('Repository: '.$repository);
+            info('Application name: '.$name);
+            info('Region: '.$region);
+            info('Would create application and deploy.');
+
+            return self::SUCCESS;
+        }
+
         $repository = $this->git->remoteRepo();
 
         $applications = spin(
@@ -121,28 +136,6 @@ class Ship extends BaseCommand
 
         $mostUsedRegion = $applications->collect()->pluck('region')->countBy()->sortDesc()->keys()->first();
         $defaultRegion = $mostUsedRegion ?? 'us-east-2';
-
-        if ($this->option('dry-run')) {
-            $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
-            $region = $this->option('region') ?? $defaultRegion;
-            $databaseType = $this->resolveDatabaseType();
-            $databasePreset = $databaseType ? $this->resolveDatabasePreset($databaseType) : null;
-
-            intro('Dry run — no changes will be made.');
-
-            info('Would create application: '.$name);
-            info('Repository: '.$repository);
-            info('Region: '.$region);
-
-            if ($databaseType) {
-                info('Database type: '.$databaseType);
-                info('Database preset: '.($databasePreset ?? 'Dev'));
-            }
-
-            info('Would deploy after creation');
-
-            return self::SUCCESS;
-        }
 
         $application = $this->isInteractive()
             ? $this->loopUntilValid(fn () => $this->createApplication($defaultRegion, $repository))
