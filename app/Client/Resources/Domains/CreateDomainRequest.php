@@ -4,6 +4,7 @@ namespace App\Client\Resources\Domains;
 
 use App\Client\Requests\CreateDomainRequestData;
 use App\Dto\Domain;
+use JsonException;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
@@ -34,6 +35,19 @@ class CreateDomainRequest extends Request implements HasBody
 
     public function createDtoFromResponse(Response $response): mixed
     {
-        return Domain::createFromResponse($response->json());
+        try {
+            return Domain::createFromResponse($response->json());
+        } catch (JsonException) {
+            // The API may return a non-JSON response (e.g., empty body or
+            // the domain ID in the Location header). Parse what we can.
+            return Domain::from([
+                'id' => $response->header('X-Resource-Id') ?? 'unknown',
+                'name' => $this->data->name,
+                'type' => 'root',
+                'hostnameStatus' => 'pending',
+                'sslStatus' => 'pending',
+                'originStatus' => 'pending',
+            ]);
+        }
     }
 }

@@ -16,7 +16,7 @@ class InstanceCreate extends BaseCommand
     protected $signature = 'instance:create
                             {environment? : The environment ID}
                             {--name= : Instance name}
-                            {--type=service : Instance type (app|worker)}
+                            {--type=service : Instance type}
                             {--size= : Instance size}
                             {--scaling-type= : Scaling type (custom|none)}
                             {--min-replicas= : Minimum replicas}
