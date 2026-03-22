@@ -11,7 +11,7 @@ use function Laravel\Prompts\intro;
 
 class DatabaseOpen extends BaseCommand
 {
-    protected $signature = 'database:open {cluster? : The database cluster ID or name} {database? : The database ID or name}';
+    protected $signature = 'database:open {cluster? : The database cluster ID or name} {database? : The database ID or name} {--show-url : Display the connection URL}';
 
     protected $description = 'Open database locally';
 
@@ -26,7 +26,11 @@ class DatabaseOpen extends BaseCommand
 
         $url = $this->buildUrl($cluster, $database);
 
-        info('Opening database connection...');
+        if ($this->option('show-url')) {
+            info($url);
+        } else {
+            info('Opening database connection...');
+        }
 
         Process::run(['open', $url]);
 
