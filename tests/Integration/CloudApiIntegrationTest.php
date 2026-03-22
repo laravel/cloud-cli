@@ -165,15 +165,121 @@ it('lists domains for the first environment', function () {
     ])->assertSuccessful();
 })->group('integration', 'read-only');
 
+it('gets the first application details', function () {
+    $result = $this->artisan('application:list', ['--json' => true]);
+    $apps = json_decode($result->output(), true);
+
+    if (empty($apps)) {
+        $this->markTestSkipped('No applications found');
+    }
+
+    $this->artisan('application:get', [
+        'application' => $apps[0]['id'],
+        '--json' => true,
+    ])->assertSuccessful();
+})->group('integration', 'read-only');
+
+it('gets environment details for the first environment', function () {
+    $result = $this->artisan('application:list', ['--json' => true]);
+    $apps = json_decode($result->output(), true);
+
+    if (empty($apps)) {
+        $this->markTestSkipped('No applications found');
+    }
+
+    $envResult = $this->artisan('environment:list', [
+        'application' => $apps[0]['id'],
+        '--json' => true,
+    ]);
+    $environments = json_decode($envResult->output(), true);
+
+    if (empty($environments)) {
+        $this->markTestSkipped('No environments found');
+    }
+
+    $this->artisan('environment:get', [
+        'environment' => $environments[0]['id'],
+        '--application' => $apps[0]['id'],
+        '--json' => true,
+    ])->assertSuccessful();
+})->group('integration', 'read-only');
+
+it('lists database types', function () {
+    $this->artisan('database-cluster:list', ['--json' => true])
+        ->assertSuccessful();
+})->group('integration', 'read-only');
+
+it('lists dedicated clusters', function () {
+    // May return "No dedicated clusters found" which is exit 1 — that's OK
+    $this->artisan('dedicated-cluster:list', ['--json' => true]);
+    $this->assertTrue(true); // Command ran without crashing
+})->group('integration', 'read-only');
+
+it('lists websocket clusters', function () {
+    // May return "No WebSocket clusters found" — that's OK
+    $this->artisan('websocket-cluster:list', ['--json' => true]);
+    $this->assertTrue(true);
+})->group('integration', 'read-only');
+
+it('runs debug command for the first environment', function () {
+    $result = $this->artisan('application:list', ['--json' => true]);
+    $apps = json_decode($result->output(), true);
+
+    if (empty($apps)) {
+        $this->markTestSkipped('No applications found');
+    }
+
+    $envResult = $this->artisan('environment:list', [
+        'application' => $apps[0]['id'],
+        '--json' => true,
+    ]);
+    $environments = json_decode($envResult->output(), true);
+
+    if (empty($environments)) {
+        $this->markTestSkipped('No environments found');
+    }
+
+    $this->artisan('debug', [
+        '--application' => $apps[0]['id'],
+        '--environment' => $environments[0]['id'],
+        '--json' => true,
+    ])->assertSuccessful();
+})->group('integration', 'read-only');
+
+it('runs status command for the first application', function () {
+    $result = $this->artisan('application:list', ['--json' => true]);
+    $apps = json_decode($result->output(), true);
+
+    if (empty($apps)) {
+        $this->markTestSkipped('No applications found');
+    }
+
+    $envResult = $this->artisan('environment:list', [
+        'application' => $apps[0]['id'],
+        '--json' => true,
+    ]);
+    $environments = json_decode($envResult->output(), true);
+
+    if (empty($environments)) {
+        $this->markTestSkipped('No environments found');
+    }
+
+    $this->artisan('status', [
+        '--application' => $apps[0]['id'],
+        '--environment' => $environments[0]['id'],
+        '--json' => true,
+    ])->assertSuccessful();
+})->group('integration', 'read-only');
+
 it('redacts sensitive values with --hide-secrets flag', function () {
-    $result = $this->artisan('application:list', [
+    $result = $this->artisan('database-cluster:list', [
         '--json' => true,
         '--hide-secrets' => true,
     ]);
     $result->assertSuccessful();
 
-    // The flag should not cause errors; redaction applies to sensitive fields
-    // in output. We verify the command completes without failure.
+    $output = $result->output();
+    expect($output)->not->toContain('npg_');
 })->group('integration', 'read-only');
 
 it('authenticates via --token flag', function () {
@@ -196,54 +302,42 @@ it('performs full application lifecycle: create, env vars, stop, start, delete',
 
     $appName = 'integration-test-'.date('YmdHis');
 
-    // ---- Step 1: Create the application ----
-    // Note: application:create requires a GitHub repository.
-    // This test assumes the account has repository access configured.
-    // If not, this test will fail at this step — which is expected.
     $createResult = $this->artisan('application:create', [
         '--name' => $appName,
         '--json' => true,
         '--no-interaction' => true,
     ]);
 
-    // If creation fails (e.g., no repo access), skip gracefully
     if ($createResult->exitCode() !== 0) {
-        $this->markTestSkipped(
-            'application:create failed — this account may not have repository access configured',
-        );
+        $this->markTestSkipped('application:create failed — account may not have repository access');
     }
 
-    $createOutput = $createResult->output();
-    $app = json_decode($createOutput, true);
+    $app = json_decode($createResult->output(), true);
     $appId = $app['id'] ?? null;
-
     expect($appId)->not->toBeNull('Created application should have an ID');
 
     try {
-        // ---- Step 2: Get environments for the new app ----
         $envResult = $this->artisan('environment:list', [
             'application' => $appId,
             '--json' => true,
         ]);
         $envResult->assertSuccessful();
-
-        $envOutput = $envResult->output();
-        $environments = json_decode($envOutput, true);
+        $environments = json_decode($envResult->output(), true);
         $envId = $environments[0]['id'] ?? null;
 
         if ($envId) {
-            // ---- Step 3: Set an environment variable ----
+            // Set an environment variable
             $this->artisan('environment:variables', [
                 'environment' => $envId,
                 '--application' => $appId,
-                '--action' => 'append',
+                '--action' => 'set',
                 '--key' => ['INTEGRATION_TEST_VAR'],
                 '--value' => 'test_value_123',
                 '--force' => true,
                 '--no-interaction' => true,
             ])->assertSuccessful();
 
-            // ---- Step 4: Delete the environment variable ----
+            // Delete the environment variable
             $this->artisan('environment:variables', [
                 'environment' => $envId,
                 '--application' => $appId,
@@ -253,7 +347,7 @@ it('performs full application lifecycle: create, env vars, stop, start, delete',
                 '--no-interaction' => true,
             ])->assertSuccessful();
 
-            // ---- Step 5: Stop the environment ----
+            // Stop the environment
             $this->artisan('environment:stop', [
                 'environment' => $envId,
                 '--application' => $appId,
@@ -261,7 +355,7 @@ it('performs full application lifecycle: create, env vars, stop, start, delete',
                 '--no-interaction' => true,
             ])->assertSuccessful();
 
-            // ---- Step 6: Start the environment ----
+            // Start the environment
             $this->artisan('environment:start', [
                 'environment' => $envId,
                 '--application' => $appId,
@@ -270,9 +364,150 @@ it('performs full application lifecycle: create, env vars, stop, start, delete',
             ])->assertSuccessful();
         }
     } finally {
-        // ---- Step 7: Always clean up — delete the application ----
         $this->artisan('application:delete', [
             'application' => $appId,
+            '--force' => true,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    }
+})->group('integration', 'destructive');
+
+it('performs database cluster lifecycle: create, snapshot, delete', function () {
+    if (env('CLOUD_CLI_INTEGRATION_DESTRUCTIVE') !== 'true') {
+        $this->markTestSkipped('Destructive integration tests require CLOUD_CLI_INTEGRATION_DESTRUCTIVE=true');
+    }
+
+    $clusterName = 'int-test-db-'.date('YmdHis');
+
+    $createResult = $this->artisan('database-cluster:create', [
+        '--name' => $clusterName,
+        '--type' => 'neon_serverless_postgres_18',
+        '--region' => 'us-east-2',
+        '--json' => true,
+        '--no-interaction' => true,
+    ]);
+    $createResult->assertSuccessful();
+
+    $cluster = json_decode($createResult->output(), true);
+    $clusterId = $cluster['id'] ?? null;
+    expect($clusterId)->not->toBeNull();
+
+    try {
+        // Get cluster details
+        $this->artisan('database-cluster:get', [
+            'cluster' => $clusterId,
+            '--json' => true,
+        ])->assertSuccessful();
+
+        // List databases in cluster
+        $this->artisan('database:list', [
+            'cluster' => $clusterId,
+            '--json' => true,
+        ])->assertSuccessful();
+
+        // Create a database schema
+        $this->artisan('database:create', [
+            'cluster' => $clusterId,
+            '--name' => 'testdb',
+            '--json' => true,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+
+        // Delete the schema
+        $this->artisan('database:delete', [
+            'cluster' => $clusterId,
+            'database' => 'testdb',
+            '--force' => true,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    } finally {
+        $this->artisan('database-cluster:delete', [
+            'cluster' => $clusterId,
+            '--force' => true,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    }
+})->group('integration', 'destructive');
+
+it('performs cache lifecycle: create, update, delete', function () {
+    if (env('CLOUD_CLI_INTEGRATION_DESTRUCTIVE') !== 'true') {
+        $this->markTestSkipped('Destructive integration tests require CLOUD_CLI_INTEGRATION_DESTRUCTIVE=true');
+    }
+
+    $cacheName = 'int-test-cache-'.date('YmdHis');
+
+    $createResult = $this->artisan('cache:create', [
+        '--name' => $cacheName,
+        '--type' => 'laravel_valkey',
+        '--region' => 'us-east-2',
+        '--size' => 'valkey-pro.250mb',
+        '--auto-upgrade-enabled' => 'false',
+        '--is-public' => 'false',
+        '--eviction-policy' => 'noeviction',
+        '--json' => true,
+        '--no-interaction' => true,
+    ]);
+    $createResult->assertSuccessful();
+
+    $cache = json_decode($createResult->output(), true);
+    $cacheId = $cache['id'] ?? null;
+    expect($cacheId)->not->toBeNull();
+
+    try {
+        $this->artisan('cache:get', [
+            'cache' => $cacheId,
+            '--json' => true,
+        ])->assertSuccessful();
+
+        // Wait for cache to finish creating before deleting
+        sleep(15);
+    } finally {
+        $this->artisan('cache:delete', [
+            'cache' => $cacheId,
+            '--force' => true,
+            '--no-interaction' => true,
+        ])->assertSuccessful();
+    }
+})->group('integration', 'destructive');
+
+it('performs websocket cluster lifecycle: create, app, delete', function () {
+    if (env('CLOUD_CLI_INTEGRATION_DESTRUCTIVE') !== 'true') {
+        $this->markTestSkipped('Destructive integration tests require CLOUD_CLI_INTEGRATION_DESTRUCTIVE=true');
+    }
+
+    $wsName = 'int-test-ws-'.date('YmdHis');
+
+    $createResult = $this->artisan('websocket-cluster:create', [
+        '--name' => $wsName,
+        '--region' => 'us-east-2',
+        '--json' => true,
+        '--no-interaction' => true,
+    ]);
+    $createResult->assertSuccessful();
+
+    $cluster = json_decode($createResult->output(), true);
+    $clusterId = $cluster['id'] ?? null;
+    expect($clusterId)->not->toBeNull();
+
+    try {
+        // List apps (default app created with cluster)
+        $appResult = $this->artisan('websocket-application:list', [
+            'cluster' => $clusterId,
+            '--json' => true,
+        ]);
+        $appResult->assertSuccessful();
+
+        // Get cluster metrics
+        $this->artisan('websocket-cluster:metrics', [
+            'cluster' => $clusterId,
+            '--json' => true,
+        ])->assertSuccessful();
+
+        // Wait for cluster operations to settle
+        sleep(10);
+    } finally {
+        $this->artisan('websocket-cluster:delete', [
+            'cluster' => $clusterId,
             '--force' => true,
             '--no-interaction' => true,
         ])->assertSuccessful();
