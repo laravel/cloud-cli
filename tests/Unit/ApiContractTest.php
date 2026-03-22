@@ -641,7 +641,7 @@ dataset('api_contract', function () {
 // ---------------------------------------------------------------------------
 // Test: HTTP method matches the Cloud API spec
 // ---------------------------------------------------------------------------
-it('uses the correct HTTP method per the Cloud API spec', function (
+it('has correct HTTP method for', function (
     string $class,
     string $expectedMethod,
     string $endpointPattern,
@@ -654,7 +654,7 @@ it('uses the correct HTTP method per the Cloud API spec', function (
 // ---------------------------------------------------------------------------
 // Test: endpoint pattern matches the Cloud API spec
 // ---------------------------------------------------------------------------
-it('resolves the correct endpoint per the Cloud API spec', function (
+it('has correct endpoint for', function (
     string $class,
     string $expectedMethod,
     string $endpointPattern,
