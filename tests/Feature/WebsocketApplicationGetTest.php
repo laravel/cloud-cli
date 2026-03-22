@@ -2,7 +2,6 @@
 
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\ListWebSocketApplicationsRequest;
-use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\ListWebSocketClustersRequest;
 use App\ConfigRepository;
 use App\Git;

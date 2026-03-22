@@ -52,7 +52,7 @@ function makeEnvListData(string $id, string $name): array
     ];
 }
 
-function setupListEnvMocks(array $environments = null): void
+function setupListEnvMocks(?array $environments = null): void
 {
     $appData = createApplicationResponse();
     $orgInclude = ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']];
@@ -87,7 +87,7 @@ it('lists environments for an application', function () {
         'application' => 'app-123',
         '--no-interaction' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('production');
+        ->expectsOutputToContain('production');
 });
 
 it('lists environments by application name', function () {
@@ -114,7 +114,7 @@ it('outputs json when --json flag is passed', function () {
         'application' => 'app-123',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('production');
+        ->expectsOutputToContain('production');
 });
 
 it('returns empty json when no environments found with --json', function () {

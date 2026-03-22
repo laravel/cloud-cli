@@ -2,7 +2,6 @@
 
 use App\Client\Resources\Environments\DeleteEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
-use App\Client\Resources\Environments\ListEnvironmentsRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\ConfigRepository;
 use App\Git;

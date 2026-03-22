@@ -8,6 +8,7 @@ use App\ConfigRepository;
 use App\Git;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Prompt;
+use Saloon\Exceptions\Request\ClientException;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 
@@ -226,4 +227,4 @@ it('throws exception when update API returns 422', function () {
         '--force' => true,
         '--json' => true,
     ]);
-})->throws(Saloon\Exceptions\Request\ClientException::class);
+})->throws(ClientException::class);

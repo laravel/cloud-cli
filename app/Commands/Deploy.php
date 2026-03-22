@@ -5,16 +5,18 @@ namespace App\Commands;
 use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
-use App\Enums\DeploymentStatus;
 use App\Dto\Deployment;
 use App\Dto\Environment;
+use App\Enums\DeploymentStatus;
 use App\Exceptions\CommandExitException;
+use App\Git;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
+use Throwable;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -69,7 +71,7 @@ class Deploy extends BaseCommand
 
             info('Application: '.$app->name.' ('.$app->id.')');
             info('Environment: '.$environment->name.' ('.$environment->id.')');
-            info('Branch: '.($environment->branch ?? app(\App\Git::class)->currentBranch()));
+            info('Branch: '.($environment->branch ?? app(Git::class)->currentBranch()));
             info('Would deploy to: '.$environment->url);
 
             return self::SUCCESS;
@@ -153,11 +155,11 @@ class Deploy extends BaseCommand
                     foreach ($recentLogs as $log) {
                         $this->line('  '.($log['message'] ?? ''));
                     }
-                } catch (\Throwable) {
+                } catch (Throwable) {
                     // Don't fail on log fetch errors
                 }
             }
-        } catch (\Throwable) {
+        } catch (Throwable) {
             warning('Health check: Could not reach '.$environment->url.'/up');
         }
     }
@@ -200,7 +202,7 @@ class Deploy extends BaseCommand
     {
         try {
             $logs = $this->client->deployments()->logs($deployment->id);
-        } catch (\Throwable) {
+        } catch (Throwable) {
             return;
         }
 

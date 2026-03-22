@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use Carbon\CarbonImmutable;
+use Throwable;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -65,7 +66,7 @@ class Debug extends BaseCommand
                 'started_at' => $d->startedAt?->toDateTimeString(),
                 'finished_at' => $d->finishedAt?->toDateTimeString(),
             ])->values()->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Continue gathering other diagnostics
         }
 
@@ -85,7 +86,7 @@ class Debug extends BaseCommand
                 ])
                 ->values()
                 ->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Continue gathering other diagnostics
         }
 
@@ -99,7 +100,7 @@ class Debug extends BaseCommand
                 'status' => $db->status,
                 'region' => $db->region,
             ])->values()->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Continue gathering other diagnostics
         }
 
@@ -113,7 +114,7 @@ class Debug extends BaseCommand
                 'status' => $cache->status,
                 'region' => $cache->region,
             ])->values()->toArray();
-        } catch (\Throwable) {
+        } catch (Throwable) {
             // Continue gathering other diagnostics
         }
 

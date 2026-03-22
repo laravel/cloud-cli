@@ -128,7 +128,7 @@ it('outputs json when --json flag is passed', function () {
         'domain' => 'domain-1',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('example.com');
+        ->expectsOutputToContain('example.com');
 });
 
 it('verifies a domain with pending status', function () {

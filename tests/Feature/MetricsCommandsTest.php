@@ -1,10 +1,8 @@
 <?php
 
 use App\Client\Resources\Caches\GetCacheMetricsRequest;
-use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterMetricsRequest;
-use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\Environments\GetEnvironmentMetricsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;

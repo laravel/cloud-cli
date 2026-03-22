@@ -1,6 +1,5 @@
 <?php
 
-use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\ObjectStorageBuckets\CreateObjectStorageBucketRequest;
 use App\ConfigRepository;
 use App\Git;

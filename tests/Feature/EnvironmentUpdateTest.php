@@ -163,7 +163,7 @@ it('outputs json when --json flag is passed', function () {
         '--force' => true,
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('production');
+        ->expectsOutputToContain('production');
 });
 
 it('updates multiple fields at once', function () {

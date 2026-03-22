@@ -60,6 +60,7 @@ it('updates a websocket application with --name and --force', function () {
     MockClient::global([
         GetWebSocketApplicationRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(wsAppUpdateGetResponse(), 200);
             }
@@ -68,7 +69,7 @@ it('updates a websocket application with --name and --force', function () {
         },
         UpdateWebSocketApplicationRequest::class => MockResponse::make(
             wsAppUpdateGetResponse(['attributes' => ['name' => 'updated-app']]),
-            200
+            200,
         ),
     ]);
 
@@ -98,6 +99,7 @@ it('updates websocket application name with --json output', function () {
     MockClient::global([
         GetWebSocketApplicationRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(wsAppUpdateGetResponse(), 200);
             }
@@ -106,7 +108,7 @@ it('updates websocket application name with --json output', function () {
         },
         UpdateWebSocketApplicationRequest::class => MockResponse::make(
             wsAppUpdateGetResponse(['attributes' => ['name' => 'renamed-app']]),
-            200
+            200,
         ),
     ]);
 

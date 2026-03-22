@@ -175,5 +175,5 @@ it('outputs json when --json flag is passed for append', function () {
         '--value' => 'new_value',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('Environment variables updated');
+        ->expectsOutputToContain('Environment variables updated');
 });

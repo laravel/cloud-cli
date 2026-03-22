@@ -4,8 +4,10 @@ namespace App\Concerns;
 
 use App\Client\Connector;
 use App\ConfigRepository;
+use App\Dto\Organization;
 use App\LocalConfig;
 use Saloon\Exceptions\Request\RequestException;
+use Symfony\Component\Console\Command\Command;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -27,6 +29,7 @@ trait HasAClient
     {
         // If a token is available via env var, no need to check config
         $envToken = getenv('LARAVEL_CLOUD_API_TOKEN');
+
         if ($envToken !== false && $envToken !== '') {
             return;
         }
@@ -44,7 +47,7 @@ trait HasAClient
     protected function resolveApiToken(bool $ignoreLocalConfig = false): string
     {
         // --token flag takes highest priority
-        if ($this instanceof \Symfony\Component\Console\Command\Command
+        if ($this instanceof Command
             && $this->getDefinition()->hasOption('token')
             && ($flagToken = $this->option('token'))
         ) {
@@ -53,6 +56,7 @@ trait HasAClient
 
         // LARAVEL_CLOUD_API_TOKEN env var takes second priority
         $envToken = getenv('LARAVEL_CLOUD_API_TOKEN');
+
         if ($envToken !== false && $envToken !== '') {
             return $envToken;
         }
@@ -71,7 +75,7 @@ trait HasAClient
             if ($hasCachedOrgNames) {
                 // Use cached org metadata — no API calls needed
                 $orgs = $tokenEntries->mapWithKeys(fn (array $e) => [
-                    $e['token'] => new \App\Dto\Organization(
+                    $e['token'] => new Organization(
                         id: $e['organization_id'] ?? '',
                         name: $e['organization_name'],
                         slug: '',

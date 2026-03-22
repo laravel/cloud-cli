@@ -162,7 +162,7 @@ it('outputs json when --json flag is passed', function () {
         '--verification-method' => 'pre_verification',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('example.com');
+        ->expectsOutputToContain('example.com');
 });
 
 it('creates a domain with root-to-www redirect', function () {

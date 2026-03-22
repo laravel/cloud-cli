@@ -104,6 +104,7 @@ it('updates an instance with options and force flag in non-interactive mode', fu
     MockClient::global([
         GetInstanceRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(instanceUpdateGetMock(), 200);
             }
@@ -143,6 +144,7 @@ it('updates multiple fields on an instance', function () {
     MockClient::global([
         GetInstanceRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(instanceUpdateGetMock(), 200);
             }

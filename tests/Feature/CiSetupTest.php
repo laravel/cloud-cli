@@ -13,7 +13,7 @@ afterEach(function () {
         // Clean up
         $files = new RecursiveIteratorIterator(
             new RecursiveDirectoryIterator($this->testDir, RecursiveDirectoryIterator::SKIP_DOTS),
-            RecursiveIteratorIterator::CHILD_FIRST
+            RecursiveIteratorIterator::CHILD_FIRST,
         );
 
         foreach ($files as $file) {

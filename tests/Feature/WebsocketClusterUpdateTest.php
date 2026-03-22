@@ -58,6 +58,7 @@ it('updates a websocket cluster with --name and --force', function () {
     MockClient::global([
         GetWebSocketClusterRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(wsClusterUpdateGetResponse(), 200);
             }
@@ -66,7 +67,7 @@ it('updates a websocket cluster with --name and --force', function () {
         },
         UpdateWebSocketClusterRequest::class => MockResponse::make(
             wsClusterUpdateGetResponse(['attributes' => ['name' => 'updated-cluster']]),
-            200
+            200,
         ),
     ]);
 
@@ -96,6 +97,7 @@ it('updates websocket cluster with --json output', function () {
     MockClient::global([
         GetWebSocketClusterRequest::class => function () use (&$getCallCount) {
             $getCallCount++;
+
             if ($getCallCount === 1) {
                 return MockResponse::make(wsClusterUpdateGetResponse(), 200);
             }
@@ -104,7 +106,7 @@ it('updates websocket cluster with --json output', function () {
         },
         UpdateWebSocketClusterRequest::class => MockResponse::make(
             wsClusterUpdateGetResponse(['attributes' => ['name' => 'renamed-cluster']]),
-            200
+            200,
         ),
     ]);
 

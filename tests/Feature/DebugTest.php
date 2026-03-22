@@ -8,7 +8,6 @@ use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
 use App\ConfigRepository;
-use App\Git;
 use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;

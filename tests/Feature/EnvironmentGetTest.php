@@ -114,7 +114,7 @@ it('gets environment details with --json flag', function () {
         'environment' => 'env-1',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('production');
+        ->expectsOutputToContain('production');
 });
 
 it('gets environment details by name', function () {

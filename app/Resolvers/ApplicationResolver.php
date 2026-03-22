@@ -32,6 +32,7 @@ class ApplicationResolver extends Resolver
                 $this->failAndExit("No application named '{$identifier}' found in your organization.");
             } else {
                 $repository = app(Git::class)->remoteRepo();
+
                 if ($repository) {
                     $this->failAndExit("No application found matching repository '{$repository}'. Create one or provide an application ID or name as an argument.");
                 } else {

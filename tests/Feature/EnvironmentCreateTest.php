@@ -139,5 +139,5 @@ it('outputs json when --json flag is passed', function () {
         '--branch' => 'develop',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('staging');
+        ->expectsOutputToContain('staging');
 });

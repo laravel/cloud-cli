@@ -1,10 +1,14 @@
 <?php
 
+use App\Commands\ApplicationList;
+use App\Commands\EnvironmentList;
+use App\Commands\EnvironmentLogs;
+use App\Commands\EnvironmentVariables;
+use App\Commands\Status;
 use App\ConfigRepository;
 use App\Git;
+use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Support\Sleep;
-use Laravel\Prompts\Prompt;
-use Symfony\Component\Console\Exception\CommandNotFoundException;
 
 beforeEach(function () {
     Sleep::fake();
@@ -20,36 +24,36 @@ beforeEach(function () {
 });
 
 it('registers the logs alias for environment:logs', function () {
-    $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
+    $command = $this->app->make(Kernel::class)->all();
 
     expect($command)->toHaveKey('logs');
-    expect($command['logs'])->toBeInstanceOf(\App\Commands\EnvironmentLogs::class);
+    expect($command['logs'])->toBeInstanceOf(EnvironmentLogs::class);
 });
 
 it('registers the vars alias for environment:variables', function () {
-    $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
+    $command = $this->app->make(Kernel::class)->all();
 
     expect($command)->toHaveKey('vars');
-    expect($command['vars'])->toBeInstanceOf(\App\Commands\EnvironmentVariables::class);
+    expect($command['vars'])->toBeInstanceOf(EnvironmentVariables::class);
 });
 
 it('registers the envs alias for environment:list', function () {
-    $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
+    $command = $this->app->make(Kernel::class)->all();
 
     expect($command)->toHaveKey('envs');
-    expect($command['envs'])->toBeInstanceOf(\App\Commands\EnvironmentList::class);
+    expect($command['envs'])->toBeInstanceOf(EnvironmentList::class);
 });
 
 it('registers the apps alias for application:list', function () {
-    $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
+    $command = $this->app->make(Kernel::class)->all();
 
     expect($command)->toHaveKey('apps');
-    expect($command['apps'])->toBeInstanceOf(\App\Commands\ApplicationList::class);
+    expect($command['apps'])->toBeInstanceOf(ApplicationList::class);
 });
 
 it('registers the status command', function () {
-    $command = $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->all();
+    $command = $this->app->make(Kernel::class)->all();
 
     expect($command)->toHaveKey('status');
-    expect($command['status'])->toBeInstanceOf(\App\Commands\Status::class);
+    expect($command['status'])->toBeInstanceOf(Status::class);
 });

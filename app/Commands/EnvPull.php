@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 
 class EnvPull extends BaseCommand
 {
@@ -47,7 +46,7 @@ class EnvPull extends BaseCommand
         }
 
         $this->outputJsonIfWanted(
-            collect($variables)->mapWithKeys(fn (array $var) => [$var['key'] => $var['value']])->toArray()
+            collect($variables)->mapWithKeys(fn (array $var) => [$var['key'] => $var['value']])->toArray(),
         );
 
         // Output each line individually so test framework can capture it

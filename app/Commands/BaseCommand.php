@@ -73,7 +73,7 @@ abstract class BaseCommand extends Command
         $this->addOption('environment', null, InputOption::VALUE_REQUIRED, 'The environment ID or name');
 
         $this->getDefinition()->addOption(
-            new InputOption('hide-secrets', null, InputOption::VALUE_NONE, 'Redact sensitive values in output')
+            new InputOption('hide-secrets', null, InputOption::VALUE_NONE, 'Redact sensitive values in output'),
         );
     }
 
@@ -217,6 +217,7 @@ abstract class BaseCommand extends Command
             $this->line(json_encode(['message' => $data]));
         } elseif ($data instanceof Jsonable) {
             $jsonData = json_decode($data->toJson(), true);
+
             if ($this->shouldHideSecrets() && is_array($jsonData)) {
                 $jsonData = $this->redactSecrets($jsonData);
             }

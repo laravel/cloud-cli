@@ -9,7 +9,6 @@ use Carbon\CarbonImmutable;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class Status extends BaseCommand
 {

@@ -1,11 +1,7 @@
 <?php
 
-use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\BackgroundProcesses\CreateBackgroundProcessRequest;
-use App\Client\Resources\Environments\GetEnvironmentRequest;
-use App\Client\Resources\Environments\ListEnvironmentsRequest;
 use App\Client\Resources\Instances\GetInstanceRequest;
-use App\Client\Resources\Instances\ListInstancesRequest;
 use App\ConfigRepository;
 use App\Git;
 use Illuminate\Support\Sleep;

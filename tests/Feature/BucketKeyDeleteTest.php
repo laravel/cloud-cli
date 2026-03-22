@@ -2,7 +2,6 @@
 
 use App\Client\Resources\BucketKeys\DeleteBucketKeyRequest;
 use App\Client\Resources\BucketKeys\ListBucketKeysRequest;
-use App\Client\Resources\ObjectStorageBuckets\GetObjectStorageBucketRequest;
 use App\Client\Resources\ObjectStorageBuckets\ListObjectStorageBucketsRequest;
 use App\ConfigRepository;
 use App\Git;

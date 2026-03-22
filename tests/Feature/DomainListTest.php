@@ -52,7 +52,7 @@ function makeDomainListItem(string $id, string $name, string $type = 'root'): ar
     ];
 }
 
-function setupListDomainMocks(array $domains = null): void
+function setupListDomainMocks(?array $domains = null): void
 {
     $appData = createApplicationResponse();
     $orgInclude = ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']];
@@ -113,7 +113,7 @@ it('lists domains for an environment', function () {
         'environment' => 'env-1',
         '--no-interaction' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('example.com');
+        ->expectsOutputToContain('example.com');
 });
 
 it('outputs json when --json flag is passed', function () {
@@ -127,7 +127,7 @@ it('outputs json when --json flag is passed', function () {
         'environment' => 'env-1',
         '--json' => true,
     ])->assertSuccessful()
-      ->expectsOutputToContain('example.com');
+        ->expectsOutputToContain('example.com');
 });
 
 it('returns empty json when no domains found with --json', function () {
