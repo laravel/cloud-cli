@@ -223,6 +223,6 @@ class KeyPressListener
 
     protected function isEscape($key): bool
     {
-        return $key[0] === "\e" || in_array($key, [Key::CTRL_B, Key::CTRL_F, Key::CTRL_A, Key::CTRL_E]);
+        return $key !== '' && ($key[0] === "\e" || in_array($key, [Key::CTRL_B, Key::CTRL_F, Key::CTRL_A, Key::CTRL_E]));
     }
 }
