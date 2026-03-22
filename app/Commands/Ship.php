@@ -68,6 +68,21 @@ class Ship extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
+        if ($this->option('dry-run')) {
+            intro('Dry run — no changes will be made.');
+
+            $repository = $git->remoteRepo();
+            $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
+            $region = $this->option('region') ?? 'us-east-2';
+
+            info('Repository: '.$repository);
+            info('Application name: '.$name);
+            info('Region: '.$region);
+            info('Would create application and deploy.');
+
+            return self::SUCCESS;
+        }
+
         $result = $this->detectOrCreateApplication($git);
 
         if ($result['existing']) {
