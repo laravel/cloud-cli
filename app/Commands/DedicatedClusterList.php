@@ -28,11 +28,11 @@ class DedicatedClusterList extends BaseCommand
 
         $items = $clusters->collect();
 
+        $this->outputJsonIfWanted($items->toArray());
+
         if ($items->isEmpty()) {
             $this->failAndExit('No dedicated clusters found.');
         }
-
-        $this->outputJsonIfWanted($items->toArray());
 
         $rows = $items->map(fn (DedicatedCluster $cluster) => [
             $cluster->id,

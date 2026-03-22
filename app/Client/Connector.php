@@ -47,7 +47,7 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function cacheExpiryInSeconds(): int
     {
-        return 60 * 5;
+        return 60 * 60 * 24;
     }
 
     public function __construct(
