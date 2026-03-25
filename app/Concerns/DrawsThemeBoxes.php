@@ -11,12 +11,12 @@ trait DrawsThemeBoxes
         box as parentBox;
     }
 
-    public function box(string $title, string $body, string $footer = '', string $color = 'gray', string $info = '', ?TimelineSymbol $symbol = TimelineSymbol::PENDING): self
+    public function box(string $title, string $body, string $footer = '', string $color = 'gray', ?string $info = '', ?TimelineSymbol $symbol = TimelineSymbol::PENDING): self
     {
         $originalOutput = $this->output;
         $this->output = '';
 
-        $this->parentBox($title, $body, $footer, $color, $info);
+        $this->parentBox($title, $body, $footer, $color, $info ?? '');
 
         $replace = [
             '┌' => '╭',
