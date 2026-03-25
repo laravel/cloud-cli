@@ -64,7 +64,7 @@ class Font
 
         $instance = new $class;
         $contents = $instance->characters();
-        $lines = collect(explode(PHP_EOL, $contents));
+        $lines = collect(explode("\n", $contents));
 
         $height = $lines->search(fn ($line) => trim($line) === '');
         $index = $height;
