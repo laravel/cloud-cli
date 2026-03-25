@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d44c2d4657721b3b7b80cdf140716527",
+    "content-hash": "66261bddae60b3a52e86ed3aeb66a1eb",
     "packages": [
         {
             "name": "brick/math",
@@ -2568,21 +2568,21 @@
         },
         {
             "name": "saloonphp/cache-plugin",
-            "version": "v3.0.1",
+            "version": "v3.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/saloonphp/cache-plugin.git",
-                "reference": "8ff15f9807e5027704eaf05c7f66a8c87f61f661"
+                "reference": "106d89b6645aa1c054f9687ef8b1eb2ef0b44c47"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/saloonphp/cache-plugin/zipball/8ff15f9807e5027704eaf05c7f66a8c87f61f661",
-                "reference": "8ff15f9807e5027704eaf05c7f66a8c87f61f661",
+                "url": "https://api.github.com/repos/saloonphp/cache-plugin/zipball/106d89b6645aa1c054f9687ef8b1eb2ef0b44c47",
+                "reference": "106d89b6645aa1c054f9687ef8b1eb2ef0b44c47",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.2",
-                "saloonphp/saloon": "^3.0"
+                "saloonphp/saloon": "^3.0 || ^4.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.13",
@@ -2610,27 +2610,27 @@
             ],
             "description": "Official plugin for caching Saloon responses",
             "support": {
-                "source": "https://github.com/saloonphp/cache-plugin/tree/v3.0.1"
+                "source": "https://github.com/saloonphp/cache-plugin/tree/v3.1.0"
             },
-            "time": "2025-11-20T23:47:02+00:00"
+            "time": "2026-03-25T20:44:39+00:00"
         },
         {
             "name": "saloonphp/pagination-plugin",
-            "version": "v2.2.2",
+            "version": "v2.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/saloonphp/pagination-plugin.git",
-                "reference": "8734ac39d9f86110a23adaa395846ec09417f7b5"
+                "reference": "a61822ca93c1207008941822b00df1d8740a4096"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/saloonphp/pagination-plugin/zipball/8734ac39d9f86110a23adaa395846ec09417f7b5",
-                "reference": "8734ac39d9f86110a23adaa395846ec09417f7b5",
+                "url": "https://api.github.com/repos/saloonphp/pagination-plugin/zipball/a61822ca93c1207008941822b00df1d8740a4096",
+                "reference": "a61822ca93c1207008941822b00df1d8740a4096",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.2",
-                "saloonphp/saloon": "^3.0"
+                "saloonphp/saloon": "^3.0 || ^4.0"
             },
             "require-dev": {
                 "friendsofphp/php-cs-fixer": "^3.5",
@@ -2663,22 +2663,22 @@
             "description": "Official Pagination Plugin For Saloon v3",
             "homepage": "https://github.com/saloonphp/pagination-plugin",
             "support": {
-                "source": "https://github.com/saloonphp/pagination-plugin/tree/v2.2.2"
+                "source": "https://github.com/saloonphp/pagination-plugin/tree/v2.3.0"
             },
-            "time": "2026-03-08T11:52:00+00:00"
+            "time": "2026-03-25T20:40:25+00:00"
         },
         {
             "name": "saloonphp/saloon",
-            "version": "v3.15.0",
+            "version": "v4.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/saloonphp/saloon.git",
-                "reference": "8039c76132ca52d08c887407773a770c15ab04a0"
+                "reference": "1307b1d72cacdd2c9c20978cdf7a0b720b4bf3bb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/saloonphp/saloon/zipball/8039c76132ca52d08c887407773a770c15ab04a0",
-                "reference": "8039c76132ca52d08c887407773a770c15ab04a0",
+                "url": "https://api.github.com/repos/saloonphp/saloon/zipball/1307b1d72cacdd2c9c20978cdf7a0b720b4bf3bb",
+                "reference": "1307b1d72cacdd2c9c20978cdf7a0b720b4bf3bb",
                 "shasum": ""
             },
             "require": {
@@ -2738,7 +2738,7 @@
             ],
             "support": {
                 "issues": "https://github.com/saloonphp/saloon/issues",
-                "source": "https://github.com/saloonphp/saloon/tree/v3.15.0"
+                "source": "https://github.com/saloonphp/saloon/tree/v4.0.0"
             },
             "funding": [
                 {
@@ -2746,7 +2746,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-02T22:04:13+00:00"
+            "time": "2026-03-17T22:58:33+00:00"
         },
         {
             "name": "shipfastlabs/agent-detector",
