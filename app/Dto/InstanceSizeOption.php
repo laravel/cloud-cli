@@ -24,7 +24,7 @@ class InstanceSizeOption extends Data
             name: $item['name'],
             label: $item['label'],
             description: $item['description'],
-            cpuType: $item['cpu_type'] ?? $item['cpuType'],
+            cpuType: $item['cpu_type'],
             computeClass: $item['compute_class'] ?? $item['computeClass'],
             cpuCount: $item['cpu_count'] ?? $item['cpuCount'],
             memoryMib: $item['memory_mib'] ?? $item['memoryMib'],

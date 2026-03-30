@@ -18,6 +18,7 @@ beforeEach(function () {
     $this->mockGit = Mockery::mock(Git::class);
     $this->mockGit->shouldReceive('isRepo')->andReturn(true)->byDefault();
     $this->mockGit->shouldReceive('getRoot')->andReturn('/tmp/test-repo')->byDefault();
+    $this->mockGit->shouldReceive('currentBranch')->andReturn('main')->byDefault();
     $this->app->instance(Git::class, $this->mockGit);
 
     $this->mockConfig = Mockery::mock(ConfigRepository::class);

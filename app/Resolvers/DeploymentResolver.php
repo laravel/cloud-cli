@@ -4,6 +4,7 @@ namespace App\Resolvers;
 
 use App\Dto\Deployment;
 use App\Resolvers\Concerns\HasAnEnvironment;
+use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\spin;
 
@@ -35,6 +36,7 @@ class DeploymentResolver extends Resolver
 
     public function fromIdentifier(string $identifier): ?Deployment
     {
+        /** @var Deployment|null */
         return $this->resolveFromIdentifier(
             $identifier,
             fn () => spin(
@@ -47,6 +49,7 @@ class DeploymentResolver extends Resolver
     public function fromInput(): ?Deployment
     {
         $environment = $this->environment();
+        /** @var Collection<int, Deployment> $deployments */
         $deployments = collect(
             spin(
                 fn () => $this->client->deployments()->include('environment')->list($environment->id)->items(),
@@ -73,6 +76,7 @@ class DeploymentResolver extends Resolver
 
         $this->displayResolved = false;
 
+        /** @var Deployment|null */
         return $deployments->firstWhere('id', $selection);
     }
 

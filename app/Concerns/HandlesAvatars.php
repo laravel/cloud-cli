@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Git;
 use DOMDocument;
 use Illuminate\Support\Collection;
+use Imagick;
 
 use function Illuminate\Filesystem\join_paths;
 
@@ -63,5 +64,26 @@ trait HandlesAvatars
         $dom->normalizeDocument();
 
         return $dom->saveXML();
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function getAvatarFromPath(string $path): array
+    {
+        $extension = pathinfo($path, PATHINFO_EXTENSION);
+
+        if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp'])) {
+            return [file_get_contents($path), $extension];
+        }
+
+        $imagick = new Imagick;
+        $imagick->readImage($path);
+        $imagick->setImageFormat('png');
+
+        $blob = $imagick->getImageBlob();
+        $imagick->clear();
+
+        return [$blob, 'png'];
     }
 }

@@ -82,7 +82,7 @@ class ApplicationCreate extends BaseCommand
                         label: 'Region',
                         options: collect($regions)->mapWithKeys(fn (Region $region) => [
                             $region->value => $region->label,
-                        ]),
+                        ])->toArray(),
                         default: $value ?? $this->getDefaultRegion(),
                         required: true,
                     ),

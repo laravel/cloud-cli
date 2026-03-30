@@ -56,13 +56,14 @@ class Font
 
     public static function load(string $name): self
     {
-        $path = resource_path('ascii-art/fonts/'.$name.'.txt');
+        $class = 'App\Fonts\\'.ucfirst($name);
 
-        if (! file_exists($path)) {
-            throw new Exception("Font file not found: {$path}");
+        if (! class_exists($class)) {
+            throw new Exception("Font class not found: {$class}");
         }
 
-        $contents = file_get_contents($path);
+        $instance = new $class;
+        $contents = $instance->characters();
         $lines = collect(explode(PHP_EOL, $contents));
 
         $height = $lines->search(fn ($line) => trim($line) === '');

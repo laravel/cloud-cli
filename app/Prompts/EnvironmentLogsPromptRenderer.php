@@ -85,7 +85,7 @@ class EnvironmentLogsPromptRenderer extends Renderer
     }
 
     /**
-     * @return array{title: string, body: ?string, info: string, footer: string}
+     * @return array{title?: string, body?: string, info?: string, footer?: string}
      */
     protected function getBoxParams(EnvironmentLog $log): array
     {
@@ -119,7 +119,7 @@ class EnvironmentLogsPromptRenderer extends Renderer
         if ($log->isApplicationLog()) {
             $json = $this->tryToDecodeJson($log->message);
 
-            if ($json !== null && is_array($json)) {
+            if ($json !== null) {
                 $body = $this->getBody($json['message'] ?? '');
 
                 $footer = [];
@@ -164,7 +164,7 @@ class EnvironmentLogsPromptRenderer extends Renderer
     {
         $decoded = $this->tryToDecodeJson($message);
 
-        if ($decoded !== null && is_array($decoded)) {
+        if ($decoded !== null) {
             return json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         }
 

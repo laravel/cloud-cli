@@ -5,6 +5,7 @@ namespace App\Resolvers;
 use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseSnapshot;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 
 use function Laravel\Prompts\spin;
 
@@ -56,7 +57,7 @@ class DatabaseSnapshotResolver extends Resolver
         return $snapshots->firstWhere('id', $selected);
     }
 
-    protected function fetchAll(DatabaseCluster $cluster): Collection
+    protected function fetchAll(DatabaseCluster $cluster): Collection|LazyCollection
     {
         return spin(
             fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),

@@ -34,6 +34,10 @@ class SlideIn extends Prompt
 
     public function animate(): void
     {
+        if (Renderer::$suppressOutput) {
+            return;
+        }
+
         $this->minWidth = min($this->minWidth, $this->terminal()->cols() - 6);
 
         $font = Font::load('computer');

@@ -47,7 +47,7 @@ class KeyPressListener
 
     public function listenNow()
     {
-        while (($key = $this->prompt->terminal()->read()) !== null) {
+        while (($key = $this->prompt->terminal()->read()) !== '') {
             if ($this->handleKey($key) === false) {
                 break;
             }

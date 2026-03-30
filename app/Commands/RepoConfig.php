@@ -42,12 +42,6 @@ class RepoConfig extends BaseCommand
 
         $organization = $this->resolveOrganization();
 
-        if (! $organization) {
-            error('No organization selected');
-
-            return self::FAILURE;
-        }
-
         $application = $this->selectApplication($localConfig->get('application_id'));
 
         if ($application === null) {
@@ -103,7 +97,7 @@ class RepoConfig extends BaseCommand
                 $application->id => $application->id === $currentApplicationId
                     ? $application->name.$this->dim(' (current default)')
                     : $application->name,
-            ]),
+            ])->toArray(),
         );
 
         return $applications->firstWhere('id', $selected);

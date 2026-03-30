@@ -76,6 +76,7 @@ class AuthToken extends BaseCommand implements NoAuthRequired
             'add' => $this->addToken($tokens),
             'remove' => $this->removeToken($tokens),
             'list' => $this->listTokens($tokens),
+            default => null,
         };
     }
 

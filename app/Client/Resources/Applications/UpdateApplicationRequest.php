@@ -5,15 +5,14 @@ namespace App\Client\Resources\Applications;
 use App\Client\Requests\UpdateApplicationRequestData;
 use App\Dto\Application;
 use Saloon\Contracts\Body\HasBody;
-use Saloon\Data\MultipartValue;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
-use Saloon\Traits\Body\HasMultipartBody;
+use Saloon\Traits\Body\HasJsonBody;
 
 class UpdateApplicationRequest extends Request implements HasBody
 {
-    use HasMultipartBody;
+    use HasJsonBody;
 
     protected Method $method = Method::PATCH;
 
@@ -30,18 +29,7 @@ class UpdateApplicationRequest extends Request implements HasBody
 
     protected function defaultBody(): array
     {
-        $body = $this->data->toRequestData();
-
-        foreach ($body as $key => $value) {
-            if (! $value instanceof MultipartValue) {
-                $body[$key] = new MultipartValue(
-                    name: $key,
-                    value: $value,
-                );
-            }
-        }
-
-        return $body;
+        return $this->data->toRequestData();
     }
 
     public function createDtoFromResponse(Response $response): mixed

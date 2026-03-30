@@ -60,7 +60,7 @@ class Environment extends Data
             'id' => $data['id'],
             'name' => $attributes['name'],
             'url' => $vanityDomain ? str($vanityDomain)->start('https://') : '',
-            'branch' => $attributes['branch'] ?? null,
+            'branch' => null,
             'status' => $attributes['status'] ?? null,
             'buildCommand' => $attributes['build_command'] ?? null,
             'deployCommand' => $attributes['deploy_command'] ?? null,
@@ -90,7 +90,8 @@ class Environment extends Data
         }
 
         if (isset($relationships['branch']['data']['id'])) {
-            $transformed['branchId'] = $relationships['branch']['data']['id'];
+            $branch = collect($included)->first(fn ($item) => $item['type'] === 'branches' && $item['id'] === $relationships['branch']['data']['id']);
+            $transformed['branch'] = $branch['attributes']['name'] ?? null;
         }
 
         if (isset($relationships['deployments']['data'])) {

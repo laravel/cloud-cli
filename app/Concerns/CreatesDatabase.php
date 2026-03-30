@@ -40,4 +40,17 @@ trait CreatesDatabase
             'Creating database...',
         );
     }
+
+    protected function createDatabaseWithName(DatabaseCluster $cluster, string $name): Database
+    {
+        return spin(
+            fn () => $this->client->databases()->create(
+                new CreateDatabaseRequestData(
+                    clusterId: $cluster->id,
+                    name: $name,
+                ),
+            ),
+            'Creating database...',
+        );
+    }
 }

@@ -14,6 +14,7 @@ class DatabaseRestoreCreate extends BaseCommand
 {
     protected $signature = 'database-restore:create
                             {cluster? : The database cluster ID or name}
+                            {name? : The name of the restore}
                             {--snapshot= : Snapshot ID to restore from}
                             {--point-in-time= : Point-in-time (ISO 8601) to restore to}
                             {--json : Output as JSON}';
@@ -30,6 +31,16 @@ class DatabaseRestoreCreate extends BaseCommand
 
         $snapshotId = $this->option('snapshot');
         $pointInTime = $this->option('point-in-time');
+
+        $this->form()->prompt(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
+                    label: 'Name',
+                    default: $value ?? '',
+                ),
+            ),
+        );
 
         if (! $snapshotId && ! $pointInTime && $this->isInteractive()) {
             $snapshots = spin(
@@ -77,9 +88,10 @@ class DatabaseRestoreCreate extends BaseCommand
         $restored = spin(
             fn () => $this->client->databaseRestores()->create(
                 new CreateDatabaseRestoreRequestData(
+                    name: $this->form()->get('name'),
                     clusterId: $cluster->id,
-                    snapshotId: $snapshotId,
-                    pointInTime: $pointInTime,
+                    databaseSnapshotId: $snapshotId,
+                    restoreTime: $pointInTime,
                 ),
             ),
             'Creating restore...',

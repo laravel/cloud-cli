@@ -21,6 +21,7 @@ use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
+use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
@@ -84,10 +85,21 @@ class Connector extends SaloonConnector implements HasPagination
 
     protected function defaultHeaders(): array
     {
-        return [
+        $headers = [
             'Accept' => 'application/vnd.api+json',
             'Content-Type' => 'application/vnd.api+json',
+            'X-Cloud-Cli-Version' => config('app.version'),
         ];
+
+        if ($terminal = ContextDetector::terminal()) {
+            $headers['X-Cloud-Cli-Terminal'] = $terminal;
+        }
+
+        if ($agent = ContextDetector::agent()) {
+            $headers['X-Cloud-Cli-Agent'] = $agent;
+        }
+
+        return $headers;
     }
 
     public function applications(): ApplicationsResource

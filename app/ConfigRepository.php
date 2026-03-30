@@ -4,6 +4,8 @@ namespace App;
 
 use Illuminate\Support\Collection;
 
+use function Illuminate\Filesystem\join_paths;
+
 class ConfigRepository
 {
     protected string $configPath;
@@ -12,7 +14,14 @@ class ConfigRepository
 
     public function __construct()
     {
-        $this->configPath = $this->getConfigDirectory().'/config.json';
+        $filename = 'config.json';
+
+        if (config('app.has_custom_base_url')) {
+            $filename = str_replace('.', '-', parse_url(config('app.base_url'))['host']).'-config.json';
+        }
+
+        $this->configPath = join_paths($this->getConfigDirectory(), $filename);
+
         $this->load();
     }
 

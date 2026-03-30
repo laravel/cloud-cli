@@ -1,36 +1,38 @@
 {
-    "name": "laravel-zero/laravel-zero",
-    "description": "The Laravel Zero Framework.",
+    "name": "laravel/cloud-cli",
+    "description": "CLI to interact with Laravel Cloud",
     "keywords": [
-        "framework",
         "laravel",
-        "laravel zero",
-        "console",
+        "cloud",
         "cli"
     ],
-    "homepage": "https://laravel-zero.com",
+    "homepage": "https://cloud.laravel.com",
     "type": "project",
     "license": "MIT",
     "support": {
-        "issues": "https://github.com/laravel-zero/laravel-zero/issues",
-        "source": "https://github.com/laravel-zero/laravel-zero"
+        "issues": "https://github.com/laravel/cloud-cli/issues",
+        "source": "https://github.com/laravel/cloud-cli"
     },
     "authors": [
         {
-            "name": "Nuno Maduro",
-            "email": "enunomaduro@gmail.com"
+            "name": "Taylor Otwell",
+            "email": "taylor@laravel.com"
         }
     ],
     "require": {
         "php": "^8.2",
         "illuminate/http": "^12.17",
-        "laravel-zero/framework": "^12.0.2",
+        "illuminate/translation": "^12.53",
+        "illuminate/validation": "^12.53",
+        "laravel-zero/phar-updater": "^1.4",
         "saloonphp/cache-plugin": "^3.1",
         "saloonphp/pagination-plugin": "^2.3",
         "saloonphp/saloon": "^4.0",
+        "shipfastlabs/agent-detector": "^1.0",
         "spatie/laravel-data": "^4.19"
     },
     "require-dev": {
+        "laravel-zero/framework": "^12.0.2",
         "laravel/pint": "^1.25.1",
         "mockery/mockery": "^1.6.12",
         "pestphp/pest": "^3.8.4|^4.1.2",
@@ -62,6 +64,6 @@
     "minimum-stability": "stable",
     "prefer-stable": true,
     "bin": [
-        "cloud"
+        "builds/cloud"
     ]
 }

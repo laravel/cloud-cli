@@ -19,18 +19,21 @@ enum DatabaseClusterPreset: string
                     'storage' => 5,
                     'retention_days' => 1,
                     'uses_scheduled_snapshots' => false,
+                    'is_public' => false,
                 ],
                 'Prod' => [
                     'size' => 'db-flex.m-1vcpu-2gb',
                     'storage' => 20,
                     'retention_days' => 7,
                     'uses_scheduled_snapshots' => false,
+                    'is_public' => false,
                 ],
                 'Scale' => [
                     'size' => 'db-pro.m-4vcpu-16gb',
                     'storage' => 200,
                     'retention_days' => 14,
                     'uses_scheduled_snapshots' => false,
+                    'is_public' => false,
                 ],
             ],
             self::NeonServerlessPostgres18 => [
@@ -92,7 +95,7 @@ enum DatabaseClusterPreset: string
                     ->toString(),
                 $preset['storage'],
                 $preset['retention_days'],
-                str($preset['retention_days'])->plural('day'),
+                str('day')->plural($preset['retention_days']),
             ),
             self::NeonServerlessPostgres18 => fn ($preset) => sprintf(
                 '%s vCPU units · %s · %s',

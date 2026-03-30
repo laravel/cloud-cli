@@ -10,6 +10,7 @@ use App\Support\ValueResolver;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\text;
+use function Laravel\Prompts\warning;
 
 class CommandRun extends BaseCommand
 {
@@ -18,7 +19,7 @@ class CommandRun extends BaseCommand
     protected $signature = 'command:run
                             {environment? : The environment ID}
                             {--cmd= : The command to run}
-                            {--monitor : Monitor the command in real-time}
+                            {--no-monitor : Do not monitor the command in real-time}
                             {--copy-output : Copy the output to the clipboard}
                             {--json : Output as JSON}';
 
@@ -35,7 +36,7 @@ class CommandRun extends BaseCommand
 
         $this->outputJsonIfWanted($command);
 
-        if ($this->option('monitor')) {
+        if (! $this->option('no-monitor')) {
             (new MonitorCommand(
                 fn (string $id) => $this->client->commands()->get($id),
                 $command,
@@ -43,6 +44,12 @@ class CommandRun extends BaseCommand
         }
 
         if ($this->option('copy-output')) {
+            if ($this->option('no-monitor')) {
+                warning('Output cannot be copied when monitoring is disabled');
+
+                return self::SUCCESS;
+            }
+
             $command = $this->client->commands()->get($command->id);
             $this->copyToClipboard($command->output ?? '');
             success('Output copied to clipboard');

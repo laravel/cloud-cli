@@ -4,6 +4,7 @@ namespace App\Concerns;
 
 use App\Exceptions\CommandExitException;
 use App\Git;
+use RuntimeException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -19,6 +20,10 @@ trait RequiresRemoteGitRepo
 
         if ($git->hasGitHubRemote()) {
             return;
+        }
+
+        if (! $this->isInteractive()) {
+            throw new RuntimeException('This directory is not a Git repository. A Git repository is required to deploy to Laravel Cloud.');
         }
 
         if (! $git->ghInstalled() || ! $git->ghAuthenticated()) {

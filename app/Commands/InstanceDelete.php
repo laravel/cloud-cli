@@ -21,7 +21,7 @@ class InstanceDelete extends BaseCommand
 
         intro('Deleting Instance');
 
-        $instance = $this->resolvers()->instance()->resolve($this->argument('instance'));
+        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
 
         if (! $this->option('force')) {
             if (! confirm("Delete instance '{$instance->name}'?")) {

@@ -2,12 +2,12 @@
 
 namespace App\Commands;
 
+use App\Client\Requests\UpdateApplicationAvatarRequestData;
 use App\Client\Requests\UpdateApplicationRequestData;
 use App\Concerns\HandlesAvatars;
 use App\Dto\Application;
 use App\Exceptions\CommandExitException;
 use App\Git;
-use Imagick;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
@@ -71,11 +71,22 @@ class ApplicationUpdate extends BaseCommand
                     defaultEnvironmentId: $this->form()->get('default_environment_id'),
                     repository: $this->form()->get('repository'),
                     slackChannel: $this->form()->get('slack_channel'),
-                    avatar: $this->form()->get('avatar'),
                 ),
             ),
             'Updating application...',
         );
+
+        if ($this->form()->get('avatar')) {
+            spin(
+                fn () => $this->client->applications()->updateAvatar(
+                    new UpdateApplicationAvatarRequestData(
+                        applicationId: $application->id,
+                        avatar: $this->getAvatarFromPath($this->form()->get('avatar')),
+                    ),
+                ),
+                'Updating application avatar...',
+            );
+        }
 
         return $this->client->applications()->get($application->id);
     }
@@ -139,7 +150,7 @@ class ApplicationUpdate extends BaseCommand
         $this->form()->define(
             'slack_channel',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => $this->getNewSlackChannel($value ?? $application->slackChannel),
+                fn ($value) => $value ?? $application->slackChannel,
             ),
         )->setPreviousValue($application->slackChannel);
     }
@@ -185,17 +196,7 @@ class ApplicationUpdate extends BaseCommand
             );
 
             if ($selected !== 'custom') {
-                $extension = pathinfo($selected, PATHINFO_EXTENSION);
-
-                if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp'])) {
-                    return [file_get_contents($selected), $extension];
-                }
-
-                $imagick = new Imagick;
-                $imagick->readImage($selected);
-                $imagick->setImageFormat('png');
-
-                return [$imagick->getImageBlob(), 'png'];
+                return $this->getAvatarFromPath($selected);
             }
         }
 

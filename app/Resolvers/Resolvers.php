@@ -90,6 +90,12 @@ class Resolvers
         return $this->make(WebSocketApplicationResolver::class);
     }
 
+    /**
+     * @template T of Resolver
+     *
+     * @param  class-string<T>  $resolver
+     * @return T
+     */
     protected function make(string $resolver): Resolver
     {
         return new $resolver($this->client, $this->localConfig, $this->isInteractive);

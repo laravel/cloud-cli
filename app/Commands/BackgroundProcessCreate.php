@@ -228,7 +228,7 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => confirm(
                     label: 'Run in maintenance mode?',
-                    default: $value ?? $this->getWorkerDefult('force'),
+                    default: (bool) ($value ?? $this->getWorkerDefult('force')),
                     hint: 'Force the worker to run even in maintenance mode',
                 ))
                 ->nonInteractively(fn () => $this->getWorkerDefult('force'))

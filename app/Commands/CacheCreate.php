@@ -97,7 +97,7 @@ class CacheCreate extends BaseCommand
                         ->filter(fn (Region $region) => in_array($region->value, $type->regions))
                         ->mapWithKeys(fn (Region $region) => [
                             $region->value => $region->label,
-                        ]),
+                        ])->toArray(),
                     default: $value ?? $this->getDefaultRegion(),
                     required: true,
                 ))

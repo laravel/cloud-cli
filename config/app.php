@@ -1,6 +1,8 @@
 <?php
 
 use App\Providers\AppServiceProvider;
+use Illuminate\Translation\TranslationServiceProvider;
+use Illuminate\Validation\ValidationServiceProvider;
 
 return [
 
@@ -57,8 +59,12 @@ return [
 
     'providers' => [
         AppServiceProvider::class,
+        ValidationServiceProvider::class,
+        TranslationServiceProvider::class,
     ],
 
     'base_url' => rtrim(env('CLOUD_BASE_URL', 'https://cloud.laravel.com'), '/'),
+
+    'has_custom_base_url' => env('CLOUD_BASE_URL') !== null,
 
 ];
