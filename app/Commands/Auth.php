@@ -72,7 +72,7 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         info("Opening browser: {$redirectUrl}");
 
-        Process::run("open {$redirectUrl}");
+        Process::run(['open', $redirectUrl]);
 
         info('Waiting for authentication...');
 

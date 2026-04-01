@@ -29,7 +29,7 @@ class Dashboard extends BaseCommand
 
         $url = $application->url($environment);
 
-        Process::run('open '.$url);
+        Process::run(['open', $url]);
 
         outro($url);
     }

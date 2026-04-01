@@ -35,7 +35,7 @@ class Browser extends BaseCommand
             return self::FAILURE;
         }
 
-        Process::run('open '.$environment->url);
+        Process::run(['open', $environment->url]);
 
         outro($environment->url);
     }

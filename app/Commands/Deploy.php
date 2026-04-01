@@ -96,7 +96,7 @@ class Deploy extends BaseCommand
         success('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
 
         if ($this->option('open')) {
-            Process::run('open '.$environment->url);
+            Process::run(['open', $environment->url]);
         }
 
         $this->outputJsonIfWanted([

@@ -176,7 +176,7 @@ class Ship extends BaseCommand
             );
 
             if ($isReady) {
-                Process::run('open '.$environment->url);
+                Process::run(['open', $environment->url]);
             } else {
                 warning('It looks like there is an error in your deployed site');
 
