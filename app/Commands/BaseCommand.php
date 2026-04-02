@@ -155,6 +155,21 @@ abstract class BaseCommand extends Command
         return false;
     }
 
+    protected function writeJsonIfWanted(mixed $data): void
+    {
+        if (! $this->wantsJson()) {
+            return;
+        }
+
+        if (is_string($data)) {
+            $this->line(json_encode(['message' => $data]));
+        } elseif ($data instanceof Jsonable) {
+            $this->line($data->toJson());
+        } else {
+            $this->line(json_encode($data));
+        }
+    }
+
     protected function outputJsonIfWanted(mixed $data): void
     {
         if (! $this->wantsJson()) {

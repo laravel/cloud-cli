@@ -65,6 +65,12 @@ class Deploy extends BaseCommand
             new InitiateDeploymentRequestData($environment->id),
         );
 
+        $this->writeJsonIfWanted([
+            'deployment_id' => $deployment->id,
+            'status' => 'initiated',
+            'timestamp' => CarbonImmutable::now()->timestamp,
+        ]);
+
         dynamicSpinner(
             fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),
             $this->getDeploymentMessage($deployment),
