@@ -79,6 +79,13 @@ class Deploy extends BaseCommand
         $deployment = $this->client->deployments()->get($deployment->id);
 
         if ($deployment->failed()) {
+            $this->writeJsonIfWanted([
+                'deployment_id' => $deployment->id,
+                'status' => 'failed',
+                'failure_reason' => $deployment->failureReason,
+                'hint' => 'Check build/deploy commands with environment:get, update with environment:update',
+            ]);
+
             error('Deployment failed: '.$deployment->failureReason);
 
             if ($this->isInteractive()) {
