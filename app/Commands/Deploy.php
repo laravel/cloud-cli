@@ -75,7 +75,7 @@ class Deploy extends BaseCommand
         if ($this->option('no-wait')) {
             $this->outputJsonIfWanted([
                 'deployment_id' => $deployment->id,
-                'status' => 'initiated',
+                'status' => $deployment->status->value,
             ]);
 
             success('Deployment initiated: '.$deployment->id);
