@@ -74,7 +74,7 @@ abstract class BaseCommand extends Command
     protected function outputError(string $message): void
     {
         if ($this->wantsJson()) {
-            $this->line(json_encode(['message' => $message]));
+            $this->output->getErrorOutput()->writeln(json_encode(['error' => true, 'message' => $message]));
         } else {
             error($message);
         }
