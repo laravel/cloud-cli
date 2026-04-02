@@ -28,6 +28,7 @@ class Deploy extends BaseCommand
                             {application? : The application ID or name}
                             {environment? : The name of the environment to deploy}
                             {--open : Open the site in the browser after a successful deployment}
+                            {--no-wait : Initiate deployment and return immediately}
                             {--json : Output as JSON}';
 
     protected $description = 'Deploy the application to Laravel Cloud';
@@ -70,6 +71,17 @@ class Deploy extends BaseCommand
             'status' => 'initiated',
             'timestamp' => CarbonImmutable::now()->timestamp,
         ]);
+
+        if ($this->option('no-wait')) {
+            $this->outputJsonIfWanted([
+                'deployment_id' => $deployment->id,
+                'status' => 'initiated',
+            ]);
+
+            success('Deployment initiated: '.$deployment->id);
+
+            return self::SUCCESS;
+        }
 
         dynamicSpinner(
             fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),
