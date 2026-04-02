@@ -23,12 +23,10 @@ class InstanceDelete extends BaseCommand
 
         $instance = $this->resolvers()->instance()->from($this->argument('instance'));
 
-        if (! $this->option('force')) {
-            if (! confirm("Delete instance '{$instance->name}'?")) {
-                error('Cancelled');
+        if (! $this->option('force') && ! confirm("Delete instance '{$instance->name}'?", default: false)) {
+            error('Cancelled');
 
-                return self::FAILURE;
-            }
+            return self::FAILURE;
         }
 
         try {
