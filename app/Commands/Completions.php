@@ -69,6 +69,8 @@ class Completions extends BaseCommand implements NoAuthRequired
 
     protected function installCompletions(string $shell): int
     {
+        $this->ensureInteractive('Shell completions must be installed interactively. Use --print to output the script.');
+
         intro('Shell Completion Setup');
 
         $completionsDir = $this->getCompletionsDirectory($shell);
