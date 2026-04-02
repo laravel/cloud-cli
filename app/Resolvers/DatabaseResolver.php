@@ -24,7 +24,7 @@ class DatabaseResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $database) {
-            $this->failAndExit('Unable to resolve database: '.($idOrName ?? 'Provide a valid database ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve database: '.($idOrName ?? 'Provide a valid database ID or name.').'. Run `cloud database:list --json` to see available databases.');
         }
 
         $this->displayResolved('Database', $database->name, $database->id);

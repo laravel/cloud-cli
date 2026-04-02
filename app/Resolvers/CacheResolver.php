@@ -21,7 +21,7 @@ class CacheResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $cache) {
-            $this->failAndExit('Unable to resolve cache: '.($idOrName ?? 'Provide a valid cache ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve cache: '.($idOrName ?? 'Provide a valid cache ID or name.').'. Run `cloud cache:list --json` to see available caches.');
         }
 
         $this->displayResolved('Cache', $cache->name, $cache->id);

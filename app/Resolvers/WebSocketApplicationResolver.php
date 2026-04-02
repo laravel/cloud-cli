@@ -24,7 +24,7 @@ class WebSocketApplicationResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $app) {
-            $this->failAndExit('Unable to resolve WebSocket application: '.($idOrName ?? 'Provide a valid application ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve WebSocket application: '.($idOrName ?? 'Provide a valid application ID or name.').'. Run `cloud websocket-application:list --json` to see available applications.');
         }
 
         $this->displayResolved('WebSocket application', $app->name, $app->id);

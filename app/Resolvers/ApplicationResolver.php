@@ -26,7 +26,7 @@ class ApplicationResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $app) {
-            $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name.').'. Run `cloud application:list --json` to see available applications.');
         }
 
         $this->displayResolved('Application', $app->name, $app->id);

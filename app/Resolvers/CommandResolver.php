@@ -25,7 +25,7 @@ class CommandResolver extends Resolver
         $command = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromInput();
 
         if (! $command) {
-            $this->failAndExit('Unable to resolve command: '.($idOrName ?? 'Provide a valid command ID as an argument.'));
+            $this->failAndExit('Unable to resolve command: '.($idOrName ?? 'Provide a valid command ID.').'. Run `cloud command:list --json` to see available commands.');
         }
 
         $this->displayResolved('Command', $command->command, $command->id);

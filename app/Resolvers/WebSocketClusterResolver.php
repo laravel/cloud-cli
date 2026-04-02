@@ -20,7 +20,7 @@ class WebSocketClusterResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $cluster) {
-            $this->failAndExit('Unable to resolve WebSocket cluster: '.($idOrName ?? 'Provide a valid cluster ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve WebSocket cluster: '.($idOrName ?? 'Provide a valid cluster ID or name.').'. Run `cloud websocket-cluster:list --json` to see available clusters.');
         }
 
         $this->displayResolved('WebSocket cluster', $cluster->name, $cluster->id);

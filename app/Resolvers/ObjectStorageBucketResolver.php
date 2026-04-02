@@ -21,7 +21,7 @@ class ObjectStorageBucketResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $bucket) {
-            $this->failAndExit('Unable to resolve bucket: '.($idOrName ?? 'Provide a valid bucket ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve bucket: '.($idOrName ?? 'Provide a valid bucket ID or name.').'. Run `cloud bucket:list --json` to see available buckets.');
         }
 
         $this->displayResolved('Bucket', $bucket->name, $bucket->id);

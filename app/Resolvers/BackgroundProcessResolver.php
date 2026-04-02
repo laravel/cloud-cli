@@ -18,7 +18,7 @@ class BackgroundProcessResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $backgroundProcess) {
-            $this->failAndExit('Unable to resolve background process: '.($idOrName ?? 'Provide a valid background process ID as an argument.'));
+            $this->failAndExit('Unable to resolve background process: '.($idOrName ?? 'Provide a valid background process ID.').'. Run `cloud background-process:list --json` to see available processes.');
         }
 
         $this->displayResolved('Background Process', $backgroundProcess->command, $backgroundProcess->id);

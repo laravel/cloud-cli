@@ -23,7 +23,7 @@ class DeploymentResolver extends Resolver
 
         if (! $deployment) {
             if ($id) {
-                $this->failAndExit('Unable to resolve deployment: '.$id);
+                $this->failAndExit('Unable to resolve deployment: '.$id.'. Run `cloud deployment:list --json` to see available deployments.');
             }
 
             return null;

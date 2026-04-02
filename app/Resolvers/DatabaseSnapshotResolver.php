@@ -17,7 +17,7 @@ class DatabaseSnapshotResolver extends Resolver
             ?? $this->fromInput($cluster);
 
         if (! $snapshot) {
-            $this->failAndExit('Unable to resolve snapshot: '.($snapshotIdOrName ?? 'Provide a valid snapshot ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve snapshot: '.($snapshotIdOrName ?? 'Provide a valid snapshot ID or name.').'. Run `cloud database-snapshot:list --json` to see available snapshots.');
         }
 
         $this->displayResolved('Snapshot', $snapshot->name, $snapshot->id);

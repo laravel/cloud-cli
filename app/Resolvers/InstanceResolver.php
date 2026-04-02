@@ -23,7 +23,7 @@ class InstanceResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $instance) {
-            $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name.').'. Run `cloud instance:list --json` to see available instances.');
         }
 
         $this->displayResolved('Instance', $instance->name, $instance->id);

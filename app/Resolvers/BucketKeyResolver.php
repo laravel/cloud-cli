@@ -16,7 +16,7 @@ class BucketKeyResolver extends Resolver
             ?? $this->fromInput($bucket);
 
         if (! $key) {
-            $this->failAndExit('Unable to resolve bucket key: '.($keyIdOrName ?? 'Provide a valid key ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve bucket key: '.($keyIdOrName ?? 'Provide a valid key ID or name.').'. Run `cloud bucket-key:list --json` to see available keys.');
         }
 
         $this->displayResolved('Key', $key->name, $key->id);

@@ -20,7 +20,7 @@ class DatabaseClusterResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $database) {
-            $this->failAndExit('Unable to resolve database cluster: '.($idOrName ?? 'Provide a valid database cluster ID or name as an argument.'));
+            $this->failAndExit('Unable to resolve database cluster: '.($idOrName ?? 'Provide a valid database cluster ID or name.').'. Run `cloud database-cluster:list --json` to see available clusters.');
         }
 
         $this->displayResolved('Database', $database->name, $database->id);
