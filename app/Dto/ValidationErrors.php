@@ -48,6 +48,10 @@ class ValidationErrors
 
     public function toJson(): string
     {
-        return json_encode($this->errors);
+        return json_encode([
+            'error' => true,
+            'message' => 'Validation failed.',
+            'errors' => $this->errors,
+        ]);
     }
 }
