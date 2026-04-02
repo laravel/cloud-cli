@@ -27,7 +27,8 @@ class Deploy extends BaseCommand
     protected $signature = 'deploy
                             {application? : The application ID or name}
                             {environment? : The name of the environment to deploy}
-                            {--open : Open the site in the browser after a successful deployment}';
+                            {--open : Open the site in the browser after a successful deployment}
+                            {--json : Output as JSON}';
 
     protected $description = 'Deploy the application to Laravel Cloud';
 
