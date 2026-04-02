@@ -10,7 +10,6 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
-use function Laravel\Prompts\warning;
 
 class DatabaseClusterDelete extends BaseCommand
 {
@@ -24,12 +23,7 @@ class DatabaseClusterDelete extends BaseCommand
 
         intro('Deleting Database Cluster');
 
-        if ($this->option('force') && ! $this->argument('database')) {
-            warning('Force option provided but no database provided. Will still confirm deletion.');
-        }
-
         $database = $this->resolvers()->databaseCluster()->from($this->argument('database'));
-        $dontConfirm = $this->option('force') && $this->argument('database');
         $schemas = spin(
             fn () => $this->client->databaseClusters()->include('schemas')->get($database->id)->schemas,
             'Fetching database cluster schemas...',
@@ -44,7 +38,7 @@ class DatabaseClusterDelete extends BaseCommand
             $schemaSuffix = ' and schemas';
         }
 
-        if (! $dontConfirm && ! confirm('Delete database cluster'.$schemaSuffix.'?')) {
+        if (! $this->option('force') && ! confirm('Delete database cluster'.$schemaSuffix.'?', default: false)) {
             error('Cancelled');
 
             return self::FAILURE;
