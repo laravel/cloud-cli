@@ -44,11 +44,13 @@ class BucketKeyResolver extends Resolver
             return $keys->first();
         }
 
-        $this->ensureInteractive('Please provide a key ID or name.');
+        $options = $keys->mapWithKeys(fn (BucketKey $k) => [$k->id => $k->name])->toArray();
+
+        $this->ensureInteractive('Multiple keys found. Provide a key ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'Key',
-            options: $keys->mapWithKeys(fn (BucketKey $k) => [$k->id => $k->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

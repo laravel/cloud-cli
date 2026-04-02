@@ -61,13 +61,15 @@ class InstanceResolver extends Resolver
             return $instances->first();
         }
 
-        $this->ensureInteractive('Please provide an instance ID or name.');
+        $options = $instances->mapWithKeys(fn ($instance) => [
+            $instance->id => $instance->name,
+        ])->toArray();
+
+        $this->ensureInteractive('Multiple instances found. Provide an instance ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'Instance',
-            options: $instances->mapWithKeys(fn ($instance) => [
-                $instance->id => $instance->name,
-            ])->toArray(),
+            options: $options,
         );
 
         // No need to display the resolved instance name, it will be displayed from the select above

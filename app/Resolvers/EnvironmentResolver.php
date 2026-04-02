@@ -77,11 +77,13 @@ class EnvironmentResolver extends Resolver
             return $envs->first();
         }
 
-        $this->ensureInteractive('Please provide an environment ID or name.');
+        $options = $envs->mapWithKeys(fn ($env) => [$env->id => $env->name])->toArray();
+
+        $this->ensureInteractive('Multiple environments found. Provide an environment ID or name.', ['options' => $options]);
 
         $selectedEnv = selectWithContext(
             label: 'Environment',
-            options: $envs->mapWithKeys(fn ($env) => [$env->id => $env->name])->toArray(),
+            options: $options,
             default: $envs->firstWhere('id', $this->application()->defaultEnvironmentId)?->id,
         );
 

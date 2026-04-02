@@ -53,11 +53,13 @@ class ObjectStorageBucketResolver extends Resolver
             return $buckets->first();
         }
 
-        $this->ensureInteractive('Please provide a bucket ID or name.');
+        $options = $buckets->mapWithKeys(fn (ObjectStorageBucket $b) => [$b->id => $b->name])->toArray();
+
+        $this->ensureInteractive('Multiple buckets found. Provide a bucket ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'Bucket',
-            options: $buckets->mapWithKeys(fn (ObjectStorageBucket $b) => [$b->id => $b->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

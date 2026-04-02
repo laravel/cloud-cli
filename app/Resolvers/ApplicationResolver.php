@@ -66,11 +66,13 @@ class ApplicationResolver extends Resolver
             return $repoApps->first();
         }
 
-        $this->ensureInteractive('Please provide an application ID or name.');
+        $options = $repoApps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray();
+
+        $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options]);
 
         $selectedApp = selectWithContext(
             label: 'Application',
-            options: $repoApps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray(),
+            options: $options,
         );
 
         // No need to display the resolved application name, it will be displayed from the select above
@@ -87,11 +89,13 @@ class ApplicationResolver extends Resolver
             return $apps->first();
         }
 
-        $this->ensureInteractive('Please provide an application ID or name.');
+        $options = $apps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray();
+
+        $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options]);
 
         $selectedApp = selectWithContext(
             label: 'Application',
-            options: $apps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray(),
+            options: $options,
         );
 
         // No need to display the resolved application name, it will be displayed from the select above

@@ -52,11 +52,13 @@ class DatabaseClusterResolver extends Resolver
             return $databases->first();
         }
 
-        $this->ensureInteractive('Please provide a database cluster ID or name.');
+        $options = $databases->mapWithKeys(fn ($database) => [$database->id => $database->name])->toArray();
+
+        $this->ensureInteractive('Multiple database clusters found. Provide a database cluster ID or name.', ['options' => $options]);
 
         $selectedDatabase = selectWithContext(
             label: 'Database',
-            options: $databases->mapWithKeys(fn ($database) => [$database->id => $database->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

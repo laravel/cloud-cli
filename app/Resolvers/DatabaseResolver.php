@@ -64,11 +64,13 @@ class DatabaseResolver extends Resolver
             return $databases->first();
         }
 
-        $this->ensureInteractive('Please provide a database ID or name.');
+        $options = $databases->mapWithKeys(fn (Database $d) => [$d->id => $d->name])->toArray();
+
+        $this->ensureInteractive('Multiple databases found. Provide a database ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'Database',
-            options: $databases->mapWithKeys(fn (Database $d) => [$d->id => $d->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

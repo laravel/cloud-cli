@@ -52,11 +52,13 @@ class WebSocketClusterResolver extends Resolver
             return $clusters->first();
         }
 
-        $this->ensureInteractive('Please provide a WebSocket cluster ID or name.');
+        $options = $clusters->mapWithKeys(fn (WebsocketCluster $c) => [$c->id => $c->name])->toArray();
+
+        $this->ensureInteractive('Multiple WebSocket clusters found. Provide a WebSocket cluster ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'WebSocket cluster',
-            options: $clusters->mapWithKeys(fn (WebsocketCluster $c) => [$c->id => $c->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

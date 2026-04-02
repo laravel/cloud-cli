@@ -64,11 +64,13 @@ class WebSocketApplicationResolver extends Resolver
             return $apps->first();
         }
 
-        $this->ensureInteractive('Please provide a WebSocket application ID or name.');
+        $options = $apps->mapWithKeys(fn (WebsocketApplication $a) => [$a->id => $a->name])->toArray();
+
+        $this->ensureInteractive('Multiple WebSocket applications found. Provide a WebSocket application ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'WebSocket application',
-            options: $apps->mapWithKeys(fn (WebsocketApplication $a) => [$a->id => $a->name])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;

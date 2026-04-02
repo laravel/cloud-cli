@@ -74,10 +74,10 @@ abstract class Resolver
         ]);
     }
 
-    protected function ensureInteractive(string $message): void
+    protected function ensureInteractive(string $message, array $data = []): void
     {
         if (! $this->isInteractive) {
-            fwrite(STDERR, json_encode(['error' => true, 'message' => $message]).PHP_EOL);
+            fwrite(STDERR, json_encode(array_merge(['error' => true, 'message' => $message], $data)).PHP_EOL);
 
             throw new CommandExitException(Command::FAILURE);
         }

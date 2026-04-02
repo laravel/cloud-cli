@@ -68,13 +68,15 @@ class DomainResolver extends Resolver
             return $domains->first();
         }
 
-        $this->ensureInteractive('Please provide a domain ID or name.');
+        $options = $domains->mapWithKeys(fn ($domain) => [
+            $domain->id => $domain->name,
+        ])->toArray();
+
+        $this->ensureInteractive('Multiple domains found. Provide a domain ID or name.', ['options' => $options]);
 
         $selected = selectWithContext(
             label: 'Domain',
-            options: $domains->mapWithKeys(fn ($domain) => [
-                $domain->id => $domain->name,
-            ])->toArray(),
+            options: $options,
         );
 
         $this->displayResolved = false;
