@@ -21,6 +21,8 @@ class Auth extends BaseCommand implements NoAuthRequired
 
     protected $description = 'Authenticate with Laravel Cloud using browser-based OAuth';
 
+    protected $aliases = ['login'];
+
     protected ConfigRepository $config;
 
     protected ?int $port = null;
