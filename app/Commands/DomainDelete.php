@@ -11,7 +11,7 @@ use function Laravel\Prompts\spin;
 
 class DomainDelete extends BaseCommand
 {
-    protected $signature = 'domain:delete {domain? : The domain ID} {--force : Skip confirmation}';
+    protected $signature = 'domain:delete {domain? : The domain ID} {--force : Skip confirmation} {--json : Output as JSON}';
 
     protected $description = 'Delete a domain';
 
@@ -34,6 +34,8 @@ class DomainDelete extends BaseCommand
                 fn () => $this->client->domains()->delete($domain->id),
                 'Deleting domain...',
             );
+
+            $this->outputJsonIfWanted('Domain deleted.');
 
             success('Domain deleted.');
         } catch (RequestException $e) {

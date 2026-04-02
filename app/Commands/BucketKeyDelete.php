@@ -11,7 +11,8 @@ class BucketKeyDelete extends BaseCommand
 {
     protected $signature = 'bucket-key:delete
                             {key? : The key ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete a bucket key';
 
@@ -34,6 +35,8 @@ class BucketKeyDelete extends BaseCommand
             fn () => $this->client->bucketKeys()->delete($key->id),
             'Deleting key...',
         );
+
+        $this->outputJsonIfWanted('Bucket key deleted.');
 
         success('Bucket key deleted');
     }

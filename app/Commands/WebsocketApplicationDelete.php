@@ -11,7 +11,8 @@ class WebsocketApplicationDelete extends BaseCommand
 {
     protected $signature = 'websocket-application:delete
                             {application? : The application ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete a WebSocket application';
 
@@ -33,6 +34,8 @@ class WebsocketApplicationDelete extends BaseCommand
             fn () => $this->client->websocketApplications()->delete($app->id),
             'Deleting WebSocket application...',
         );
+
+        $this->outputJsonIfWanted('WebSocket application deleted.');
 
         success('WebSocket application deleted');
     }

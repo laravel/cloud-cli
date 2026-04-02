@@ -13,7 +13,8 @@ class ApplicationDelete extends BaseCommand
 {
     protected $signature = 'application:delete
                             {application? : The application ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete an application';
 
@@ -36,6 +37,8 @@ class ApplicationDelete extends BaseCommand
                 fn () => $this->client->applications()->delete($application->id),
                 'Deleting application...',
             );
+
+            $this->outputJsonIfWanted('Application deleted.');
 
             success('Application deleted.');
         } catch (RequestException $e) {

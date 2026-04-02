@@ -11,7 +11,8 @@ class BucketDelete extends BaseCommand
 {
     protected $signature = 'bucket:delete
                             {bucket? : The bucket ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete an object storage bucket';
 
@@ -45,6 +46,8 @@ class BucketDelete extends BaseCommand
             fn () => $this->client->objectStorageBuckets()->delete($bucket->id),
             'Deleting bucket...',
         );
+
+        $this->outputJsonIfWanted('Bucket deleted.');
 
         success('Bucket deleted');
     }

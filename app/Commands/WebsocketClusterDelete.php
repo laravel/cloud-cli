@@ -11,7 +11,8 @@ class WebsocketClusterDelete extends BaseCommand
 {
     protected $signature = 'websocket-cluster:delete
                             {cluster? : The cluster ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete a WebSocket cluster';
 
@@ -33,6 +34,8 @@ class WebsocketClusterDelete extends BaseCommand
             fn () => $this->client->websocketClusters()->delete($cluster->id),
             'Deleting WebSocket cluster...',
         );
+
+        $this->outputJsonIfWanted('WebSocket cluster deleted.');
 
         success('WebSocket cluster deleted');
     }
