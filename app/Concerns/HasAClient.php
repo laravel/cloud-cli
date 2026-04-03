@@ -9,6 +9,7 @@ use App\LocalConfig;
 use App\Support\DetectsNonInteractiveEnvironments;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
+use Saloon\Exceptions\Request\FatalRequestException;
 use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\select;
@@ -61,7 +62,7 @@ trait HasAClient
                             $validTokens->push($token);
 
                             return [$token => $org];
-                        } catch (RequestException) {
+                        } catch (FatalRequestException|RequestException) {
                             return [];
                         }
                     })->filter();
