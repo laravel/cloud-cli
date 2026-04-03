@@ -37,7 +37,7 @@ class MonitorDeploymentsRenderer extends Renderer
             $this->box(
                 title: $this->dim('Last Deployment'),
                 body: $body,
-                info: $monitor->lastDeployment->startedAt?->toDateTimeString(),
+                info: $monitor->lastDeployment->startedAt?->toDateTimeString() ?? '',
                 symbol: TimelineSymbol::SUCCESS,
             );
 

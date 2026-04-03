@@ -45,7 +45,7 @@ class MonitorCommandRenderer extends Renderer
             $this->box(
                 title: $this->dim('Command Completed'),
                 body: $body,
-                info: $command->startedAt?->toDateTimeString(),
+                info: $command->startedAt?->toDateTimeString() ?? '',
                 symbol: $symbol,
             );
 
