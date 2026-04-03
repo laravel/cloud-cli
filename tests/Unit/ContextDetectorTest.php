@@ -25,7 +25,7 @@ it('detects agent from env vars', function (string $envVar, string $value, strin
 })->with([
     'Claude Code' => ['CLAUDECODE', '1', 'claude'],
     'Codex' => ['CODEX_SANDBOX', '1', 'codex'],
-    'Cursor CLI' => ['CURSOR_AGENT', '1', 'cursor-cli'],
+    'Cursor CLI' => ['CURSOR_AGENT', '1', 'cursor'],
     'OpenCode' => ['OPENCODE', '1', 'opencode'],
 ]);
 
