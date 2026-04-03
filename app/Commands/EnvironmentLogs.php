@@ -50,6 +50,8 @@ class EnvironmentLogs extends BaseCommand
         );
 
         if (empty($logs)) {
+            $this->outputJsonIfWanted(['logs' => []]);
+
             warning('No logs found.');
 
             return self::FAILURE;
