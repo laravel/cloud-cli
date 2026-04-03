@@ -8,8 +8,7 @@ class DatabaseGet extends BaseCommand
 {
     protected $signature = 'database:get
                             {cluster? : The database cluster ID or name}
-                            {database? : The database schema ID or name}
-                            {--json : Output as JSON}';
+                            {database? : The database schema ID or name}';
 
     protected $description = 'Get database (schema) details';
 

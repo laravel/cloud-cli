@@ -30,8 +30,7 @@ class DatabaseClusterUpdate extends BaseCommand
                             {--uses-pitr= : Whether point-in-time recovery is enabled}
                             {--maintenance-window= : UTC maintenance window}
                             {--deployment-option= : single-az or multi-az}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update a database cluster';
 

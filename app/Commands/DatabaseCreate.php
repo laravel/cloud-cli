@@ -12,8 +12,7 @@ class DatabaseCreate extends BaseCommand
 
     protected $signature = 'database:create
                             {cluster? : The database cluster ID or name}
-                            {--name= : Database (schema) name}
-                            {--json : Output as JSON}';
+                            {--name= : Database (schema) name}';
 
     protected $description = 'Create a new database (schema) in a database cluster';
 

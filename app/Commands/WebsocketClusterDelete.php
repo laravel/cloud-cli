@@ -11,8 +11,7 @@ class WebsocketClusterDelete extends BaseCommand
 {
     protected $signature = 'websocket-cluster:delete
                             {cluster? : The cluster ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete a WebSocket cluster';
 

@@ -10,7 +10,7 @@ use function Laravel\Prompts\warning;
 
 class BackgroundProcessList extends BaseCommand
 {
-    protected $signature = 'background-process:list {instance? : The instance ID} {--json : Output as JSON}';
+    protected $signature = 'background-process:list {instance? : The instance ID}';
 
     protected $description = 'List all background processes for an instance';
 

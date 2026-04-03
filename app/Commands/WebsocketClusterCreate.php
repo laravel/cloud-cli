@@ -14,8 +14,7 @@ class WebsocketClusterCreate extends BaseCommand
 
     protected $signature = 'websocket-cluster:create
                             {--name= : Cluster name}
-                            {--region= : Region}
-                            {--json : Output as JSON}';
+                            {--region= : Region}';
 
     protected $description = 'Create a WebSocket cluster';
 

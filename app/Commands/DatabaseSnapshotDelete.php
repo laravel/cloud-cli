@@ -12,8 +12,7 @@ class DatabaseSnapshotDelete extends BaseCommand
     protected $signature = 'database-snapshot:delete
                             {cluster? : The database cluster ID or name}
                             {snapshot? : The snapshot ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete a database snapshot';
 

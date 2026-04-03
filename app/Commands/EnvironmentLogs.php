@@ -20,7 +20,6 @@ class EnvironmentLogs extends BaseCommand
                             {--hours= : Number of hours to fetch logs}
                             {--minutes= : Number of minutes to fetch logs}
                             {--to= : End time for filtering logs}
-                            {--json : Output as JSON}
                             {--tail= : Number of lines to show from the end}
                             {--live : Live log output}';
 

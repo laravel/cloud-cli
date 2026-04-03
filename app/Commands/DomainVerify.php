@@ -10,7 +10,7 @@ use function Laravel\Prompts\spin;
 
 class DomainVerify extends BaseCommand
 {
-    protected $signature = 'domain:verify {domain? : The domain ID} {--json : Output as JSON}';
+    protected $signature = 'domain:verify {domain? : The domain ID}';
 
     protected $description = 'Verify domain DNS records are properly set up';
 

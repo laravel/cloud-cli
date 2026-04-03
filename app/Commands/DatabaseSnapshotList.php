@@ -12,8 +12,7 @@ use function Laravel\Prompts\warning;
 class DatabaseSnapshotList extends BaseCommand
 {
     protected $signature = 'database-snapshot:list
-                            {cluster? : The database cluster ID or name}
-                            {--json : Output as JSON}';
+                            {cluster? : The database cluster ID or name}';
 
     protected $description = 'List database snapshots for a cluster';
 

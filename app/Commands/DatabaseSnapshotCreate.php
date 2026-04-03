@@ -13,8 +13,7 @@ use function Laravel\Prompts\textarea;
 class DatabaseSnapshotCreate extends BaseCommand
 {
     protected $signature = 'database-snapshot:create
-                            {cluster? : The database cluster ID or name}
-                            {--json : Output as JSON}';
+                            {cluster? : The database cluster ID or name}';
 
     protected $description = 'Create a database snapshot';
 

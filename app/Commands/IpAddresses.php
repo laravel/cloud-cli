@@ -16,7 +16,6 @@ class IpAddresses extends BaseCommand
     use InteractsWithClipbboard;
 
     protected $signature = 'ip:addresses
-                            {--json : Output as JSON}
                             {--copy : Copy to clipboard}
                             {--region= : Filter by region}';
 

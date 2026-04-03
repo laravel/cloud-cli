@@ -20,8 +20,7 @@ class CommandRun extends BaseCommand
                             {environment? : The environment ID}
                             {--cmd= : The command to run}
                             {--no-monitor : Do not monitor the command in real-time}
-                            {--copy-output : Copy the output to the clipboard}
-                            {--json : Output as JSON}';
+                            {--copy-output : Copy the output to the clipboard}';
 
     protected $description = 'Run a command on an environment';
 

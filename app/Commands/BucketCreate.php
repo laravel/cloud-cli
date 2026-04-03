@@ -22,8 +22,7 @@ class BucketCreate extends BaseCommand
                             {--jurisdiction= : Jurisdiction (eu or default)}
                             {--key-name= : Key name (required for S3 compatible buckets)}
                             {--key-permission= : Key permission (read_only or read_write)}
-                            {--allowed-origins= : Allowed origins (comma-separated list)}
-                            {--json : Output as JSON}';
+                            {--allowed-origins= : Allowed origins (comma-separated list)}';
 
     protected $description = 'Create an object storage bucket';
 

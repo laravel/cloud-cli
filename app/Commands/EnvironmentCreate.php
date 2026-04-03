@@ -14,8 +14,7 @@ class EnvironmentCreate extends BaseCommand
     protected $signature = 'environment:create
                             {application? : The application ID}
                             {--name= : Environment name}
-                            {--branch= : Git branch}
-                            {--json : Output as JSON}';
+                            {--branch= : Git branch}';
 
     protected $description = 'Create a new environment';
 

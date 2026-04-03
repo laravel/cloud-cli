@@ -10,7 +10,7 @@ use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
 {
-    protected $signature = 'database-cluster:list {--json : Output as JSON}';
+    protected $signature = 'database-cluster:list';
 
     protected $description = 'List all database clusters';
 

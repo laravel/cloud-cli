@@ -15,8 +15,7 @@ class DatabaseClusterCreate extends BaseCommand
     protected $signature = 'database-cluster:create
                             {--name= : Database cluster name}
                             {--type= : Database type}
-                            {--region= : Database region}
-                            {--json : Output as JSON}';
+                            {--region= : Database region}';
 
     protected $description = 'Create a new database cluster';
 

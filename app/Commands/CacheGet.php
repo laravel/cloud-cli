@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class CacheGet extends BaseCommand
 {
-    protected $signature = 'cache:get {cache? : The cache ID or name} {--json : Output as JSON}';
+    protected $signature = 'cache:get {cache? : The cache ID or name}';
 
     protected $description = 'Get cache details';
 

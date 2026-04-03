@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class DatabaseClusterGet extends BaseCommand
 {
-    protected $signature = 'database-cluster:get {cluster? : The cluster ID or name} {--json : Output as JSON}';
+    protected $signature = 'database-cluster:get {cluster? : The cluster ID or name}';
 
     protected $description = 'Get database cluster details';
 

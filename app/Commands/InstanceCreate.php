@@ -19,8 +19,7 @@ class InstanceCreate extends BaseCommand
                             {--type=service : Instance type (app|worker)}
                             {--size= : Instance size}
                             {--min-replicas= : Minimum replicas}
-                            {--max-replicas= : Maximum replicas}
-                            {--json : Output as JSON}';
+                            {--max-replicas= : Maximum replicas}';
 
     protected $description = 'Create a new instance';
 

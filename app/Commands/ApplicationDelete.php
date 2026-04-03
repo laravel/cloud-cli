@@ -13,8 +13,7 @@ class ApplicationDelete extends BaseCommand
 {
     protected $signature = 'application:delete
                             {application? : The application ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete an application';
 

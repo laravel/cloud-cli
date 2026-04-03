@@ -10,7 +10,7 @@ use function Laravel\Prompts\warning;
 
 class DomainList extends BaseCommand
 {
-    protected $signature = 'domain:list {environment? : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'domain:list {environment? : The environment ID}';
 
     protected $description = 'List all domains for an environment';
 

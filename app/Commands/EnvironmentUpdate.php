@@ -19,8 +19,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--branch= : Git branch}
                             {--build-command= : Build command}
                             {--deploy-command= : Deploy command}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update an environment';
 

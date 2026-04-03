@@ -11,8 +11,7 @@ use function Laravel\Prompts\warning;
 class DatabaseList extends BaseCommand
 {
     protected $signature = 'database:list
-                            {cluster? : The database cluster ID or name}
-                            {--json : Output as JSON}';
+                            {cluster? : The database cluster ID or name}';
 
     protected $description = 'List all databases (schemas) in a database cluster';
 

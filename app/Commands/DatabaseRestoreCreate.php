@@ -16,8 +16,7 @@ class DatabaseRestoreCreate extends BaseCommand
                             {cluster? : The database cluster ID or name}
                             {name? : The name of the restore}
                             {--snapshot= : Snapshot ID to restore from}
-                            {--point-in-time= : Point-in-time (ISO 8601) to restore to}
-                            {--json : Output as JSON}';
+                            {--point-in-time= : Point-in-time (ISO 8601) to restore to}';
 
     protected $description = 'Create a database restore from a snapshot or point-in-time';
 

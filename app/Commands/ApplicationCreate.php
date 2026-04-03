@@ -21,8 +21,7 @@ class ApplicationCreate extends BaseCommand
     protected $signature = 'application:create
                             {--name= : Application name}
                             {--repository= : Repository (owner/repo format)}
-                            {--region= : Application region}
-                            {--json : Output as JSON}';
+                            {--region= : Application region}';
 
     protected $description = 'Create a new application';
 

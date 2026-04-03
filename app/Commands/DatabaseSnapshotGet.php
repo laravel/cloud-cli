@@ -9,8 +9,7 @@ class DatabaseSnapshotGet extends BaseCommand
 {
     protected $signature = 'database-snapshot:get
                             {cluster? : The database cluster ID or name}
-                            {snapshot? : The snapshot ID or name}
-                            {--json : Output as JSON}';
+                            {snapshot? : The snapshot ID or name}';
 
     protected $description = 'Get database snapshot details';
 

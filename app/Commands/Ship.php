@@ -58,7 +58,7 @@ class Ship extends BaseCommand
                             {--database-preset= : Preset tier for the database (dev, prod, scale — case-insensitive). Default: dev}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
-                            {--json : Output application_id, environment_id, and url as JSON}';
+';
 
     protected $description = 'Ship the application to Laravel Cloud';
 

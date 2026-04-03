@@ -11,7 +11,7 @@ use function Laravel\Prompts\warning;
 
 class ApplicationList extends BaseCommand
 {
-    protected $signature = 'application:list {--json : Output as JSON}';
+    protected $signature = 'application:list';
 
     protected $description = 'List all applications';
 

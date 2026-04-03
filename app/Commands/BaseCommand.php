@@ -18,6 +18,7 @@ use LaravelZero\Framework\Commands\Command;
 use RuntimeException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
@@ -33,6 +34,13 @@ abstract class BaseCommand extends Command
     protected Form $form;
 
     protected ?Resolvers $resolvers;
+
+    protected function configure(): void
+    {
+        parent::configure();
+
+        $this->addOption('json', null, InputOption::VALUE_NONE, 'Output as JSON');
+    }
 
     protected function form(): Form
     {

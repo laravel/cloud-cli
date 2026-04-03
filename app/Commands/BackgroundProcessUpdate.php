@@ -28,8 +28,7 @@ class BackgroundProcessUpdate extends BaseCommand
                             {--rest= : Seconds to rest between jobs (worker only)}
                             {--timeout= : Job timeout in seconds (worker only)}
                             {--run-in-maintenance= : Run in maintenance mode (worker only)}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update a background process';
 

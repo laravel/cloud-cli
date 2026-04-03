@@ -28,8 +28,7 @@ class InstanceUpdate extends BaseCommand
                             {--uses-inertia-ssr= : Uses Inertia SSR}
                             {--hibernation= : Uses hibernation}
                             {--hibernation-timeout= : Hibernation timeout}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update an instance';
 

@@ -17,8 +17,7 @@ class DomainCreate extends BaseCommand
                             {--name= : The domain name}
                             {--www-redirect= : The redirect strategy}
                             {--wildcard-enabled= : Whether to enable wildcard}
-                            {--verification-method= : The verification method}
-                            {--json : Output as JSON}';
+                            {--verification-method= : The verification method}';
 
     protected $description = 'Create a new domain';
 

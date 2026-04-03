@@ -15,8 +15,7 @@ class BucketKeyCreate extends BaseCommand
     protected $signature = 'bucket-key:create
                             {bucket? : The bucket ID or name}
                             {--name= : Key name}
-                            {--permission= : Permission (read_only or read_write)}
-                            {--json : Output as JSON}';
+                            {--permission= : Permission (read_only or read_write)}';
 
     protected $description = 'Create a bucket key';
 

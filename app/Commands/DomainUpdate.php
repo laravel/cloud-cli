@@ -15,8 +15,7 @@ class DomainUpdate extends BaseCommand
     protected $signature = 'domain:update
                             {domain? : The domain ID or name}
                             {--verification-method= : Verification method (pre_verification or real_time)}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update a domain';
 

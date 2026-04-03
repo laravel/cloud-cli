@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class WebsocketClusterGet extends BaseCommand
 {
-    protected $signature = 'websocket-cluster:get {cluster? : The cluster ID or name} {--json : Output as JSON}';
+    protected $signature = 'websocket-cluster:get {cluster? : The cluster ID or name}';
 
     protected $description = 'Get WebSocket cluster details';
 

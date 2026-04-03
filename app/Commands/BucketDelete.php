@@ -11,8 +11,7 @@ class BucketDelete extends BaseCommand
 {
     protected $signature = 'bucket:delete
                             {bucket? : The bucket ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete an object storage bucket';
 

@@ -26,8 +26,7 @@ class BackgroundProcessCreate extends BaseCommand
                             {--timeout=60 : Timeout time}
                             {--tries=1 : Number of tries}
                             {--force=0 : Force the process to run in maintenance mode}
-                            {--processes=1 : Number of processes}
-                            {--json : Output as JSON}';
+                            {--processes=1 : Number of processes}';
 
     protected $description = 'Create a new background process';
 

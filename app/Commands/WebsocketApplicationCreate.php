@@ -12,8 +12,7 @@ class WebsocketApplicationCreate extends BaseCommand
 
     protected $signature = 'websocket-application:create
                             {cluster? : The WebSocket cluster ID or name}
-                            {--name= : Application name}
-                            {--json : Output as JSON}';
+                            {--name= : Application name}';
 
     protected $description = 'Create a WebSocket application';
 

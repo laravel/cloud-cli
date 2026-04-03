@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class BucketGet extends BaseCommand
 {
-    protected $signature = 'bucket:get {bucket? : The bucket ID or name} {--json : Output as JSON}';
+    protected $signature = 'bucket:get {bucket? : The bucket ID or name}';
 
     protected $description = 'Get object storage bucket details';
 

@@ -11,8 +11,7 @@ class WebsocketApplicationDelete extends BaseCommand
 {
     protected $signature = 'websocket-application:delete
                             {application? : The application ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete a WebSocket application';
 

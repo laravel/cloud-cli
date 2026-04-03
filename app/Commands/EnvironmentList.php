@@ -11,8 +11,7 @@ use function Laravel\Prompts\warning;
 class EnvironmentList extends BaseCommand
 {
     protected $signature = 'environment:list
-                            {application? : The application ID or name}
-                            {--json : Output as JSON}';
+                            {application? : The application ID or name}';
 
     protected $description = 'List all environments for an application';
 

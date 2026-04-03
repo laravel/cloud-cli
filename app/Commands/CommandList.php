@@ -8,7 +8,7 @@ use function Laravel\Prompts\intro;
 
 class CommandList extends BaseCommand
 {
-    protected $signature = 'command:list {environment? : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'command:list {environment? : The environment ID}';
 
     protected $description = 'List all commands for an environment';
 

@@ -9,8 +9,7 @@ use function Laravel\Prompts\intro;
 class DeploymentGet extends BaseCommand
 {
     protected $signature = 'deployment:get
-                            {deployment? : The deployment ID}
-                            {--json : Output as JSON}';
+                            {deployment? : The deployment ID}';
 
     protected $description = 'Get deployment details';
 

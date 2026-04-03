@@ -10,7 +10,7 @@ use function Laravel\Prompts\warning;
 
 class DedicatedClusterList extends BaseCommand
 {
-    protected $signature = 'dedicated-cluster:list {--json : Output as JSON}';
+    protected $signature = 'dedicated-cluster:list';
 
     protected $description = 'List dedicated clusters';
 

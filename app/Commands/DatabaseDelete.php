@@ -14,8 +14,7 @@ class DatabaseDelete extends BaseCommand
     protected $signature = 'database:delete
                             {cluster? : The database cluster ID or name}
                             {database? : The database (schema) ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete a database (schema) from a database cluster';
 

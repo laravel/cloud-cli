@@ -9,8 +9,7 @@ class BucketKeyGet extends BaseCommand
 {
     protected $signature = 'bucket-key:get
                             {bucket? : The bucket ID or name}
-                            {key? : The key ID or name}
-                            {--json : Output as JSON}';
+                            {key? : The key ID or name}';
 
     protected $description = 'Get bucket key details';
 

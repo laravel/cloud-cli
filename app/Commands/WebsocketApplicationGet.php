@@ -8,8 +8,7 @@ use function Laravel\Prompts\spin;
 class WebsocketApplicationGet extends BaseCommand
 {
     protected $signature = 'websocket-application:get
-                            {application? : The application ID or name}
-                            {--json : Output as JSON}';
+                            {application? : The application ID or name}';
 
     protected $description = 'Get WebSocket application details';
 

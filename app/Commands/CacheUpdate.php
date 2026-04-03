@@ -21,8 +21,7 @@ class CacheUpdate extends BaseCommand
                             {--size= : Cache size}
                             {--auto-upgrade-enabled= : Enable auto upgrade}
                             {--is-public= : Whether cache is public}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update a cache';
 

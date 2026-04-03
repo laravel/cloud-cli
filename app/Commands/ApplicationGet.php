@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class ApplicationGet extends BaseCommand
 {
-    protected $signature = 'application:get {application? : The application ID or name} {--json : Output as JSON}';
+    protected $signature = 'application:get {application? : The application ID or name}';
 
     protected $description = 'Get application details';
 

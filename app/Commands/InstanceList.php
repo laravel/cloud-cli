@@ -11,8 +11,7 @@ use function Laravel\Prompts\warning;
 class InstanceList extends BaseCommand
 {
     protected $signature = 'instance:list
-                            {environment? : The environment ID or name}
-                            {--json : Output as JSON}';
+                            {environment? : The environment ID or name}';
 
     protected $description = 'List all instances for an environment';
 

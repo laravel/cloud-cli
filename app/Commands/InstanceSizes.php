@@ -8,7 +8,7 @@ use function Laravel\Prompts\warning;
 
 class InstanceSizes extends BaseCommand
 {
-    protected $signature = 'instance:sizes {--json : Output as JSON}';
+    protected $signature = 'instance:sizes';
 
     protected $description = 'List available instance sizes';
 

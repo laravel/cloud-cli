@@ -6,7 +6,7 @@ use function Laravel\Prompts\intro;
 
 class InstanceGet extends BaseCommand
 {
-    protected $signature = 'instance:get {instance? : The instance ID} {--json : Output as JSON}';
+    protected $signature = 'instance:get {instance? : The instance ID}';
 
     protected $description = 'Get instance details';
 

@@ -10,7 +10,7 @@ use function Laravel\Prompts\warning;
 
 class DeploymentList extends BaseCommand
 {
-    protected $signature = 'deployment:list {environment? : The environment ID} {--json : Output as JSON}';
+    protected $signature = 'deployment:list {environment? : The environment ID}';
 
     protected $description = 'List all deployments for an environment';
 

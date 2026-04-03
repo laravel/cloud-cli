@@ -18,8 +18,7 @@ class EnvironmentVariables extends BaseCommand
                             {--action= : append, set, or replace}
                             {--key= : Variable key}
                             {--value= : Variable value}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Replace all environment variables with content from a file';
 

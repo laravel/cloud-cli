@@ -18,8 +18,7 @@ class WebsocketClusterUpdate extends BaseCommand
     protected $signature = 'websocket-cluster:update
                             {cluster? : The cluster ID or name}
                             {--name= : Cluster name}
-                            {--force : Force update without confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Force update without confirmation}';
 
     protected $description = 'Update a WebSocket cluster';
 

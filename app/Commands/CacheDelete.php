@@ -11,8 +11,7 @@ class CacheDelete extends BaseCommand
 {
     protected $signature = 'cache:delete
                             {cache? : The cache ID or name}
-                            {--force : Skip confirmation}
-                            {--json : Output as JSON}';
+                            {--force : Skip confirmation}';
 
     protected $description = 'Delete a cache';
 

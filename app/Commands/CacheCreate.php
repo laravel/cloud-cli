@@ -24,8 +24,7 @@ class CacheCreate extends BaseCommand
                             {--size= : Cache size}
                             {--auto-upgrade-enabled= : Auto upgrade enabled}
                             {--is-public= : Is public}
-                            {--eviction-policy= : Eviction policy}
-                            {--json : Output as JSON}';
+                            {--eviction-policy= : Eviction policy}';
 
     protected $description = 'Create a new cache';
 
