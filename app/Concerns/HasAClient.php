@@ -9,9 +9,11 @@ use App\LocalConfig;
 use App\Support\DetectsNonInteractiveEnvironments;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 trait HasAClient
 {
@@ -51,13 +53,37 @@ trait HasAClient
             $orgs = spin(
                 function () use ($apiTokens) {
                     return $apiTokens->mapWithKeys(function ($token) {
-                        $client = new Connector($token);
+                        try {
+                            $client = new Connector($token);
 
-                        return [$token => $client->meta()->organization()];
-                    });
+                            return [$token => $client->meta()->organization()];
+                        } catch (RequestException $e) {
+                            if ($e->getResponse()->status() === 401) {
+                                return [];
+                            }
+
+                            throw $e;
+                        }
+                    })->filter();
                 },
                 'Fetching token details',
             );
+
+            if ($orgs->count() < $apiTokens->count()) {
+                $config->setApiTokens($orgs->keys());
+            }
+
+            if ($orgs->isEmpty()) {
+                warning('All stored API tokens are no longer valid. Please re-authenticate with: cloud auth');
+
+                Artisan::call(Auth::class);
+
+                return $this->resolveApiToken($ignoreLocalConfig);
+            }
+
+            if ($orgs->count() === 1) {
+                return $orgs->keys()->first();
+            }
 
             if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
                 foreach ($orgs as $token => $organization) {
