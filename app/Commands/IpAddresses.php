@@ -37,6 +37,8 @@ class IpAddresses extends BaseCommand
             $addresses = $addresses->filter(fn ($ips, $region) => str_starts_with($region, strtolower($this->option('region'))));
 
             if ($addresses->isEmpty()) {
+                $this->outputJsonIfWanted([]);
+
                 warning('No IP addresses found for region: '.$this->option('region'));
 
                 return self::FAILURE;
@@ -45,11 +47,7 @@ class IpAddresses extends BaseCommand
 
         $addresses = $addresses->sortBy(fn ($ips, $region) => $region);
 
-        if ($this->option('json')) {
-            $this->line(json_encode($addresses, JSON_PRETTY_PRINT));
-
-            return;
-        }
+        $this->outputJsonIfWanted($addresses);
 
         $tableData = $addresses->map(fn ($ips, $region) => [
             'region' => $region,
