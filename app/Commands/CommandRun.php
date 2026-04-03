@@ -5,12 +5,14 @@ namespace App\Commands;
 use App\Client\Requests\RunCommandRequestData;
 use App\Concerns\InteractsWithClipbboard;
 use App\Dto\Command;
+use App\Enums\CommandStatus;
 use App\Prompts\MonitorCommand;
 use App\Support\ValueResolver;
+use Carbon\CarbonInterval;
+use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\text;
-use function Laravel\Prompts\warning;
 
 class CommandRun extends BaseCommand
 {
@@ -35,25 +37,62 @@ class CommandRun extends BaseCommand
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
         $command = $this->loopUntilValid(fn () => $this->runCommandOnEnvironment($environment->id));
 
-        $this->outputJsonIfWanted($command);
+        if ($this->option('no-monitor')) {
+            $this->outputJsonIfWanted($command);
 
-        if (! $this->option('no-monitor')) {
-            (new MonitorCommand(
-                fn (string $id) => $this->client->commands()->get($id),
-                $command,
-            ))->display();
+            return self::SUCCESS;
         }
 
-        if ($this->option('copy-output')) {
-            if ($this->option('no-monitor')) {
-                warning('Output cannot be copied when monitoring is disabled');
+        if (! $this->isInteractive()) {
+            $command = $this->monitorNonInteractively($command);
 
-                return self::SUCCESS;
+            $this->outputJsonIfWanted($command);
+
+            if ($this->option('copy-output')) {
+                $this->copyToClipboard($command->output ?? '');
             }
 
+            return $command->status === CommandStatus::SUCCESS ? self::SUCCESS : self::FAILURE;
+        }
+
+        $this->outputJsonIfWanted($command);
+
+        (new MonitorCommand(
+            fn (string $id) => $this->client->commands()->get($id),
+            $command,
+        ))->display();
+
+        if ($this->option('copy-output')) {
             $command = $this->client->commands()->get($command->id);
             $this->copyToClipboard($command->output ?? '');
             success('Output copied to clipboard');
+        }
+    }
+
+    protected function monitorNonInteractively(Command $command): Command
+    {
+        $checkInterval = 3;
+        $lastStatus = '';
+
+        while (true) {
+            $command = $this->client->commands()->get($command->id);
+
+            $currentStatus = $command->status->label();
+
+            if ($currentStatus !== $lastStatus) {
+                $this->writeJsonIfWanted([
+                    'command_id' => $command->id,
+                    'status' => $command->status->value,
+                    'message' => $currentStatus,
+                ]);
+                $lastStatus = $currentStatus;
+            }
+
+            if ($command->isFinished()) {
+                return $command;
+            }
+
+            Sleep::for(CarbonInterval::seconds($checkInterval));
         }
     }
 
