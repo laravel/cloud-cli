@@ -6,9 +6,14 @@ use AgentDetector\AgentDetector;
 
 trait DetectsNonInteractiveEnvironments
 {
+    protected function isAgentEnvironment(): bool
+    {
+        return AgentDetector::detect()->isAgent;
+    }
+
     protected function isNonInteractiveEnvironment(): bool
     {
-        if (AgentDetector::detect()->isAgent) {
+        if ($this->isAgentEnvironment()) {
             return true;
         }
 

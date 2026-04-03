@@ -5,6 +5,7 @@ namespace App\Middleware;
 use App\Concerns\HasAClient;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Support\Facades\Artisan;
+use RuntimeException;
 
 class RequiresAuthToken implements CommandMiddleware
 {
@@ -22,7 +23,13 @@ class RequiresAuthToken implements CommandMiddleware
             return $next();
         }
 
-        $this->ensureApiTokenExists();
+        try {
+            $this->ensureApiTokenExists();
+        } catch (RuntimeException $e) {
+            fwrite(STDERR, json_encode(['error' => true, 'message' => $e->getMessage()]).PHP_EOL);
+
+            return;
+        }
 
         return $next();
     }

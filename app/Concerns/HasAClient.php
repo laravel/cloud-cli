@@ -3,9 +3,11 @@
 namespace App\Concerns;
 
 use App\Client\Connector;
+use App\Commands\Auth;
 use App\ConfigRepository;
 use App\LocalConfig;
 use App\Support\DetectsNonInteractiveEnvironments;
+use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
 
 use function Laravel\Prompts\password;
@@ -72,7 +74,7 @@ trait HasAClient
 
             $apiToken = select(
                 label: 'Organization',
-                options: $orgs->mapWithKeys(fn ($organization, $token) => [
+                options: $orgs->mapWithKeys(fn($organization, $token) => [
                     $token => $organization->name,
                 ]),
             );
@@ -80,22 +82,12 @@ trait HasAClient
             return $apiToken;
         }
 
-        if (! stream_isatty(STDIN) || $this->isNonInteractiveEnvironment()) {
+        if (! stream_isatty(STDIN) && !$this->isAgentEnvironment()) {
             throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
         }
 
-        info('No API tokens found.');
-        info('Learn how to create an API token: https://cloud.laravel.com/docs/api/authentication#create-an-api-token');
+        Artisan::call(Auth::class);
 
-        $apiToken = password(
-            label: 'Laravel Cloud API token',
-            required: true,
-        );
-
-        $config->addApiToken($apiToken);
-
-        info('API token saved to '.$config->path());
-
-        return $apiToken;
+        return $this->resolveApiToken($ignoreLocalConfig);
     }
 }
