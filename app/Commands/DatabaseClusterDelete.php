@@ -6,6 +6,7 @@ use Carbon\CarbonInterval;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Sleep;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 

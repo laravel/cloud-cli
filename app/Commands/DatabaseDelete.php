@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use Throwable;
 
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
