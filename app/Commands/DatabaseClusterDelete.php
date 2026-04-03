@@ -6,8 +6,6 @@ use Carbon\CarbonInterval;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Sleep;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -38,11 +36,7 @@ class DatabaseClusterDelete extends BaseCommand
             $schemaSuffix = ' and schemas';
         }
 
-        if (! $this->option('force') && ! confirm('Delete database cluster'.$schemaSuffix.'?', default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive('Delete database cluster'.$schemaSuffix.'?');
 
         try {
             foreach ($schemas as $schema) {

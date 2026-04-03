@@ -4,8 +4,6 @@ namespace App\Commands;
 
 use Throwable;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -30,11 +28,7 @@ class DatabaseDelete extends BaseCommand
             ->withCluster($cluster)
             ->from($this->argument('database'));
 
-        if (! $this->option('force') && ! confirm("Delete database '{$database->name}' and detach from associated environments?")) {
-            error('Cancelled');
-
-            return self::SUCCESS;
-        }
+        $this->confirmDestructive("Delete database '{$database->name}' and detach from associated environments?");
 
         try {
             spin(

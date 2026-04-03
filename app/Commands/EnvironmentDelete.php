@@ -4,8 +4,6 @@ namespace App\Commands;
 
 use Illuminate\Http\Client\RequestException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -25,11 +23,7 @@ class EnvironmentDelete extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        if (! $this->option('force') && ! confirm("Delete environment '{$environment->name}'?")) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete environment '{$environment->name}'?");
 
         try {
             spin(

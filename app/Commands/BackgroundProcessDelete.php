@@ -4,8 +4,6 @@ namespace App\Commands;
 
 use Illuminate\Http\Client\RequestException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -23,11 +21,7 @@ class BackgroundProcessDelete extends BaseCommand
 
         $process = $this->resolvers()->backgroundProcess()->from($this->argument('process'));
 
-        if (! $this->option('force') && ! confirm('Delete background process?', default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive('Delete background process?');
 
         try {
             spin(

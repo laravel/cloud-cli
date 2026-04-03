@@ -4,8 +4,6 @@ namespace App\Commands;
 
 use Illuminate\Http\Client\RequestException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -23,11 +21,7 @@ class InstanceDelete extends BaseCommand
 
         $instance = $this->resolvers()->instance()->from($this->argument('instance'));
 
-        if (! $this->option('force') && ! confirm("Delete instance '{$instance->name}'?", default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete instance '{$instance->name}'?");
 
         try {
             spin(

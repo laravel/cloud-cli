@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -23,11 +21,7 @@ class WebsocketClusterDelete extends BaseCommand
 
         $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
 
-        if (! $this->option('force') && ! confirm("Delete WebSocket cluster '{$cluster->name}'?", default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete WebSocket cluster '{$cluster->name}'?");
 
         spin(
             fn () => $this->client->websocketClusters()->delete($cluster->id),

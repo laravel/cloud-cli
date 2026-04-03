@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -23,11 +21,7 @@ class CacheDelete extends BaseCommand
 
         $cache = $this->resolvers()->cache()->from($this->argument('cache'));
 
-        if (! $this->option('force') && ! confirm("Delete cache '{$cache->name}'?", default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete cache '{$cache->name}'?");
 
         spin(
             fn () => $this->client->caches()->delete($cache->id),

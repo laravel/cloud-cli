@@ -359,4 +359,21 @@ abstract class BaseCommand extends Command
 
         return confirm('Update the '.$resourceType.'?');
     }
+
+    protected function confirmDestructive(string $message): void
+    {
+        if ($this->option('force')) {
+            return;
+        }
+
+        if (! $this->isInteractive()) {
+            $this->failAndExit('Destructive operation requires --force flag in non-interactive mode.');
+        }
+
+        if (! confirm($message, default: false)) {
+            error('Cancelled');
+
+            throw new CommandExitException(self::FAILURE);
+        }
+    }
 }

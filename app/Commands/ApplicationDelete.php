@@ -4,8 +4,6 @@ namespace App\Commands;
 
 use Illuminate\Http\Client\RequestException;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -25,11 +23,7 @@ class ApplicationDelete extends BaseCommand
 
         $application = $this->resolvers()->application()->from($this->argument('application'));
 
-        if (! $this->option('force') && ! confirm("Delete application '{$application->name}'?", default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete application '{$application->name}'?");
 
         try {
             spin(

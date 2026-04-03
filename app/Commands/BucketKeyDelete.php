@@ -2,8 +2,6 @@
 
 namespace App\Commands;
 
-use function Laravel\Prompts\confirm;
-use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
@@ -24,11 +22,7 @@ class BucketKeyDelete extends BaseCommand
         $bucket = $this->resolvers()->objectStorageBucket()->resolve();
         $key = $this->resolvers()->bucketKey()->from($bucket, $this->argument('key'));
 
-        if (! $this->option('force') && ! confirm("Delete key '{$key->name}'?", default: false)) {
-            error('Cancelled');
-
-            return self::FAILURE;
-        }
+        $this->confirmDestructive("Delete key '{$key->name}'?");
 
         spin(
             fn () => $this->client->bucketKeys()->delete($key->id),
