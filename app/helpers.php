@@ -6,6 +6,7 @@ use App\Prompts\DataTable;
 use App\Prompts\DynamicSpinner;
 use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SlideIn;
+use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Note;
 
 if (! function_exists('answered')) {
@@ -54,5 +55,39 @@ if (! function_exists('dataTable')) {
     function dataTable(array $headers, array $rows, array $actions = []): void
     {
         (new DataTable(headers: $headers, rows: $rows, actions: $actions))->display();
+    }
+}
+
+if (! function_exists('openUrl')) {
+    /**
+     * Open a URL or file in the user's default browser or file manager.
+     */
+    function openUrl(string $url): void
+    {
+        $command = match (PHP_OS_FAMILY) {
+            'Darwin' => ['open', $url],
+            'Windows' => ['rundll32', 'url.dll,FileProtocolHandler', $url],
+            'Linux' => ['xdg-open', $url],
+            default => ['open', $url],
+        };
+
+        Process::run($command);
+    }
+}
+
+if (! function_exists('openInFinder')) {
+    /**
+     * Reveal a file in the system file manager.
+     */
+    function openInFinder(string $path): void
+    {
+        $command = match (PHP_OS_FAMILY) {
+            'Darwin' => ['open', $path, '-R'],
+            'Windows' => ['explorer', '/select,'.$path],
+            'Linux' => ['xdg-open', dirname($path)],
+            default => ['open', $path, '-R'],
+        };
+
+        Process::run($command);
     }
 }
