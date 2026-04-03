@@ -67,16 +67,11 @@ it('replaces all tokens atomically with setApiTokens', function () {
     // Simulate re-auth: should REPLACE, not append
     $this->config->setApiTokens(collect(['token-B']));
     expect($this->config->apiTokens()->toArray())->toBe(['token-B']);
-
-    // token-A should be gone entirely
-    expect($this->config->apiTokens())->toHaveCount(1);
-    expect($this->config->apiTokens()->contains('token-A'))->toBeFalse();
 });
 
 it('setApiTokens deduplicates the input', function () {
     $this->config->setApiTokens(collect(['token-A', 'token-A', 'token-B']));
 
-    expect($this->config->apiTokens())->toHaveCount(2);
     expect($this->config->apiTokens()->toArray())->toBe(['token-A', 'token-B']);
 });
 
@@ -96,7 +91,6 @@ it('preserves multiple tokens for users with multiple organizations', function (
     // Auth session returns one token per org
     $this->config->setApiTokens(collect(['token-org-A', 'token-org-B']));
 
-    expect($this->config->apiTokens())->toHaveCount(2);
     expect($this->config->apiTokens()->toArray())->toBe(['token-org-A', 'token-org-B']);
 });
 
@@ -108,11 +102,7 @@ it('replaces all org tokens atomically on re-auth', function () {
     // Re-auth: same 2 orgs, fresh tokens
     $this->config->setApiTokens(collect(['token-org-A-v2', 'token-org-B-v2']));
 
-    // Should have exactly 2 fresh tokens, no stale ones
-    expect($this->config->apiTokens())->toHaveCount(2);
     expect($this->config->apiTokens()->toArray())->toBe(['token-org-A-v2', 'token-org-B-v2']);
-    expect($this->config->apiTokens()->contains('token-org-A-v1'))->toBeFalse();
-    expect($this->config->apiTokens()->contains('token-org-B-v1'))->toBeFalse();
 });
 
 it('handles org count changing between auth sessions', function () {
@@ -132,6 +122,5 @@ it('handles org count changing between auth sessions', function () {
 });
 
 it('returns empty collection when no tokens exist', function () {
-    expect($this->config->apiTokens())->toHaveCount(0);
-    expect($this->config->apiTokens()->isEmpty())->toBeTrue();
+    expect($this->config->apiTokens())->toBeEmpty();
 });
