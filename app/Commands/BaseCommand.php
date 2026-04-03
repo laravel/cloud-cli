@@ -266,7 +266,7 @@ abstract class BaseCommand extends Command
         $fieldList = array_map('trim', explode(',', $fields));
 
         if (array_is_list($data)) {
-            return array_values(array_map(fn ($item) => $this->pickFields($item, $fieldList), $data));
+            return array_map(fn ($item) => $this->pickFields($item, $fieldList), $data);
         }
 
         return $this->pickFields($data, $fieldList);
