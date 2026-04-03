@@ -46,12 +46,18 @@ class ValidationErrors
         return implode(PHP_EOL, array_values($this->errors));
     }
 
-    public function toJson(): string
+    public function toJson(array $values = []): string
     {
-        return json_encode([
+        $data = [
             'error' => true,
             'message' => 'Validation failed.',
             'errors' => $this->errors,
-        ]);
+        ];
+
+        if (! empty($values)) {
+            $data['values'] = $values;
+        }
+
+        return json_encode($data);
     }
 }

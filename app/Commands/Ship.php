@@ -20,9 +20,11 @@ use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseType;
 use App\Dto\Environment;
 use App\Dto\Region;
+use App\Dto\ValidationErrors;
 use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
 use App\Enums\DatabaseClusterPreset;
+use App\Exceptions\CommandExitException;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
@@ -230,21 +232,33 @@ class Ship extends BaseCommand
         $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
         $region = $this->option('region') ?? $defaultRegion;
 
+        $data = new CreateApplicationRequestData(
+            repository: $repository,
+            name: $name,
+            region: $region,
+        );
+
         try {
-            return $this->client->applications()->create(
-                new CreateApplicationRequestData(
-                    repository: $repository,
-                    name: $name,
-                    region: $region,
-                ),
-            );
+            return $this->client->applications()->create($data);
         } catch (RequestException $e) {
             if ($e->getResponse()->status() === 422) {
                 $errors = $e->getResponse()->json('errors', []);
-                $message = collect($errors)->map(fn ($msgs, $field) => ucfirst($field).': '.implode(', ', $msgs))->implode('. ');
-                $message = $message ?: $e->getResponse()->json('message', 'Validation failed.');
 
-                $this->failAndExit($message);
+                $validationErrors = new ValidationErrors;
+
+                foreach ($errors as $field => $msgs) {
+                    $validationErrors->add($field, implode(', ', $msgs));
+                }
+
+                $values = collect($errors)
+                    ->keys()
+                    ->mapWithKeys(fn ($field) => [$field => $data->{$field} ?? null])
+                    ->filter()
+                    ->all();
+
+                fwrite(STDERR, $validationErrors->toJson($values).PHP_EOL);
+
+                throw new CommandExitException(self::FAILURE);
             }
 
             throw $e;

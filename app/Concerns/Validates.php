@@ -93,7 +93,13 @@ trait Validates
             throw new RuntimeException($this->errors);
         }
 
-        fwrite(STDERR, $this->errors->toJson().PHP_EOL);
+        $values = collect($this->errors->all())
+            ->keys()
+            ->mapWithKeys(fn ($field) => [$field => $this->form()->get($field)])
+            ->filter()
+            ->all();
+
+        fwrite(STDERR, $this->errors->toJson($values).PHP_EOL);
 
         throw new CommandExitException(BaseCommand::FAILURE);
     }
