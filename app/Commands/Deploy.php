@@ -29,7 +29,7 @@ class Deploy extends BaseCommand
                             {--open : Open the site in the browser after a successful deployment}
                             {--no-wait : Initiate deployment and return immediately}';
 
-    protected $description = 'Deploy an existing application to Laravel Cloud';
+    protected $description = 'Deploy an existing application to Laravel Cloud (use `ship` to create a new application)';
 
     public function handle()
     {
