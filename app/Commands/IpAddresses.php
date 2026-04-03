@@ -64,7 +64,7 @@ class IpAddresses extends BaseCommand
 
         dataTable(
             ['Region', 'IPv4', 'IPv6'],
-            $tableData->toArray(),
+            $tableData->values()->toArray(),
             actions: [
                 Key::ENTER => [
                     fn ($row) => $this->copyToIpsToClipboard(collect([$row['region'] => $row])),
