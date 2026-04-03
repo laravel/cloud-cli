@@ -75,11 +75,11 @@ if (! function_exists('openUrl')) {
     }
 }
 
-if (! function_exists('openInFinder')) {
+if (! function_exists('revealFile')) {
     /**
-     * Reveal a file in the system file manager.
+     * Reveal a file in the system file manager (Finder, Explorer, etc.).
      */
-    function openInFinder(string $path): void
+    function revealFile(string $path): void
     {
         $command = match (PHP_OS_FAMILY) {
             'Darwin' => ['open', $path, '-R'],

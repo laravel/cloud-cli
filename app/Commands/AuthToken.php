@@ -37,7 +37,7 @@ class AuthToken extends BaseCommand implements NoAuthRequired
         intro('Laravel Cloud API Tokens');
 
         if ($this->option('reveal')) {
-            openInFinder($this->config->path());
+            revealFile($this->config->path());
 
             outro('Revealed '.$this->config->path());
 
