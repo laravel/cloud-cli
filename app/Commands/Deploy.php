@@ -10,7 +10,6 @@ use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\confirm;
@@ -96,7 +95,7 @@ class Deploy extends BaseCommand
         success('Deployment completed in <comment>'.$deployment->totalTime()->format('%I:%S').'</comment>');
 
         if ($this->option('open')) {
-            Process::run(['open', $environment->url]);
+            openUrl($environment->url);
         }
 
         $this->outputJsonIfWanted([

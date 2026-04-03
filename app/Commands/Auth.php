@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
-use Illuminate\Support\Facades\Process;
 use Saloon\Exceptions\Request\RequestException as SaloonRequestException;
 use Socket;
 
@@ -72,7 +71,7 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         info("Opening browser: {$redirectUrl}");
 
-        Process::run(['open', $redirectUrl]);
+        openUrl($redirectUrl);
 
         info('Waiting for authentication...');
 

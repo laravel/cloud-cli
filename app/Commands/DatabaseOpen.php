@@ -4,7 +4,6 @@ namespace App\Commands;
 
 use App\Dto\Database;
 use App\Dto\DatabaseCluster;
-use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -28,7 +27,7 @@ class DatabaseOpen extends BaseCommand
 
         info($url);
 
-        Process::run(['open', $url]);
+        openUrl($url);
 
         success("Opened {$database->name}");
     }

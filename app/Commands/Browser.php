@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\RequiresRemoteGitRepo;
-use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -35,7 +34,7 @@ class Browser extends BaseCommand
             return self::FAILURE;
         }
 
-        Process::run(['open', $environment->url]);
+        openUrl($environment->url);
 
         outro($environment->url);
     }

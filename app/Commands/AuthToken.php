@@ -7,7 +7,6 @@ use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use App\Exceptions\CommandExitException;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
@@ -38,9 +37,9 @@ class AuthToken extends BaseCommand implements NoAuthRequired
         intro('Laravel Cloud API Tokens');
 
         if ($this->option('reveal')) {
-            Process::run(['open', $this->config->path(), '-R']);
+            openInFinder($this->config->path());
 
-            outro('Revealed '.$this->config->path().' in Finder');
+            outro('Revealed '.$this->config->path());
 
             return self::SUCCESS;
         }

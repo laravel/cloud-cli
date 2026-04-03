@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\RequiresRemoteGitRepo;
-use Illuminate\Support\Facades\Process;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
@@ -29,7 +28,7 @@ class Dashboard extends BaseCommand
 
         $url = $application->url($environment);
 
-        Process::run(['open', $url]);
+        openUrl($url);
 
         outro($url);
     }

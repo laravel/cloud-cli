@@ -8,7 +8,6 @@ use App\Exceptions\CommandExitException;
 use App\Support\KeyPressListener;
 use Carbon\CarbonImmutable;
 use Closure;
-use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Prompt;
 use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
@@ -99,7 +98,7 @@ class MonitorDeployments extends Prompt
 
         $keyPressListener = KeyPressListener::for($this)->listenForQuit()->on('o', function () {
             if ($this->lastDeployment) {
-                Process::run(['open', $this->environment->url]);
+                openUrl($this->environment->url);
             }
         });
 
