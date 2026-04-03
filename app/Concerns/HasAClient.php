@@ -63,7 +63,7 @@ trait HasAClient
                 }
             }
 
-            if (! $this->isInteractive()) {
+            if (! stream_isatty(STDIN)) {
                 throw new RuntimeException('Multiple API tokens found. Set organization_id in .cloud/config.json or use `cloud auth:token` to manage tokens.');
             }
 
@@ -77,7 +77,7 @@ trait HasAClient
             return $apiToken;
         }
 
-        if (! $this->isInteractive()) {
+        if (! stream_isatty(STDIN)) {
             throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
         }
 
