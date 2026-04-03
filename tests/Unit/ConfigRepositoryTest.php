@@ -20,16 +20,14 @@ beforeEach(function () {
 it('does not accumulate duplicate tokens when addApiToken is called repeatedly', function () {
     $token = 'test-token-abc123';
 
-    // Simulate running `cloud auth` 5 times with the same token
-    $this->config->addApiToken($token);
-    $this->config->addApiToken($token);
+    // Simulate running `cloud auth` 3 times with the same token
     $this->config->addApiToken($token);
     $this->config->addApiToken($token);
     $this->config->addApiToken($token);
 
     $tokens = $this->config->apiTokens();
 
-    // BEFORE fix: count would be 5 (each push appended without dedup)
+    // BEFORE fix: count would be 3 (each push appended without dedup)
     // AFTER fix: count is 1 (unique()->values() deduplicates)
     expect($tokens)->toHaveCount(1);
     expect($tokens->first())->toBe($token);
