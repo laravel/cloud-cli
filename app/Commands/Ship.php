@@ -62,7 +62,7 @@ class Ship extends BaseCommand
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
 ';
 
-    protected $description = 'Ship the application to Laravel Cloud';
+    protected $description = 'Ship a new application to Laravel Cloud';
 
     protected ?string $appName = null;
 
