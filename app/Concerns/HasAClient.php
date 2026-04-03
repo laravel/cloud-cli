@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\LocalConfig;
+use RuntimeException;
 
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
@@ -62,6 +63,10 @@ trait HasAClient
                 }
             }
 
+            if (! $this->isInteractive()) {
+                throw new RuntimeException('Multiple API tokens found. Set organization_id in .cloud/config.json or use `cloud auth:token` to manage tokens.');
+            }
+
             $apiToken = select(
                 label: 'Organization',
                 options: $orgs->mapWithKeys(fn ($organization, $token) => [
@@ -70,6 +75,10 @@ trait HasAClient
             );
 
             return $apiToken;
+        }
+
+        if (! $this->isInteractive()) {
+            throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
         }
 
         info('No API tokens found.');
