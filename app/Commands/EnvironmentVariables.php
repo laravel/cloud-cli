@@ -22,6 +22,8 @@ class EnvironmentVariables extends BaseCommand
 
     protected $description = 'Replace all environment variables with content from a file';
 
+    protected $aliases = ['env:variables', 'env:vars', 'environment:vars'];
+
     public function handle()
     {
         $this->ensureClient();

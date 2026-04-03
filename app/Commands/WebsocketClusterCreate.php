@@ -21,6 +21,8 @@ class WebsocketClusterCreate extends BaseCommand
 
     protected $description = 'Create a WebSocket cluster';
 
+    protected $aliases = ['ws-cluster:create'];
+
     public function handle()
     {
         $this->ensureClient();

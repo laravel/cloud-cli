@@ -14,6 +14,8 @@ class DatabaseOpen extends BaseCommand
 
     protected $description = 'Open database locally';
 
+    protected $aliases = ['db:open'];
+
     public function handle()
     {
         $this->ensureClient();

@@ -22,6 +22,8 @@ class DatabaseClusterCreate extends BaseCommand
 
     protected $description = 'Create a new database cluster';
 
+    protected $aliases = ['db-cluster:create'];
+
     public function handle()
     {
         $this->ensureClient();

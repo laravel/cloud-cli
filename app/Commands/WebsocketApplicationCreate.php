@@ -19,6 +19,8 @@ class WebsocketApplicationCreate extends BaseCommand
 
     protected $description = 'Create a WebSocket application';
 
+    protected $aliases = ['ws-app:create'];
+
     public function handle()
     {
         $this->ensureClient();

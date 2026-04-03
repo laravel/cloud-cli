@@ -17,6 +17,8 @@ class CommandList extends BaseCommand
 
     protected $description = 'List all commands for an environment';
 
+    protected $aliases = ['cmd:list'];
+
     public function handle()
     {
         $this->ensureClient();

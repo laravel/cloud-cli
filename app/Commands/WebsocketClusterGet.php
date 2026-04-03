@@ -14,6 +14,8 @@ class WebsocketClusterGet extends BaseCommand
 
     protected $description = 'Get WebSocket cluster details';
 
+    protected $aliases = ['ws-cluster:get'];
+
     public function handle()
     {
         $this->ensureClient();

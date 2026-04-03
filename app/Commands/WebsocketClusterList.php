@@ -19,6 +19,8 @@ class WebsocketClusterList extends BaseCommand
 
     protected $description = 'List WebSocket clusters';
 
+    protected $aliases = ['ws-cluster:list'];
+
     public function handle()
     {
         $this->ensureClient();

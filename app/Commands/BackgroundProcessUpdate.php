@@ -34,6 +34,8 @@ class BackgroundProcessUpdate extends BaseCommand
 
     protected $description = 'Update a background process';
 
+    protected $aliases = ['process:update'];
+
     public function handle()
     {
         $this->ensureClient();

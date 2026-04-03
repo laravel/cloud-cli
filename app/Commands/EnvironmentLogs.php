@@ -25,6 +25,8 @@ class EnvironmentLogs extends BaseCommand
 
     protected $description = 'View environment logs';
 
+    protected $aliases = ['env:logs'];
+
     public function handle()
     {
         $this->ensureClient();

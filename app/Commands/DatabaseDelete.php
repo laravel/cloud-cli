@@ -17,6 +17,8 @@ class DatabaseDelete extends BaseCommand
 
     protected $description = 'Delete a database (schema) from a database cluster';
 
+    protected $aliases = ['db:delete'];
+
     public function handle()
     {
         $this->ensureClient();

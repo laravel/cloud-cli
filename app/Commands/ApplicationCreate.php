@@ -28,6 +28,8 @@ class ApplicationCreate extends BaseCommand
 
     protected $description = 'Create a new application';
 
+    protected $aliases = ['app:create'];
+
     public function handle()
     {
         $this->ensureClient();

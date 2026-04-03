@@ -14,6 +14,8 @@ class DatabaseClusterGet extends BaseCommand
 
     protected $description = 'Get database cluster details';
 
+    protected $aliases = ['db-cluster:get'];
+
     public function handle()
     {
         $this->ensureClient();

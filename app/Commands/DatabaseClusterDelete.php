@@ -16,6 +16,8 @@ class DatabaseClusterDelete extends BaseCommand
 
     protected $description = 'Delete a database cluster';
 
+    protected $aliases = ['db-cluster:delete'];
+
     public function handle()
     {
         $this->ensureClient();

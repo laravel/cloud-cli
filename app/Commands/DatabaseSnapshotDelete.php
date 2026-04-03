@@ -14,6 +14,8 @@ class DatabaseSnapshotDelete extends BaseCommand
 
     protected $description = 'Delete a database snapshot';
 
+    protected $aliases = ['db-snapshot:delete'];
+
     public function handle()
     {
         $this->ensureClient();

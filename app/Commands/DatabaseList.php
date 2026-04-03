@@ -20,6 +20,8 @@ class DatabaseList extends BaseCommand
 
     protected $description = 'List all databases (schemas) in a database cluster';
 
+    protected $aliases = ['db:list'];
+
     public function handle()
     {
         $this->ensureClient();

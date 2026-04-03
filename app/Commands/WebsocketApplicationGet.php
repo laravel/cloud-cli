@@ -16,6 +16,8 @@ class WebsocketApplicationGet extends BaseCommand
 
     protected $description = 'Get WebSocket application details';
 
+    protected $aliases = ['ws-app:get'];
+
     public function handle()
     {
         $this->ensureClient();

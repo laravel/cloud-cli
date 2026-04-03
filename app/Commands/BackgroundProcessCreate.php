@@ -33,6 +33,8 @@ class BackgroundProcessCreate extends BaseCommand
 
     protected $description = 'Create a new background process';
 
+    protected $aliases = ['process:create'];
+
     public function handle()
     {
         $this->ensureClient();

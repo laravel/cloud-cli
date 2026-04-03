@@ -15,6 +15,8 @@ class BackgroundProcessGet extends BaseCommand
 
     protected $description = 'Get background process details';
 
+    protected $aliases = ['process:get'];
+
     public function handle()
     {
         $this->ensureClient();

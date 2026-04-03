@@ -13,6 +13,8 @@ class WebsocketClusterDelete extends BaseCommand
 
     protected $description = 'Delete a WebSocket cluster';
 
+    protected $aliases = ['ws-cluster:delete'];
+
     public function handle()
     {
         $this->ensureClient();

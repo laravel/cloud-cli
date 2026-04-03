@@ -12,6 +12,8 @@ class DatabaseGet extends BaseCommand
 
     protected $description = 'Get database (schema) details';
 
+    protected $aliases = ['db:get'];
+
     public function handle()
     {
         $this->ensureClient();

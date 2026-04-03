@@ -13,6 +13,8 @@ class WebsocketApplicationDelete extends BaseCommand
 
     protected $description = 'Delete a WebSocket application';
 
+    protected $aliases = ['ws-app:delete'];
+
     public function handle()
     {
         $this->ensureClient();

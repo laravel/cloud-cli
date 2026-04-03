@@ -14,6 +14,8 @@ class ApplicationGet extends BaseCommand
 
     protected $description = 'Get application details';
 
+    protected $aliases = ['app:get'];
+
     public function handle()
     {
         $this->ensureClient();

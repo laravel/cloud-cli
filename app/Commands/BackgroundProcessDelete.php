@@ -14,6 +14,8 @@ class BackgroundProcessDelete extends BaseCommand
 
     protected $description = 'Delete a background process';
 
+    protected $aliases = ['process:delete'];
+
     public function handle()
     {
         $this->ensureClient();

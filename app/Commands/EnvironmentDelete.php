@@ -16,6 +16,8 @@ class EnvironmentDelete extends BaseCommand
 
     protected $description = 'Delete an environment';
 
+    protected $aliases = ['env:delete'];
+
     public function handle()
     {
         $this->ensureClient();

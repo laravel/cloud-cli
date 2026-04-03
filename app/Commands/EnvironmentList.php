@@ -20,6 +20,8 @@ class EnvironmentList extends BaseCommand
 
     protected $description = 'List all environments for an application';
 
+    protected $aliases = ['env:list'];
+
     public function handle()
     {
         $this->ensureClient();

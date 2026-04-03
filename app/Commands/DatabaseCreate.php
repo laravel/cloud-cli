@@ -19,6 +19,8 @@ class DatabaseCreate extends BaseCommand
 
     protected $description = 'Create a new database (schema) in a database cluster';
 
+    protected $aliases = ['db:create'];
+
     public function handle()
     {
         $this->ensureClient();

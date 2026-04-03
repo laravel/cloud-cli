@@ -19,6 +19,8 @@ class ApplicationList extends BaseCommand
 
     protected $description = 'List all applications';
 
+    protected $aliases = ['app:list'];
+
     public function handle()
     {
         $this->ensureClient();

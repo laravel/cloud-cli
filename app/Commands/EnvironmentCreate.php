@@ -21,6 +21,8 @@ class EnvironmentCreate extends BaseCommand
 
     protected $description = 'Create a new environment';
 
+    protected $aliases = ['env:create'];
+
     public function handle()
     {
         $this->ensureClient();

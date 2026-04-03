@@ -24,6 +24,8 @@ class WebsocketClusterUpdate extends BaseCommand
 
     protected $description = 'Update a WebSocket cluster';
 
+    protected $aliases = ['ws-cluster:update'];
+
     public function handle()
     {
         $this->ensureClient();

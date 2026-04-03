@@ -17,6 +17,8 @@ class CommandGet extends BaseCommand
 
     protected $description = 'Get command details';
 
+    protected $aliases = ['cmd:get'];
+
     public function handle()
     {
         $this->ensureClient();

@@ -20,6 +20,8 @@ class DatabaseSnapshotCreate extends BaseCommand
 
     protected $description = 'Create a database snapshot';
 
+    protected $aliases = ['db-snapshot:create'];
+
     public function handle()
     {
         $this->ensureClient();

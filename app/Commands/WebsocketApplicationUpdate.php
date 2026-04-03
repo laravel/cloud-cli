@@ -24,6 +24,8 @@ class WebsocketApplicationUpdate extends BaseCommand
 
     protected $description = 'Update a WebSocket application';
 
+    protected $aliases = ['ws-app:update'];
+
     public function handle()
     {
         $this->ensureClient();

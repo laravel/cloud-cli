@@ -28,6 +28,8 @@ class CommandRun extends BaseCommand
 
     protected $description = 'Run a command on an environment';
 
+    protected $aliases = ['cmd:run'];
+
     public function handle()
     {
         $this->ensureClient();

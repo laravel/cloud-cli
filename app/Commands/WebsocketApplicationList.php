@@ -20,6 +20,8 @@ class WebsocketApplicationList extends BaseCommand
 
     protected $description = 'List WebSocket applications for a cluster';
 
+    protected $aliases = ['ws-app:list'];
+
     public function handle()
     {
         $this->ensureClient();

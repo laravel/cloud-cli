@@ -16,6 +16,8 @@ class ApplicationDelete extends BaseCommand
 
     protected $description = 'Delete an application';
 
+    protected $aliases = ['app:delete'];
+
     public function handle()
     {
         $this->ensureClient();

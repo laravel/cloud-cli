@@ -20,6 +20,8 @@ class DatabaseSnapshotList extends BaseCommand
 
     protected $description = 'List database snapshots for a cluster';
 
+    protected $aliases = ['db-snapshot:list'];
+
     public function handle()
     {
         $this->ensureClient();

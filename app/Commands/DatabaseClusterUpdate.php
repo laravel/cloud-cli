@@ -36,6 +36,8 @@ class DatabaseClusterUpdate extends BaseCommand
 
     protected $description = 'Update a database cluster';
 
+    protected $aliases = ['db-cluster:update'];
+
     public function handle()
     {
         $this->ensureClient();

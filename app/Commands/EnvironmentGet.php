@@ -14,6 +14,8 @@ class EnvironmentGet extends BaseCommand
 
     protected $description = 'Get environment details';
 
+    protected $aliases = ['env:get'];
+
     public function handle()
     {
         $this->ensureClient();

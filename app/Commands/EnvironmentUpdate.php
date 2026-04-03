@@ -25,6 +25,8 @@ class EnvironmentUpdate extends BaseCommand
 
     protected $description = 'Update an environment';
 
+    protected $aliases = ['env:update'];
+
     public function handle()
     {
         $this->ensureClient();

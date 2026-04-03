@@ -17,6 +17,8 @@ class DatabaseSnapshotGet extends BaseCommand
 
     protected $description = 'Get database snapshot details';
 
+    protected $aliases = ['db-snapshot:get'];
+
     public function handle()
     {
         $this->ensureClient();

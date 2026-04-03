@@ -19,6 +19,8 @@ class DatabaseClusterList extends BaseCommand
 
     protected $description = 'List all database clusters';
 
+    protected $aliases = ['db-cluster:list'];
+
     public function handle()
     {
         $this->ensureClient();

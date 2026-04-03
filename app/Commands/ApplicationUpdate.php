@@ -33,6 +33,8 @@ class ApplicationUpdate extends BaseCommand
 
     protected $description = 'Update an application';
 
+    protected $aliases = ['app:update'];
+
     public function handle()
     {
         $this->ensureClient();

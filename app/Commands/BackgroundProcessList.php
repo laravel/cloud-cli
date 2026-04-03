@@ -19,6 +19,8 @@ class BackgroundProcessList extends BaseCommand
 
     protected $description = 'List all background processes for an instance';
 
+    protected $aliases = ['process:list'];
+
     public function handle()
     {
         $this->ensureClient();

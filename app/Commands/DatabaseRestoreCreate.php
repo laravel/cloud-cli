@@ -23,6 +23,8 @@ class DatabaseRestoreCreate extends BaseCommand
 
     protected $description = 'Create a database restore from a snapshot or point-in-time';
 
+    protected $aliases = ['db-restore:create'];
+
     public function handle()
     {
         $this->ensureClient();
