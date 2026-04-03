@@ -10,7 +10,6 @@ use App\Support\DetectsNonInteractiveEnvironments;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
 
-use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
@@ -74,7 +73,7 @@ trait HasAClient
 
             $apiToken = select(
                 label: 'Organization',
-                options: $orgs->mapWithKeys(fn($organization, $token) => [
+                options: $orgs->mapWithKeys(fn ($organization, $token) => [
                     $token => $organization->name,
                 ]),
             );
@@ -82,7 +81,7 @@ trait HasAClient
             return $apiToken;
         }
 
-        if (! stream_isatty(STDIN) && !$this->isAgentEnvironment()) {
+        if (! stream_isatty(STDIN) && ! $this->isAgentEnvironment()) {
             throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
         }
 
