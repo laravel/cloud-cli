@@ -74,11 +74,10 @@ trait HasAClient
                 $config->setApiTokens($validTokens);
             }
 
-            if ($orgs->isEmpty()) {
-                // All tokens expired, fall through to re-auth
-            } elseif ($orgs->count() === 1) {
+            // If all tokens expired, fall through to re-auth below
+            if ($orgs->count() === 1) {
                 return $orgs->keys()->first();
-            } else {
+            } elseif ($orgs->isNotEmpty()) {
                 if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
                     foreach ($orgs as $token => $organization) {
                         if ($organization->id === $defaultOrganizationId) {
