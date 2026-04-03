@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateBucketKeyRequestData;
+use App\Dto\BucketKey;
 use App\Dto\ObjectStorageBucket;
 
 use function Laravel\Prompts\intro;
@@ -12,6 +13,8 @@ use function Laravel\Prompts\text;
 
 class BucketKeyCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = BucketKey::class;
+
     protected $signature = 'bucket-key:create
                             {bucket? : The bucket ID or name}
                             {--name= : Key name}

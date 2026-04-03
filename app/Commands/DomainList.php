@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Dto\Domain;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -10,6 +11,10 @@ use function Laravel\Prompts\warning;
 
 class DomainList extends BaseCommand
 {
+    protected ?string $jsonDataClass = Domain::class;
+
+    protected bool $jsonDataIsCollection = true;
+
     protected $signature = 'domain:list {environment? : The environment ID}';
 
     protected $description = 'List all domains for an environment';

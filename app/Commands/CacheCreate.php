@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\CreateCacheRequestData;
 use App\Concerns\DeterminesDefaultRegion;
+use App\Dto\Cache;
 use App\Dto\CacheType;
 use App\Dto\Region;
 
@@ -15,6 +16,8 @@ use function Laravel\Prompts\text;
 
 class CacheCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Cache::class;
+
     use DeterminesDefaultRegion;
 
     protected $signature = 'cache:create

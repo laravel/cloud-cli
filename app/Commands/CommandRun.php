@@ -14,6 +14,8 @@ use function Laravel\Prompts\warning;
 
 class CommandRun extends BaseCommand
 {
+    protected ?string $jsonDataClass = Command::class;
+
     use InteractsWithClipbboard;
 
     protected $signature = 'command:run

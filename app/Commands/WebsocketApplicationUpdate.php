@@ -15,6 +15,8 @@ use function Laravel\Prompts\textarea;
 
 class WebsocketApplicationUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = WebsocketApplication::class;
+
     protected $signature = 'websocket-application:update
                             {application? : The application ID or name}
                             {--name= : Application name}

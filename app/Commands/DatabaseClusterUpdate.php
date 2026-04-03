@@ -17,6 +17,8 @@ use function Laravel\Prompts\text;
 
 class DatabaseClusterUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = DatabaseCluster::class;
+
     protected $signature = 'database-cluster:update
                             {cluster? : The cluster ID or name}
                             {--size= : Instance size}

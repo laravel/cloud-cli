@@ -2,11 +2,15 @@
 
 namespace App\Commands;
 
+use App\Dto\BackgroundProcess;
+
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 
 class BackgroundProcessGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = BackgroundProcess::class;
+
     protected $signature = 'background-process:get {process? : The background process ID}';
 
     protected $description = 'Get background process details';

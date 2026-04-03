@@ -2,12 +2,15 @@
 
 namespace App\Commands;
 
+use App\Dto\Deployment;
 use App\Git;
 
 use function Laravel\Prompts\intro;
 
 class DeploymentGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = Deployment::class;
+
     protected $signature = 'deployment:get
                             {deployment? : The deployment ID}';
 

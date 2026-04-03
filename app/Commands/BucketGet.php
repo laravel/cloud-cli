@@ -2,10 +2,14 @@
 
 namespace App\Commands;
 
+use App\Dto\ObjectStorageBucket;
+
 use function Laravel\Prompts\intro;
 
 class BucketGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = ObjectStorageBucket::class;
+
     protected $signature = 'bucket:get {bucket? : The bucket ID or name}';
 
     protected $description = 'Get object storage bucket details';

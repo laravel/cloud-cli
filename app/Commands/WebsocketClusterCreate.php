@@ -4,11 +4,14 @@ namespace App\Commands;
 
 use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\DeterminesDefaultRegion;
+use App\Dto\WebsocketCluster;
 
 use function Laravel\Prompts\intro;
 
 class WebsocketClusterCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = WebsocketCluster::class;
+
     use CreatesWebSocketCluster;
     use DeterminesDefaultRegion;
 

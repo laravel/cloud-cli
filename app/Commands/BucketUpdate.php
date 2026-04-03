@@ -14,6 +14,8 @@ use function Laravel\Prompts\text;
 
 class BucketUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = ObjectStorageBucket::class;
+
     protected $signature = 'bucket:update
                             {bucket? : The bucket ID or name}
                             {--name= : Bucket name}

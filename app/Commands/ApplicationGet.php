@@ -2,10 +2,14 @@
 
 namespace App\Commands;
 
+use App\Dto\Application;
+
 use function Laravel\Prompts\intro;
 
 class ApplicationGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = Application::class;
+
     protected $signature = 'application:get {application? : The application ID or name}';
 
     protected $description = 'Get application details';

@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\CreateApplicationRequestData;
 use App\Concerns\DeterminesDefaultRegion;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Dto\Application;
 use App\Dto\Region;
 use App\Git;
 
@@ -15,6 +16,8 @@ use function Laravel\Prompts\text;
 
 class ApplicationCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Application::class;
+
     use DeterminesDefaultRegion;
     use RequiresRemoteGitRepo;
 

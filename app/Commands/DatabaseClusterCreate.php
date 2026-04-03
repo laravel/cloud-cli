@@ -4,11 +4,14 @@ namespace App\Commands;
 
 use App\Concerns\CreatesDatabaseCluster;
 use App\Concerns\DeterminesDefaultRegion;
+use App\Dto\DatabaseCluster;
 
 use function Laravel\Prompts\intro;
 
 class DatabaseClusterCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = DatabaseCluster::class;
+
     use CreatesDatabaseCluster;
     use DeterminesDefaultRegion;
 

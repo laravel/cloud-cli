@@ -11,6 +11,8 @@ use function Laravel\Prompts\text;
 
 class BucketKeyUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = BucketKey::class;
+
     protected $signature = 'bucket-key:update
                             {key? : The key ID or name}
                             {--name= : Key name}

@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateBackgroundProcessRequestData;
+use App\Dto\BackgroundProcess;
 use App\Dto\EnvironmentInstance;
 
 use function Laravel\Prompts\confirm;
@@ -14,6 +15,8 @@ use function Laravel\Prompts\text;
 
 class BackgroundProcessCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = BackgroundProcess::class;
+
     protected $signature = 'background-process:create
                             {instance? : The instance ID}
                             {--type= : Process type (worker|custom)}

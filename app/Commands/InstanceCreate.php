@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateInstanceRequestData;
+use App\Dto\EnvironmentInstance;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -13,6 +14,8 @@ use function Laravel\Prompts\text;
 
 class InstanceCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = EnvironmentInstance::class;
+
     protected $signature = 'instance:create
                             {environment? : The environment ID}
                             {--name= : Instance name}

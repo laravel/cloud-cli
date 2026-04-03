@@ -2,11 +2,15 @@
 
 namespace App\Commands;
 
+use App\Dto\BucketKey;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
 class BucketKeyGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = BucketKey::class;
+
     protected $signature = 'bucket-key:get
                             {bucket? : The bucket ID or name}
                             {key? : The key ID or name}';

@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Dto\DatabaseCluster;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -10,6 +11,10 @@ use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
 {
+    protected ?string $jsonDataClass = DatabaseCluster::class;
+
+    protected bool $jsonDataIsCollection = true;
+
     protected $signature = 'database-cluster:list';
 
     protected $description = 'List all database clusters';

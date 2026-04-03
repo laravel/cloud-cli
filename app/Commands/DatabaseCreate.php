@@ -3,11 +3,14 @@
 namespace App\Commands;
 
 use App\Concerns\CreatesDatabase;
+use App\Dto\Database;
 
 use function Laravel\Prompts\intro;
 
 class DatabaseCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Database::class;
+
     use CreatesDatabase;
 
     protected $signature = 'database:create

@@ -11,6 +11,10 @@ use function Laravel\Prompts\warning;
 
 class WebsocketClusterList extends BaseCommand
 {
+    protected ?string $jsonDataClass = WebsocketCluster::class;
+
+    protected bool $jsonDataIsCollection = true;
+
     protected $signature = 'websocket-cluster:list';
 
     protected $description = 'List WebSocket clusters';

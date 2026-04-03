@@ -2,11 +2,15 @@
 
 namespace App\Commands;
 
+use App\Dto\WebsocketApplication;
+
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 
 class WebsocketApplicationGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = WebsocketApplication::class;
+
     protected $signature = 'websocket-application:get
                             {application? : The application ID or name}';
 

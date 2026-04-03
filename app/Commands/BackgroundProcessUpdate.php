@@ -15,6 +15,8 @@ use function Laravel\Prompts\text;
 
 class BackgroundProcessUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = BackgroundProcess::class;
+
     protected $signature = 'background-process:update
                             {process? : The background process ID}
                             {--type= : Process type (worker|custom)}

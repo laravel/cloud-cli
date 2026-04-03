@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Dto\EnvironmentInstance;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -10,6 +11,10 @@ use function Laravel\Prompts\warning;
 
 class InstanceList extends BaseCommand
 {
+    protected ?string $jsonDataClass = EnvironmentInstance::class;
+
+    protected bool $jsonDataIsCollection = true;
+
     protected $signature = 'instance:list
                             {environment? : The environment ID or name}';
 

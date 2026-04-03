@@ -15,6 +15,8 @@ use function Laravel\Prompts\text;
 
 class CacheUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Cache::class;
+
     protected $signature = 'cache:update
                             {cache? : The cache ID or name}
                             {--name= : Cache name}

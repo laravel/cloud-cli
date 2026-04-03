@@ -17,6 +17,8 @@ use function Laravel\Prompts\text;
 
 class ApplicationUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Application::class;
+
     use HandlesAvatars;
 
     protected $signature = 'application:update

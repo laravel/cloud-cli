@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\CreateDatabaseSnapshotRequestData;
 use App\Dto\DatabaseCluster;
+use App\Dto\DatabaseSnapshot;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -12,6 +13,8 @@ use function Laravel\Prompts\textarea;
 
 class DatabaseSnapshotCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = DatabaseSnapshot::class;
+
     protected $signature = 'database-snapshot:create
                             {cluster? : The database cluster ID or name}';
 

@@ -2,10 +2,14 @@
 
 namespace App\Commands;
 
+use App\Dto\Domain;
+
 use function Laravel\Prompts\intro;
 
 class DomainGet extends BaseCommand
 {
+    protected ?string $jsonDataClass = Domain::class;
+
     protected $signature = 'domain:get {domain? : The domain ID or name}';
 
     protected $description = 'Get domain details';

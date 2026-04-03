@@ -12,6 +12,8 @@ use function Laravel\Prompts\spin;
 
 class DomainUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = Domain::class;
+
     protected $signature = 'domain:update
                             {domain? : The domain ID or name}
                             {--verification-method= : Verification method (pre_verification or real_time)}

@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateDatabaseRestoreRequestData;
+use App\Dto\DatabaseCluster;
 use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
@@ -12,6 +13,8 @@ use function Laravel\Prompts\text;
 
 class DatabaseRestoreCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = DatabaseCluster::class;
+
     protected $signature = 'database-restore:create
                             {cluster? : The database cluster ID or name}
                             {name? : The name of the restore}

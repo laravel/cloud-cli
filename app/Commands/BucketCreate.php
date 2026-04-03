@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\CreateObjectStorageBucketRequestData;
 use App\Concerns\DeterminesDefaultRegion;
+use App\Dto\ObjectStorageBucket;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -13,6 +14,8 @@ use function Laravel\Prompts\text;
 
 class BucketCreate extends BaseCommand
 {
+    protected ?string $jsonDataClass = ObjectStorageBucket::class;
+
     use DeterminesDefaultRegion;
 
     protected $signature = 'bucket:create

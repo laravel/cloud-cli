@@ -15,6 +15,8 @@ use function Laravel\Prompts\text;
 
 class WebsocketClusterUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = WebsocketCluster::class;
+
     protected $signature = 'websocket-cluster:update
                             {cluster? : The cluster ID or name}
                             {--name= : Cluster name}

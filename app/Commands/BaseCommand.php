@@ -3,7 +3,6 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
-use Illuminate\Support\Arr;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
 use App\Prompts\Renderer;
@@ -13,10 +12,15 @@ use App\Support\DetectsNonInteractiveEnvironments;
 use App\Support\Form;
 use App\Support\ValueResolver;
 use Illuminate\Contracts\Support\Jsonable;
+use Illuminate\Support\Arr;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Prompt;
 use LaravelZero\Framework\Commands\Command;
+use ReflectionClass;
+use ReflectionNamedType;
 use RuntimeException;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
+use Spatie\LaravelData\Data;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -36,12 +40,65 @@ abstract class BaseCommand extends Command
 
     protected ?Resolvers $resolvers;
 
+    /** @var class-string<Data>|null */
+    protected ?string $jsonDataClass = null;
+
+    protected bool $jsonDataIsCollection = false;
+
     protected function configure(): void
     {
         parent::configure();
 
         $this->addOption('json', null, InputOption::VALUE_NONE, 'Output as JSON');
         $this->addOption('fields', null, InputOption::VALUE_REQUIRED, 'Filter JSON output to specific fields (comma-separated, supports dot notation for nested fields)');
+
+        if ($this->jsonDataClass) {
+            $fields = $this->describeJsonFields($this->jsonDataClass);
+            $prefix = $this->jsonDataIsCollection ? 'Each item contains: ' : '';
+            $this->setHelp("Available JSON fields:\n  {$prefix}{$fields}");
+        }
+    }
+
+    protected function describeJsonFields(string $dataClass, string $prefix = '', int $depth = 0): string
+    {
+        $reflection = new ReflectionClass($dataClass);
+        $fields = [];
+
+        foreach ($reflection->getConstructor()?->getParameters() ?? [] as $param) {
+            $name = $prefix.$param->getName();
+            $type = $param->getType();
+
+            if (! $type instanceof ReflectionNamedType || $type->isBuiltin()) {
+                if ($type instanceof ReflectionNamedType && $type->getName() === 'array' && $depth === 0) {
+                    $collectionAttr = $param->getAttributes(DataCollectionOf::class)[0] ?? null;
+
+                    if ($collectionAttr) {
+                        $nestedClass = $collectionAttr->getArguments()[0];
+                        $fields[] = $name.'[]';
+                        $fields[] = $this->describeJsonFields($nestedClass, $param->getName().'.', 1);
+
+                        continue;
+                    }
+                }
+
+                $fields[] = $name;
+
+                continue;
+            }
+
+            $typeName = $type->getName();
+
+            if ($depth === 0 && is_subclass_of($typeName, Data::class)) {
+                $fields[] = $name;
+                $fields[] = $this->describeJsonFields($typeName, $param->getName().'.', 1);
+
+                continue;
+            }
+
+            $fields[] = $name;
+        }
+
+        return implode(', ', $fields);
     }
 
     protected function form(): Form

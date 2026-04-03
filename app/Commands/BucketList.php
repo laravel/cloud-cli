@@ -11,6 +11,10 @@ use function Laravel\Prompts\warning;
 
 class BucketList extends BaseCommand
 {
+    protected ?string $jsonDataClass = ObjectStorageBucket::class;
+
+    protected bool $jsonDataIsCollection = true;
+
     protected $signature = 'bucket:list
                             {--type= : Filter by type}
                             {--status= : Filter by status}

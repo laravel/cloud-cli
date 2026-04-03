@@ -15,6 +15,8 @@ use function Laravel\Prompts\spin;
 
 class InstanceUpdate extends BaseCommand
 {
+    protected ?string $jsonDataClass = EnvironmentInstance::class;
+
     protected $signature = 'instance:update
                             {instance? : The instance ID or name}
                             {--size= : Instance size}
