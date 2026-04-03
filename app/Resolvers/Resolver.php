@@ -14,12 +14,21 @@ abstract class Resolver
 {
     protected bool $displayResolved = true;
 
+    protected bool $nullable = false;
+
     public function __construct(
         protected Connector $client,
         protected LocalConfig $localConfig,
         protected bool $isInteractive,
     ) {
         //
+    }
+
+    public function nullable(): static
+    {
+        $this->nullable = true;
+
+        return $this;
     }
 
     abstract protected function idPrefix(): string|callable;
@@ -74,13 +83,19 @@ abstract class Resolver
         ]);
     }
 
-    protected function ensureInteractive(string $message, array $data = []): void
+    protected function ensureInteractive(string $message, array $data = []): bool
     {
         if (! $this->isInteractive) {
+            if ($this->nullable) {
+                return false;
+            }
+
             fwrite(STDERR, json_encode(array_merge(['error' => true, 'message' => $message], $data)).PHP_EOL);
 
             throw new CommandExitException(Command::FAILURE);
         }
+
+        return true;
     }
 
     protected function displayResolved(string $label, string $answer, ?string $info = null): void

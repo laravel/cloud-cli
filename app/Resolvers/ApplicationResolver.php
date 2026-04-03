@@ -26,6 +26,10 @@ class ApplicationResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $app) {
+            if ($this->nullable) {
+                return null;
+            }
+
             $this->failAndExit('Unable to resolve application: '.($idOrName ?? 'Provide a valid application ID or name.').'. Run `cloud application:list --json` to see available applications.');
         }
 
@@ -68,7 +72,9 @@ class ApplicationResolver extends Resolver
 
         $options = $repoApps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray();
 
-        $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options]);
+        if (! $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options])) {
+            return null;
+        }
 
         $selectedApp = selectWithContext(
             label: 'Application',
@@ -91,7 +97,9 @@ class ApplicationResolver extends Resolver
 
         $options = $apps->mapWithKeys(fn ($app) => [$app->id => $app->name])->toArray();
 
-        $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options]);
+        if (! $this->ensureInteractive('Multiple applications found. Provide an application ID or name.', ['options' => $options])) {
+            return null;
+        }
 
         $selectedApp = selectWithContext(
             label: 'Application',

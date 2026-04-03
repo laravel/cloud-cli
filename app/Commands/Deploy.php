@@ -29,7 +29,7 @@ class Deploy extends BaseCommand
                             {--open : Open the site in the browser after a successful deployment}
                             {--no-wait : Initiate deployment and return immediately}';
 
-    protected $description = 'Deploy an existing application to Laravel Cloud (use `ship` to create a new application)';
+    protected $description = 'Deploy an application to Laravel Cloud';
 
     public function handle()
     {
@@ -40,22 +40,22 @@ class Deploy extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
-        $app = $this->resolvers()->application()->from($this->argument('application'));
+        $app = $this->resolvers()->application()->nullable()->from($this->argument('application'));
 
         if (! $app) {
-            warning('No existing Cloud application found for this repository.');
+            if ($this->isInteractive()) {
+                warning('No existing Cloud application found for this repository.');
 
-            $shouldShip = confirm('Do you want to ship this application to Laravel Cloud?');
+                if (! confirm('Do you want to ship this application to Laravel Cloud?')) {
+                    error('Cancelled');
 
-            if ($shouldShip) {
-                Artisan::call('ship', [], $this->output);
-
-                return;
+                    return self::FAILURE;
+                }
             }
 
-            error('Cancelled');
+            Artisan::call('ship', [], $this->output);
 
-            return self::FAILURE;
+            return;
         }
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
