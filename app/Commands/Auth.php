@@ -55,7 +55,7 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         try {
             $redirectUrl = spin(
-                fn() => (new Connector(''))->cliAuth()->createAuthSession($this->port),
+                fn () => (new Connector(''))->cliAuth()->createAuthSession($this->port),
                 'Creating auth session...',
             );
         } catch (SaloonRequestException $e) {
@@ -63,10 +63,10 @@ class Auth extends BaseCommand implements NoAuthRequired
                 $errors = $e->getResponse()->json('errors', []);
 
                 foreach ($errors as $field => $messages) {
-                    error(ucwords($field) . ': ' . implode(', ', $messages));
+                    error(ucwords($field).': '.implode(', ', $messages));
                 }
             } else {
-                error('Failed to create auth session: ' . $e->getMessage());
+                error('Failed to create auth session: '.$e->getMessage());
             }
 
             return 1;
@@ -88,7 +88,7 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         try {
             $tokens = spin(
-                fn() => (new Connector(''))->cliAuth()->exchangeCode($this->exchangeCode),
+                fn () => (new Connector(''))->cliAuth()->exchangeCode($this->exchangeCode),
                 'Exchanging code for tokens...',
             );
         } catch (SaloonRequestException $e) {
@@ -97,7 +97,7 @@ class Auth extends BaseCommand implements NoAuthRequired
 
                 error($message);
             } else {
-                error('Failed to exchange code: ' . $e->getMessage());
+                error('Failed to exchange code: '.$e->getMessage());
             }
 
             return 1;
@@ -138,7 +138,7 @@ class Auth extends BaseCommand implements NoAuthRequired
             success("Authenticated with <comment>{$tokenData['organization_name']}</comment>");
         }
 
-        outro('Authentication successful! Tokens saved to ' . $this->config->path());
+        outro('Authentication successful! Tokens saved to '.$this->config->path());
 
         return 0;
     }
