@@ -43,7 +43,13 @@ class Deploy extends BaseCommand
         $app = $this->resolvers()->application()->nullable()->from($this->argument('application'));
 
         if (! $app) {
-            if ($this->isInteractive()) {
+            if (! $this->isInteractive()) {
+                $this->writeJsonIfWanted([
+                    'status' => 'redirect',
+                    'message' => 'No application found for this repository. Running `cloud ship` to create one. If this fails, run `cloud ship` directly.',
+                    'command' => 'ship',
+                ]);
+            } else {
                 warning('No existing Cloud application found for this repository.');
 
                 if (! confirm('Do you want to ship this application to Laravel Cloud?')) {
