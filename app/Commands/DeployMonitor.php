@@ -8,7 +8,10 @@ use App\Dto\Deployment;
 use App\Dto\Environment;
 use App\Prompts\MonitorDeployments;
 use App\Support\Notification;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
@@ -22,7 +25,8 @@ class DeployMonitor extends BaseCommand
 
     protected $signature = 'deploy:monitor
                             {application? : The application ID or name}
-                            {environment? : The name of the environment to deploy}';
+                            {environment? : The name of the environment to deploy}
+                            {--json : Output as JSON}';
 
     protected $description = 'Monitor application deployments to Laravel Cloud';
 
@@ -55,10 +59,65 @@ class DeployMonitor extends BaseCommand
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
+        if (! $this->isInteractive()) {
+            $this->monitorNonInteractively($environment);
+
+            return;
+        }
+
         (new MonitorDeployments(
             fn ($deploymentId = null) => $this->getCurrentDeployment($environment, $deploymentId),
             $environment,
         ))->display();
+    }
+
+    protected function monitorNonInteractively(Environment $environment): void
+    {
+        $lastStatus = '';
+        $deployment = null;
+        $checkInterval = 3;
+        $idleChecks = 0;
+        $maxIdleChecks = 100; // ~5 minutes of idle polling at 3s
+
+        while ($idleChecks < $maxIdleChecks) {
+            $deployment = $this->getCurrentDeployment($environment, $deployment?->id);
+
+            if (! $deployment) {
+                $idleChecks++;
+                Sleep::for(CarbonInterval::seconds($checkInterval));
+
+                continue;
+            }
+
+            $idleChecks = 0;
+
+            $currentStatus = $deployment->status->monitorLabel();
+
+            if ($currentStatus !== $lastStatus) {
+                $this->line(json_encode([
+                    'deployment_id' => $deployment->id,
+                    'status' => $deployment->status->value,
+                    'message' => $currentStatus,
+                    'timestamp' => CarbonImmutable::now()->timestamp,
+                ]));
+                $lastStatus = $currentStatus;
+            }
+
+            if ($deployment->isFinished()) {
+                $this->outputJsonIfWanted([
+                    'deployment_id' => $deployment->id,
+                    'status' => $deployment->status->value,
+                    'message' => $currentStatus,
+                    'duration' => $deployment->totalTime()->format('%I:%S'),
+                ]);
+
+                return;
+            }
+
+            Sleep::for(CarbonInterval::seconds($checkInterval));
+        }
+
+        $this->failAndExit('No active deployment found after waiting.');
     }
 
     protected function getCurrentDeployment(Environment $environment, ?string $deploymentId = null): ?Deployment
