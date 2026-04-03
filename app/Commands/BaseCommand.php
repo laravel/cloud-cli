@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\HasAClient;
+use Illuminate\Support\Arr;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
 use App\Prompts\Renderer;
@@ -40,6 +41,7 @@ abstract class BaseCommand extends Command
         parent::configure();
 
         $this->addOption('json', null, InputOption::VALUE_NONE, 'Output as JSON');
+        $this->addOption('fields', null, InputOption::VALUE_REQUIRED, 'Filter JSON output to specific fields (comma-separated, supports dot notation for nested fields)');
     }
 
     protected function form(): Form
@@ -169,13 +171,7 @@ abstract class BaseCommand extends Command
             return;
         }
 
-        if (is_string($data)) {
-            $this->line(json_encode(['message' => $data]));
-        } elseif ($data instanceof Jsonable) {
-            $this->line($data->toJson());
-        } else {
-            $this->line(json_encode($data));
-        }
+        $this->line($this->toJson($data));
     }
 
     protected function outputJsonIfWanted(mixed $data): void
@@ -184,15 +180,65 @@ abstract class BaseCommand extends Command
             return;
         }
 
-        if (is_string($data)) {
-            $this->line(json_encode(['message' => $data]));
-        } elseif ($data instanceof Jsonable) {
-            $this->line($data->toJson());
-        } else {
-            $this->line(json_encode($data));
+        $json = $this->toJson($data);
+
+        if (! is_string($data) && $fields = $this->option('fields')) {
+            $json = json_encode($this->filterByFields(json_decode($json, true), $fields));
         }
 
+        $this->line($json);
+
         throw new CommandExitException(self::SUCCESS);
+    }
+
+    protected function toJson(mixed $data): string
+    {
+        if (is_string($data)) {
+            return json_encode(['message' => $data]);
+        }
+
+        if ($data instanceof Jsonable) {
+            return $data->toJson();
+        }
+
+        return json_encode($data);
+    }
+
+    protected function filterByFields(array $data, string $fields): array
+    {
+        $fieldList = array_map('trim', explode(',', $fields));
+
+        if (array_is_list($data)) {
+            return array_values(array_map(fn ($item) => $this->pickFields($item, $fieldList), $data));
+        }
+
+        return $this->pickFields($data, $fieldList);
+    }
+
+    protected function pickFields(array $item, array $fields): array
+    {
+        $dotted = Arr::dot($item);
+
+        $filtered = collect($dotted)
+            ->filter(fn ($value, $dottedKey) => $this->matchesRequestedField($dottedKey, $fields))
+            ->all();
+
+        return Arr::undot($filtered);
+    }
+
+    protected function matchesRequestedField(string $dottedKey, array $fields): bool
+    {
+        $normalized = collect(explode('.', $dottedKey))
+            ->reject(fn ($segment) => is_numeric($segment))
+            ->implode('.');
+
+        foreach ($fields as $field) {
+            if ($normalized === $field || str_starts_with($normalized, $field.'.')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     protected function resolve(string $argument): ValueResolver
