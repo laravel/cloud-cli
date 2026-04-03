@@ -5,6 +5,7 @@ namespace App\Concerns;
 use App\Client\Connector;
 use App\ConfigRepository;
 use App\LocalConfig;
+use App\Support\DetectsNonInteractiveEnvironments;
 use RuntimeException;
 
 use function Laravel\Prompts\password;
@@ -13,6 +14,8 @@ use function Laravel\Prompts\spin;
 
 trait HasAClient
 {
+    use DetectsNonInteractiveEnvironments;
+
     protected Connector $client;
 
     protected function ensureClient(bool $ignoreLocalConfig = false)
@@ -63,7 +66,7 @@ trait HasAClient
                 }
             }
 
-            if (! stream_isatty(STDIN)) {
+            if (! stream_isatty(STDIN) || $this->isNonInteractiveEnvironment()) {
                 throw new RuntimeException('Multiple API tokens found. Set organization_id in .cloud/config.json or use `cloud auth:token` to manage tokens.');
             }
 
@@ -77,7 +80,7 @@ trait HasAClient
             return $apiToken;
         }
 
-        if (! stream_isatty(STDIN)) {
+        if (! stream_isatty(STDIN) || $this->isNonInteractiveEnvironment()) {
             throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
         }
 
