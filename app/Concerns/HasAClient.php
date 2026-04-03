@@ -46,7 +46,7 @@ trait HasAClient
             return $apiTokens->first();
         }
 
-        if ($apiTokens->containsManyItems()) {
+        if ($apiTokens->hasMany()) {
             $orgs = spin(
                 function () use ($apiTokens) {
                     return $apiTokens->mapWithKeys(function ($token) {
