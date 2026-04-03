@@ -39,7 +39,7 @@ class AuthToken extends BaseCommand implements NoAuthRequired
         if ($this->option('reveal')) {
             revealFile($this->config->path());
 
-            outro('Revealed '.$this->config->path().' in file manager');
+            outro('Revealed '.$this->config->path());
 
             return self::SUCCESS;
         }
