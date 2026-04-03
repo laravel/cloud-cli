@@ -30,6 +30,7 @@ use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Sleep;
+use Saloon\Exceptions\Request\RequestException;
 use Throwable;
 
 use function Laravel\Prompts\confirm;
@@ -230,13 +231,25 @@ class Ship extends BaseCommand
         $name = $this->option('name') ?? str($repository)->afterLast('/')->toString();
         $region = $this->option('region') ?? $defaultRegion;
 
-        return $this->client->applications()->create(
-            new CreateApplicationRequestData(
-                repository: $repository,
-                name: $name,
-                region: $region,
-            ),
-        );
+        try {
+            return $this->client->applications()->create(
+                new CreateApplicationRequestData(
+                    repository: $repository,
+                    name: $name,
+                    region: $region,
+                ),
+            );
+        } catch (RequestException $e) {
+            if ($e->getResponse()->status() === 422) {
+                $errors = $e->getResponse()->json('errors', []);
+                $message = collect($errors)->map(fn ($msgs, $field) => ucfirst($field).': '.implode(', ', $msgs))->implode('. ');
+                $message = $message ?: $e->getResponse()->json('message', 'Validation failed.');
+
+                $this->failAndExit($message);
+            }
+
+            throw $e;
+        }
     }
 
     protected function createApplication(string $defaultRegion, string $repository): ?Application
