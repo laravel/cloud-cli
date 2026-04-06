@@ -12,7 +12,8 @@ class EnvironmentDelete extends BaseCommand
 {
     protected $signature = 'environment:delete
                             {environment? : The environment ID}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete an environment';
 

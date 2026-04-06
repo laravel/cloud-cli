@@ -9,7 +9,8 @@ class BucketKeyDelete extends BaseCommand
 {
     protected $signature = 'bucket-key:delete
                             {key? : The key ID or name}
-                            {--force : Skip confirmation}';
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete a bucket key';
 

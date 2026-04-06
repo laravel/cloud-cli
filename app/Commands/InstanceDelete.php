@@ -10,7 +10,10 @@ use function Laravel\Prompts\spin;
 
 class InstanceDelete extends BaseCommand
 {
-    protected $signature = 'instance:delete {instance? : The instance ID} {--force : Skip confirmation}';
+    protected $signature = 'instance:delete
+                            {instance? : The instance ID}
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete an instance';
 

@@ -10,7 +10,10 @@ use function Laravel\Prompts\spin;
 
 class BackgroundProcessDelete extends BaseCommand
 {
-    protected $signature = 'background-process:delete {process? : The background process ID} {--force : Skip confirmation}';
+    protected $signature = 'background-process:delete
+                            {process? : The background process ID}
+                            {--force : Skip confirmation}
+                            {--json : Output as JSON}';
 
     protected $description = 'Delete a background process';
 
