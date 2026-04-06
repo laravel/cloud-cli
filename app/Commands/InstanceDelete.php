@@ -36,7 +36,7 @@ class InstanceDelete extends BaseCommand
         } catch (RequestException $e) {
             error('Failed to delete instance: '.$e->getMessage());
 
-            return 1;
+            return self::FAILURE;
         }
     }
 }
