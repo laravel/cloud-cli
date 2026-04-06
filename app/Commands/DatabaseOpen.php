@@ -27,7 +27,7 @@ class DatabaseOpen extends BaseCommand
 
         $url = $this->buildUrl($cluster, $database);
 
-        info("Opening {$database->name}...");
+        info("Opening {$database->name} on {$cluster->connection['hostname']}...");
 
         openUrl($url);
 
