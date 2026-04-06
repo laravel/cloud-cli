@@ -101,7 +101,7 @@ class AuthToken extends BaseCommand implements NoAuthRequired
         if ($existingTokens->isEmpty()) {
             warning('No API tokens to remove.');
 
-            return;
+            throw new CommandExitException(self::FAILURE);
         }
 
         $token = select(
