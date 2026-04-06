@@ -108,7 +108,7 @@ class BackgroundProcessCreate extends BaseCommand
                 'timeout',
                 'force',
             ])->mapWithKeys(fn ($key) => [
-                $key => $this->form()->get('config.'.$key, $this->getWorkerDefult($key)),
+                $key => $this->form()->get('config.'.$key, $this->getWorkerDefault($key)),
             ])->toArray();
         } else {
             $command = $this->form()->get('command');
@@ -135,10 +135,10 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
                     label: 'Connection',
-                    default: $value ?? $this->getWorkerDefult('connection'),
+                    default: $value ?? $this->getWorkerDefault('connection'),
                     required: true,
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('connection'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('connection'))
                 ->shouldPromptOnce(),
             'connection',
         );
@@ -148,11 +148,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
                     label: 'Queue',
-                    default: $value ?? $this->getWorkerDefult('queue'),
+                    default: $value ?? $this->getWorkerDefault('queue'),
                     required: true,
                     hint: 'Comma-separated for multiple queues',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('queue'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('queue'))
                 ->shouldPromptOnce(),
             'queue',
         );
@@ -162,11 +162,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => number(
                     label: 'Tries',
-                    default: $value ?? $this->getWorkerDefult('tries'),
+                    default: $value ?? $this->getWorkerDefault('tries'),
                     required: true,
                     hint: 'Number of times a job should be attempted',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('tries'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('tries'))
                 ->shouldPromptOnce(),
             'tries',
         );
@@ -176,11 +176,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => number(
                     label: 'Backoff',
-                    default: $value ?? $this->getWorkerDefult('backoff'),
+                    default: $value ?? $this->getWorkerDefault('backoff'),
                     required: true,
                     hint: 'Number of seconds to wait before retrying a failed job.',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('backoff'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('backoff'))
                 ->shouldPromptOnce(),
             'backoff',
         );
@@ -190,11 +190,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => number(
                     label: 'Sleep',
-                    default: $value ?? $this->getWorkerDefult('sleep'),
+                    default: $value ?? $this->getWorkerDefault('sleep'),
                     required: true,
                     hint: 'Number of seconds to sleep when no jobs are available',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('sleep'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('sleep'))
                 ->shouldPromptOnce(),
             'sleep',
         );
@@ -204,11 +204,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => number(
                     label: 'Rest',
-                    default: $value ?? $this->getWorkerDefult('rest'),
+                    default: $value ?? $this->getWorkerDefault('rest'),
                     required: true,
                     hint: 'Number of seconds to rest between jobs',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('rest'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('rest'))
                 ->shouldPromptOnce(),
             'rest',
         );
@@ -218,11 +218,11 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => number(
                     label: 'Timeout',
-                    default: $value ?? $this->getWorkerDefult('timeout'),
+                    default: $value ?? $this->getWorkerDefault('timeout'),
                     required: true,
                     hint: 'Number of seconds a job can run before timing out',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('timeout'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('timeout'))
                 ->shouldPromptOnce(),
             'timeout',
         );
@@ -232,10 +232,10 @@ class BackgroundProcessCreate extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => confirm(
                     label: 'Run in maintenance mode?',
-                    default: (bool) ($value ?? $this->getWorkerDefult('force')),
+                    default: (bool) ($value ?? $this->getWorkerDefault('force')),
                     hint: 'Force the worker to run even in maintenance mode',
                 ))
-                ->nonInteractively(fn () => $this->getWorkerDefult('force'))
+                ->nonInteractively(fn () => $this->getWorkerDefault('force'))
                 ->shouldPromptOnce(),
             'force',
         );
@@ -254,14 +254,14 @@ class BackgroundProcessCreate extends BaseCommand
         }
 
         dataList([
-            'Connection' => $this->getWorkerDefult('connection'),
-            'Queue' => $this->getWorkerDefult('queue'),
-            'Tries' => $this->getWorkerDefult('tries'),
-            'Backoff' => $this->getWorkerDefult('backoff'),
-            'Sleep' => $this->getWorkerDefult('sleep'),
-            'Rest' => $this->getWorkerDefult('rest'),
-            'Timeout' => $this->getWorkerDefult('timeout'),
-            'Force to run in maintenance mode' => $this->getWorkerDefult('force') ? 'Yes' : 'No',
+            'Connection' => $this->getWorkerDefault('connection'),
+            'Queue' => $this->getWorkerDefault('queue'),
+            'Tries' => $this->getWorkerDefault('tries'),
+            'Backoff' => $this->getWorkerDefault('backoff'),
+            'Sleep' => $this->getWorkerDefault('sleep'),
+            'Rest' => $this->getWorkerDefault('rest'),
+            'Timeout' => $this->getWorkerDefault('timeout'),
+            'Force to run in maintenance mode' => $this->getWorkerDefault('force') ? 'Yes' : 'No',
         ]);
 
         return confirm(
@@ -270,7 +270,7 @@ class BackgroundProcessCreate extends BaseCommand
         );
     }
 
-    protected function getWorkerDefult(string $key): ?string
+    protected function getWorkerDefault(string $key): ?string
     {
         $arg = $this->option($key);
 
