@@ -52,15 +52,17 @@ class DatabaseSnapshotCreate extends BaseCommand
             ),
         );
 
-        $this->form()->prompt(
-            'description',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => textarea(
-                    label: 'Description',
-                    default: $value ?? '',
+        if ($this->isInteractive() || $this->option('description') !== null) {
+            $this->form()->prompt(
+                'description',
+                fn ($resolver) => $resolver->fromInput(
+                    fn (?string $value) => textarea(
+                        label: 'Description',
+                        default: $value ?? '',
+                    ),
                 ),
-            )->nonInteractively(fn () => ''),
-        );
+            );
+        }
 
         return spin(
             fn () => $this->client->databaseSnapshots()->create(
