@@ -59,7 +59,7 @@ class DatabaseSnapshotCreate extends BaseCommand
                     label: 'Description',
                     default: $value ?? '',
                 ),
-            ),
+            )->nonInteractively(fn () => ''),
         );
 
         return spin(
