@@ -15,7 +15,7 @@ class Form
 
     protected array $arguments = [];
 
-    protected ValidationErrors $errors = new ValidationErrors;
+    protected ?ValidationErrors $errors = null;
 
     protected bool $isInteractive;
 
@@ -33,6 +33,8 @@ class Form
         if (! in_array($key, $this->prompted)) {
             $this->prompted[] = $key;
         }
+
+        $this->errors ??= new ValidationErrors;
 
         $result = ($this->fields[$key]['callback'])($this->fields[$key]['resolver'])->errors($this->errors);
         $result->retrieve();
