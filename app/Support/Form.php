@@ -15,7 +15,7 @@ class Form
 
     protected array $arguments = [];
 
-    protected ValidationErrors $errors;
+    protected ValidationErrors $errors = new ValidationErrors;
 
     protected bool $isInteractive;
 
