@@ -16,7 +16,9 @@ class DatabaseSnapshotCreate extends BaseCommand
     protected ?string $jsonDataClass = DatabaseSnapshot::class;
 
     protected $signature = 'database-snapshot:create
-                            {cluster? : The database cluster ID or name}';
+                            {cluster? : The database cluster ID or name}
+                            {--name= : Snapshot name}
+                            {--description= : Snapshot description}';
 
     protected $description = 'Create a database snapshot';
 
