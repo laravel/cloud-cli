@@ -10,10 +10,10 @@ The `CloudClient` uses `->throw()` which means **all HTTP errors throw exception
 ```php
 try {
     $application = $client->getApplication($applicationId);
-} catch (Illuminate\Http\Client\RequestException $e) {
+} catch (Saloon\Exceptions\Request\RequestException $e) {
     // Handle error
-    $statusCode = $e->response->status();
-    $errorBody = $e->response->json();
+    $statusCode = $e->getResponse()->status();
+    $errorBody = $e->getResponse()->json();
 }
 ```
 
