@@ -2,7 +2,7 @@
 
 namespace App\Commands;
 
-use Throwable;
+use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
@@ -44,7 +44,7 @@ class DatabaseDelete extends BaseCommand
             success('Database deleted.');
 
             return self::SUCCESS;
-        } catch (Throwable $e) {
+        } catch (RequestException $e) {
             error('Failed to delete database: '.$e->getMessage());
 
             return self::FAILURE;
