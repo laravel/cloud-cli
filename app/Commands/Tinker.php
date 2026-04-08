@@ -163,7 +163,6 @@ class Tinker extends BaseCommand
 
         if (! $this->editorUrl) {
             error('Unknown editor. Valid values:');
-            // TODO: Improve this, not sure what it should be
             info(implode(', ', array_keys($this->editorHrefs)));
 
             throw new CommandExitException(self::FAILURE);
