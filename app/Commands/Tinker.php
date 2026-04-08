@@ -14,6 +14,7 @@ use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\textarea;
 use function Laravel\Prompts\warning;
@@ -108,7 +109,7 @@ class Tinker extends BaseCommand
                         return $codeExecution;
                     }
 
-                    Sleep::for(CarbonInterval::second());
+                    Sleep::for(CarbonInterval::second(2));
                 }
             }, 'Waiting for output...');
 
@@ -135,13 +136,16 @@ class Tinker extends BaseCommand
     protected function resolveEditorUrl()
     {
         if ($this->input->getParameterOption('--editor', false) === false) {
-            return null;
+            return;
         }
 
-        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
+        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR') ?: select(
+            label: 'Editor',
+            options: array_keys($this->editorHrefs),
+        );
 
         if (! $editorKey) {
-            return null;
+            return;
         }
 
         $editorKey = match ($editorKey) {
