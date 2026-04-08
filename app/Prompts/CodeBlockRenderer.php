@@ -22,7 +22,7 @@ class CodeBlockRenderer extends Renderer
 
         $code = trim($code);
 
-        if (! str_starts_with($code, '<?php')) {
+        if ($prompt->language === 'php' && ! str_starts_with($code, '<?php')) {
             $code = '<?php '.PHP_EOL.$code;
         }
 
@@ -39,7 +39,7 @@ class CodeBlockRenderer extends Renderer
         return $this->box(
             '',
             $code,
-            symbol: TimelineSymbol::GREATER_THAN,
+            symbol: $prompt->language === 'result' ? TimelineSymbol::SUCCESS : TimelineSymbol::GREATER_THAN,
         );
     }
 }

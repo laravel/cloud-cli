@@ -79,7 +79,7 @@ class Tinker extends BaseCommand
                     $errors = $e->getResponse()->json('errors', []);
 
                     foreach ($errors as $field => $messages) {
-                        error(ucwords($field) . ': ' . implode(', ', $messages));
+                        error(ucwords($field).': '.implode(', ', $messages));
                     }
 
                     if (empty($errors)) {
@@ -105,7 +105,7 @@ class Tinker extends BaseCommand
             }, 'Waiting for output...');
 
             if ($result->output) {
-                info($result->output);
+                codeBlock($result->output, 'result');
             }
         }
     }
@@ -150,7 +150,7 @@ class Tinker extends BaseCommand
 
         return textarea(
             'Code',
-            default: '<?php ' . PHP_EOL . PHP_EOL,
+            default: '<?php '.PHP_EOL.PHP_EOL,
             rows: 10,
             placeholder: 'Type your code here...',
             required: true,
@@ -163,7 +163,7 @@ class Tinker extends BaseCommand
         $this->tmpFileLastModifiedAt = filemtime($this->codeTmpFile);
 
         $result = spin(
-            fn() => $this->waitForFileToBeSaved(),
+            fn () => $this->waitForFileToBeSaved(),
             'Waiting for file to be saved...',
         );
 
@@ -176,7 +176,7 @@ class Tinker extends BaseCommand
         match ($type) {
             'warning' => warning($message),
             'outro' => outro($message),
-            default => throw new Exception('Invalid type: ' . $type),
+            default => throw new Exception('Invalid type: '.$type),
         };
 
         return null;
@@ -211,12 +211,12 @@ class Tinker extends BaseCommand
 
     protected function fileIsOpen(string $path): bool
     {
-        if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'])) {
+        if (! in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'])) {
             return true;
         }
 
         $output = [];
-        exec('lsof ' . escapeshellarg($path) . ' 2>/dev/null', $output);
+        exec('lsof '.escapeshellarg($path).' 2>/dev/null', $output);
 
         if ($output !== []) {
             return true;
@@ -266,7 +266,7 @@ class Tinker extends BaseCommand
                     continue;
                 }
 
-                $target = @readlink($fdDir . DIRECTORY_SEPARATOR . $fd);
+                $target = @readlink($fdDir.DIRECTORY_SEPARATOR.$fd);
 
                 if ($target !== false && str_starts_with($target, '/')) {
                     $targetResolved = realpath($target);
@@ -285,10 +285,10 @@ class Tinker extends BaseCommand
     {
         $this->codeTmpFile = tempnam(sys_get_temp_dir(), 'laravel-cloud-tinker-');
 
-        file_put_contents($this->codeTmpFile, '<?php ' . PHP_EOL . PHP_EOL);
+        file_put_contents($this->codeTmpFile, '<?php '.PHP_EOL.PHP_EOL);
 
         exec(
-            'open ' . str_replace(
+            'open '.str_replace(
                 ['{file}', '{line}'],
                 [$this->codeTmpFile, 3],
                 $this->editorUrl,

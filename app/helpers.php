@@ -77,9 +77,9 @@ if (! function_exists('openUrl')) {
 }
 
 if (! function_exists('codeBlock')) {
-    function codeBlock(string $code): void
+    function codeBlock(string $code, string $language = 'php'): void
     {
-        (new CodeBlock(code: $code))->display();
+        (new CodeBlock(code: $code, language: $language))->display();
     }
 }
 
