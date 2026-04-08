@@ -139,13 +139,15 @@ class Tinker extends BaseCommand
             return;
         }
 
-        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR') ?: select(
-            label: 'Editor',
-            options: array_keys($this->editorHrefs),
-        );
+        $editorKey = null; // $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
 
         if (! $editorKey) {
-            return;
+            warning('Tip: You can specify an editor by passing "--editor=code" or setting the VISUAL or EDITOR environment variables.');
+
+            $editorKey = select(
+                label: 'Editor',
+                options: array_keys($this->editorHrefs),
+            );
         }
 
         $editorKey = match ($editorKey) {
@@ -313,8 +315,8 @@ class Tinker extends BaseCommand
 
         file_put_contents($this->codeTmpFile, '<?php '.PHP_EOL.PHP_EOL);
 
-        exec(
-            'open '.str_replace(
+        openUrl(
+            str_replace(
                 ['{file}', '{line}'],
                 [$this->codeTmpFile, 3],
                 $this->editorUrl,
