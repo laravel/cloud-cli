@@ -139,7 +139,7 @@ class Tinker extends BaseCommand
             return;
         }
 
-        $editorKey = null; // $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
+        $editorKey = $this->option('editor') ?: getenv('VISUAL') ?: getenv('EDITOR');
 
         if (! $editorKey) {
             warning('Tip: You can specify an editor by passing "--editor=code" or setting the VISUAL or EDITOR environment variables.');
