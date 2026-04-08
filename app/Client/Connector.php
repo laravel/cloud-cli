@@ -7,6 +7,7 @@ use App\Client\Resources\BackgroundProcessesResource;
 use App\Client\Resources\BucketKeysResource;
 use App\Client\Resources\CachesResource;
 use App\Client\Resources\CliAuthResource;
+use App\Client\Resources\CodeExecutionsResource;
 use App\Client\Resources\CommandsResource;
 use App\Client\Resources\DatabaseClustersResource;
 use App\Client\Resources\DatabaseRestoresResource;
@@ -125,6 +126,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function instances(): InstancesResource
     {
         return new InstancesResource($this);
+    }
+
+    public function codeExecutions(): CodeExecutionsResource
+    {
+        return new CodeExecutionsResource($this);
     }
 
     public function commands(): CommandsResource
