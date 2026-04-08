@@ -118,7 +118,15 @@ class Tinker extends BaseCommand
                 continue;
             }
 
-            if ($result->output) {
+            if ($result->failureReason) {
+                error($result->failureReason);
+            } elseif ($result->exitCode !== 0 && $result->exitCode !== null) {
+                error('Code execution failed (exit code: '.$result->exitCode.').');
+
+                if ($result->output) {
+                    codeBlock($result->output, 'result');
+                }
+            } elseif ($result->output) {
                 codeBlock($result->output, 'result');
             }
         }
