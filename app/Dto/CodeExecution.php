@@ -29,11 +29,6 @@ class CodeExecution extends Data
         //
     }
 
-    public function isFinished(): bool
-    {
-        return $this->status === CommandStatus::SUCCESS || $this->status === CommandStatus::FAILURE;
-    }
-
     public static function createFromResponse(array $response): self
     {
         $data = $response['data'] ?? [];
