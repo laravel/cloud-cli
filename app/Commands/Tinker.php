@@ -154,7 +154,7 @@ class Tinker extends BaseCommand
             'code' => 'vscode',
             'subl' => 'sublime',
             'nvim' => 'neovim',
-            'vim', 'vi' => 'vim',
+            'vi' => 'vim',
             'codium' => 'vscodium',
             default => $editorKey,
         };
