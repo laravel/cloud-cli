@@ -211,25 +211,22 @@ class Tinker extends BaseCommand
 
     protected function fileIsOpen(string $path): bool
     {
-        if (PHP_OS_FAMILY === 'Darwin') {
-            $output = [];
-            exec('lsof ' . escapeshellarg($path) . ' 2>/dev/null', $output);
+        if (!in_array(PHP_OS_FAMILY, ['Darwin', 'Linux'])) {
+            return true;
+        }
 
-            return $output !== [];
+        $output = [];
+        exec('lsof ' . escapeshellarg($path) . ' 2>/dev/null', $output);
+
+        if ($output !== []) {
+            return true;
         }
 
         if (PHP_OS_FAMILY === 'Linux') {
-            $output = [];
-            exec('lsof ' . escapeshellarg($path) . ' 2>/dev/null', $output);
-
-            if ($output !== []) {
-                return true;
-            }
-
             return $this->fileIsOpenViaProc($path);
         }
 
-        return true;
+        return false;
     }
 
     protected function wasModifiedRecently(string $path): bool
