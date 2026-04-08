@@ -4,15 +4,19 @@ namespace App\Prompts;
 
 use App\Enums\TimelineSymbol;
 use Laravel\Prompts\Note;
+use Laravel\Prompts\Themes\Default\Concerns\InteractsWithStrings;
 
 class NoteRenderer extends Renderer
 {
+    use InteractsWithStrings;
+
     /**
      * Render the note.
      */
     public function __invoke(Note $note): string
     {
-        $lines = explode(PHP_EOL, $note->message);
+        $width = $note::terminal()->cols() - 10;
+        $lines = explode(PHP_EOL, $this->mbWordwrap($note->message, width: $width));
         $spacer = str_repeat(' ', 2);
 
         switch ($note->type) {
@@ -44,15 +48,15 @@ class NoteRenderer extends Renderer
                 return $this;
 
             case 'warning':
-                foreach ($lines as $line) {
-                    $this->line($this->yellow(TimelineSymbol::WARNING->value.$spacer.$line));
+                foreach ($lines as $index => $line) {
+                    $this->line($this->symbolOrLine(TimelineSymbol::WARNING, 'yellow', $line, $index));
                 }
 
                 return $this;
 
             case 'error':
-                foreach ($lines as $line) {
-                    $this->line($this->red(TimelineSymbol::FAILURE->value.$spacer.$line));
+                foreach ($lines as $index => $line) {
+                    $this->line($this->symbolOrLine(TimelineSymbol::FAILURE, 'red', $line, $index));
                 }
 
                 return $this;
@@ -65,15 +69,15 @@ class NoteRenderer extends Renderer
                 return $this;
 
             case 'info':
-                foreach ($lines as $line) {
-                    $this->line($this->green(TimelineSymbol::DOT->value.$spacer.$line));
+                foreach ($lines as $index => $line) {
+                    $this->line($this->symbolOrLine(TimelineSymbol::DOT, 'green', $line, $index));
                 }
 
                 return $this;
 
             case 'success':
-                foreach ($lines as $line) {
-                    $this->line($this->green(TimelineSymbol::SUCCESS->value.$spacer.$line));
+                foreach ($lines as $index => $line) {
+                    $this->line($this->symbolOrLine(TimelineSymbol::SUCCESS, 'green', $line, $index));
                 }
 
                 return $this;
@@ -85,5 +89,16 @@ class NoteRenderer extends Renderer
 
                 return $this;
         }
+    }
+
+    public function symbolOrLine(TimelineSymbol $symbol, string $color, string $line, int $index): string
+    {
+        $content = str_repeat(' ', 2).$this->{$color}($line);
+
+        if ($index === 0) {
+            return $this->{$color}($symbol->value).$content;
+        }
+
+        return TimelineSymbol::LINE->value.$content;
     }
 }
