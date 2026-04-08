@@ -1,6 +1,7 @@
 <?php
 
 use App\Prompts\Answered;
+use App\Prompts\CodeBlock;
 use App\Prompts\DataList;
 use App\Prompts\DataTable;
 use App\Prompts\DynamicSpinner;
@@ -72,6 +73,13 @@ if (! function_exists('openUrl')) {
         };
 
         Process::run($command);
+    }
+}
+
+if (! function_exists('codeBlock')) {
+    function codeBlock(string $code): void
+    {
+        (new CodeBlock(code: $code))->display();
     }
 }
 

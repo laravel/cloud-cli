@@ -45,6 +45,7 @@ class AppServiceProvider extends ServiceProvider
             'SlideInRenderer',
             'SpinnerRenderer',
             'TableRenderer',
+            'CodeBlockRenderer',
             'TextareaPromptRenderer',
             'TextPromptRenderer',
         ])
