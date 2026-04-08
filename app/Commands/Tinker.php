@@ -24,7 +24,8 @@ class Tinker extends BaseCommand
 
     protected $signature = 'tinker
         {environment? : The environment ID or name}
-        {--editor= : Open the code in the editor}';
+        {--editor= : Open the code in the editor}
+        {--timeout=60 : Maximum seconds to wait for output}';
 
     protected $description = 'Tinker in your Laravel Cloud environment';
 
@@ -92,8 +93,15 @@ class Tinker extends BaseCommand
                 continue;
             }
 
-            $result = spin(function () use ($codeExecution) {
+            $startedAt = time();
+            $timeout = (int) $this->option('timeout');
+
+            $result = spin(function () use ($codeExecution, $startedAt, $timeout) {
                 while (true) {
+                    if (time() - $startedAt >= $timeout) {
+                        return null;
+                    }
+
                     $codeExecution = $this->client->codeExecutions()->get($codeExecution->id);
 
                     if ($codeExecution->output !== null) {
@@ -103,6 +111,12 @@ class Tinker extends BaseCommand
                     Sleep::for(CarbonInterval::second());
                 }
             }, 'Waiting for output...');
+
+            if ($result === null) {
+                error('Code execution timed out.');
+
+                continue;
+            }
 
             if ($result->output) {
                 codeBlock($result->output, 'result');
