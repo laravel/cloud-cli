@@ -18,7 +18,7 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
     protected $signature = 'skills:install
                             {--global : Install skills globally}
                             {--project : Install skills to the current project}
-                            {--agent=* : Agents to install for (e.g. claude, cursor, junie)}
+                            {--agent=* : Agents to install for (claude, cursor, junie, github, agents)}
                             {--force : Overwrite existing skills}';
 
     protected $description = 'Install Laravel Cloud CLI agent skills for all supported coding agents';
