@@ -92,8 +92,15 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
             }
         }
 
+        $this->outputJsonIfWanted([
+            'installed' => $installedSkills,
+            'skipped' => $skippedSkills,
+        ]);
+
         if ($installedSkills === [] && $skippedSkills !== []) {
             warning('All skills already installed. Use --force to overwrite.');
+
+            return self::FAILURE;
         }
 
         return self::SUCCESS;
