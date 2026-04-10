@@ -172,7 +172,14 @@ class Tinker extends BaseCommand
             throw new RuntimeException($e->getMessage());
         }
 
-        $codeExecution = $this->pollNonInteractively($codeExecution);
+        if ($this->wantsJson()) {
+            $codeExecution = $this->pollNonInteractively($codeExecution);
+        } else {
+            $codeExecution = spin(
+                fn () => $this->pollNonInteractively($codeExecution),
+                'Waiting for output...',
+            );
+        }
 
         $this->outputJsonIfWanted($codeExecution);
 
