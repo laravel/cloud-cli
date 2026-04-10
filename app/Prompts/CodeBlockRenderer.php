@@ -37,7 +37,7 @@ class CodeBlockRenderer extends Renderer
         $code = implode(PHP_EOL, $lines);
 
         return $this->box(
-            '',
+            $this->dim($prompt->language == 'php' ? 'Code' : 'Result'),
             $code,
             symbol: $prompt->language === 'result' ? TimelineSymbol::SUCCESS : TimelineSymbol::GREATER_THAN,
         );
