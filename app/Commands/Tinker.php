@@ -317,7 +317,7 @@ class Tinker extends BaseCommand
         openUrl(
             str_replace(
                 ['{file}', '{line}'],
-                [$this->codeTmpFile, 3],
+                [$this->codeTmpFile, '3'],
                 $this->editorUrl,
             ),
         );
