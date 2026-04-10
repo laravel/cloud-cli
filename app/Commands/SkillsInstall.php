@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
@@ -17,6 +18,7 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
     protected $signature = 'skills:install
                             {--global : Install skills globally}
                             {--project : Install skills to the current project}
+                            {--agent=* : Agents to install for (e.g. claude, cursor, junie)}
                             {--force : Overwrite existing skills}';
 
     protected $description = 'Install Laravel Cloud CLI agent skills for all supported coding agents';
@@ -25,20 +27,13 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
 
     protected string $repoPath = 'laravel-cloud/skills';
 
-    /** @var array<int, string> */
-    protected array $globalSkillPaths = [
-        '~/.claude/skills',
-        '~/.cursor/skills',
-        '~/.agents/skills',
-    ];
-
-    /** @var array<int, string> */
-    protected array $projectSkillPaths = [
-        '.claude/skills',
-        '.cursor/skills',
-        '.agents/skills',
-        '.github/skills',
-        '.junie/skills',
+    /** @var array<string, array{global: string, project: string}> */
+    protected array $agents = [
+        'claude' => ['global' => '~/.claude/skills', 'project' => '.claude/skills'],
+        'cursor' => ['global' => '~/.cursor/skills', 'project' => '.cursor/skills'],
+        'junie' => ['global' => '~/.junie/skills', 'project' => '.junie/skills'],
+        'github' => ['global' => '~/.github/skills', 'project' => '.github/skills'],
+        'agents' => ['global' => '~/.agents/skills', 'project' => '.agents/skills'],
     ];
 
     public function handle(): int
@@ -60,6 +55,7 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
 
         foreach ($skills as $skillName => $files) {
             $skillInstalled = false;
+            $filePaths = [];
 
             foreach ($skillPaths as $basePath) {
                 $targetDir = $basePath.'/'.$skillName;
@@ -74,17 +70,17 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
 
                 foreach ($files as $relativePath => $content) {
                     $filePath = $targetDir.'/'.$relativePath;
+                    $filePaths[] = $filePath;
 
                     File::ensureDirectoryExists(dirname($filePath));
                     File::put($filePath, $content);
-
-                    success("Installed skill '{$skillName}' to {$filePath}");
                 }
 
                 $skillInstalled = true;
             }
 
             if ($skillInstalled) {
+                success("Installed skill <comment>{$skillName}</comment> <info>to:</info>".PHP_EOL.PHP_EOL.implode(PHP_EOL, $filePaths));
                 $installedSkills[] = $skillName;
             } else {
                 warning("Skill '{$skillName}' already exists in all target locations. Use --force to overwrite.");
@@ -120,11 +116,74 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
             default => File::isDirectory($cwd.'/vendor/laravel/cloud-cli'),
         };
 
-        if ($isProject) {
-            return array_map(fn (string $path) => $cwd.'/'.$path, $this->projectSkillPaths);
+        $scope = $isProject ? 'project' : 'global';
+        $selectedAgents = $this->resolveAgents($scope, $home, $cwd);
+
+        return array_map(function (string $agent) use ($scope, $home, $cwd) {
+            $path = $this->agents[$agent][$scope];
+
+            if ($scope === 'project') {
+                return $cwd.'/'.$path;
+            }
+
+            return str_replace('~', $home, $path);
+        }, $selectedAgents);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function resolveAgents(string $scope, string $home, string $cwd): array
+    {
+        $explicit = array_filter($this->option('agent'));
+
+        if ($explicit !== []) {
+            return array_values(array_intersect($explicit, array_keys($this->agents)));
         }
 
-        return array_map(fn (string $path) => str_replace('~', $home, $path), $this->globalSkillPaths);
+        $detected = $this->detectAgents($scope, $home, $cwd);
+
+        if ($this->input->isInteractive()) {
+            $options = collect($this->agents)->keys()->mapWithKeys(fn (string $agent) => [
+                $agent => match ($agent) {
+                    'agents' => 'Generic agent skills (for any agent)',
+                    default => ucfirst($agent),
+                },
+            ])->all();
+
+            return multiselect(
+                label: 'Which agents do you want to install skills for?',
+                options: $options,
+                default: $detected ?: array_keys($this->agents),
+            );
+        }
+
+        return $detected ?: array_keys($this->agents);
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function detectAgents(string $scope, string $home, string $cwd): array
+    {
+        $detected = [];
+
+        foreach ($this->agents as $agent => $paths) {
+            $skillPath = $paths[$scope];
+            $parentDir = dirname($skillPath);
+
+            if ($scope === 'project') {
+                $parentDir = $cwd.'/'.$parentDir;
+            } else {
+                $parentDir = str_replace('~', $home, $parentDir);
+            }
+
+            if (File::isDirectory($parentDir)) {
+                $detected[] = $agent;
+            }
+        }
+
+        return $detected;
     }
 
     /**
