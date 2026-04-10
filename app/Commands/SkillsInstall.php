@@ -107,12 +107,9 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
         $home = $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
         $cwd = getcwd();
 
-        $global = $this->option('global');
-        $project = $this->option('project');
-
         $isProject = match (true) {
-            $global => false,
-            $project => true,
+            $this->option('global') => false,
+            $this->option('project') => true,
             default => File::isDirectory($cwd.'/vendor/laravel/cloud-cli'),
         };
 
