@@ -15,6 +15,8 @@ use function Laravel\Prompts\warning;
 class SkillsInstall extends BaseCommand implements NoAuthRequired
 {
     protected $signature = 'skills:install
+                            {--global : Install skills globally}
+                            {--project : Install skills to the current project}
                             {--force : Overwrite existing skills}';
 
     protected $description = 'Install Laravel Cloud CLI agent skills for all supported coding agents';
@@ -24,17 +26,24 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
     protected string $repoPath = 'laravel-cloud/skills';
 
     /** @var array<int, string> */
-    protected array $skillPaths = [
+    protected array $globalSkillPaths = [
         '~/.claude/skills',
         '~/.cursor/skills',
         '~/.agents/skills',
     ];
 
+    /** @var array<int, string> */
+    protected array $projectSkillPaths = [
+        '.claude/skills',
+        '.cursor/skills',
+        '.agents/skills',
+        '.github/skills',
+        '.junie/skills',
+    ];
+
     public function handle(): int
     {
         intro('Install Agent Skills');
-
-        $home = $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
 
         $skills = spin(
             fn () => $this->fetchSkills(),
@@ -45,15 +54,15 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
             $this->failAndExit('No skills found in the repository.');
         }
 
+        $skillPaths = $this->resolveSkillPaths();
         $installedSkills = [];
         $skippedSkills = [];
 
         foreach ($skills as $skillName => $files) {
             $skillInstalled = false;
 
-            foreach ($this->skillPaths as $basePath) {
-                $resolvedPath = str_replace('~', $home, $basePath);
-                $targetDir = $resolvedPath.'/'.$skillName;
+            foreach ($skillPaths as $basePath) {
+                $targetDir = $basePath.'/'.$skillName;
 
                 if (File::isDirectory($targetDir) && ! $this->option('force')) {
                     continue;
@@ -88,6 +97,30 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
         }
 
         return self::SUCCESS;
+    }
+
+    /**
+     * @return array<int, string>
+     */
+    protected function resolveSkillPaths(): array
+    {
+        $home = $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
+        $cwd = getcwd();
+
+        $global = $this->option('global');
+        $project = $this->option('project');
+
+        $isProject = match (true) {
+            $global => false,
+            $project => true,
+            default => File::isDirectory($cwd.'/vendor/laravel/cloud-cli'),
+        };
+
+        if ($isProject) {
+            return array_map(fn (string $path) => $cwd.'/'.$path, $this->projectSkillPaths);
+        }
+
+        return array_map(fn (string $path) => str_replace('~', $home, $path), $this->globalSkillPaths);
     }
 
     /**
