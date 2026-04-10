@@ -2,11 +2,9 @@
 
 namespace App\Middleware;
 
-use App\Contracts\NoAuthRequired;
 use App\Prompts\Renderer;
 use App\Prompts\SuppressedOutput;
 use App\Support\DetectsNonInteractiveEnvironments;
-use Illuminate\Support\Facades\Artisan;
 use Laravel\Prompts\Prompt;
 
 class SuppressOutputIfJson implements CommandMiddleware
