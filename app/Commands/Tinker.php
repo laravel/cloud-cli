@@ -3,11 +3,13 @@
 namespace App\Commands;
 
 use App\Client\Requests\CodeExecutionRequestData;
+use App\Dto\CodeExecution;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonInterval;
 use Exception;
 use Illuminate\Foundation\Concerns\ResolvesDumpSource;
 use Illuminate\Support\Sleep;
+use RuntimeException;
 use Saloon\Exceptions\Request\RequestException;
 
 use function Laravel\Prompts\error;
@@ -23,8 +25,11 @@ class Tinker extends BaseCommand
 {
     use ResolvesDumpSource;
 
+    protected ?string $jsonDataClass = CodeExecution::class;
+
     protected $signature = 'tinker
         {environment? : The environment ID or name}
+        {--code= : The code to execute}
         {--editor= : Open the code in the editor}
         {--timeout=60 : Maximum seconds to wait for output}';
 
@@ -33,6 +38,8 @@ class Tinker extends BaseCommand
     protected string $codeTmpFile;
 
     protected $tmpFileLastModifiedAt;
+
+    protected const POLL_INTERVAL_SECONDS = 2;
 
     protected const RECENT_SAVE_WINDOW_SECONDS = 2;
 
@@ -45,6 +52,10 @@ class Tinker extends BaseCommand
         intro('Tinker');
 
         $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+
+        if (! $this->isInteractive() || $this->option('code')) {
+            return $this->handleNonInteractively($environment);
+        }
 
         $this->resolveEditorUrl();
 
@@ -109,7 +120,7 @@ class Tinker extends BaseCommand
                         return $codeExecution;
                     }
 
-                    Sleep::for(CarbonInterval::second(2));
+                    Sleep::for(CarbonInterval::seconds(static::POLL_INTERVAL_SECONDS));
                 }
             }, 'Waiting for output...');
 
@@ -130,6 +141,89 @@ class Tinker extends BaseCommand
             } elseif ($result->output) {
                 codeBlock($result->output, 'result');
             }
+        }
+    }
+
+    protected function handleNonInteractively($environment): int
+    {
+        $code = $this->option('code');
+
+        if (! $code) {
+            throw new RuntimeException('The --code option is required in non-interactive mode.');
+        }
+
+        try {
+            $codeExecution = $this->client->codeExecutions()->create(
+                new CodeExecutionRequestData(
+                    environmentId: $environment->id,
+                    code: $code,
+                ),
+            );
+        } catch (RequestException $e) {
+            if ($e->getResponse()->status() === 422) {
+                $errors = $e->getResponse()->json('errors', []);
+                $message = ! empty($errors)
+                    ? collect($errors)->map(fn ($msgs, $field) => ucwords($field).': '.implode(', ', $msgs))->implode('; ')
+                    : $e->getResponse()->json('message', 'Validation error');
+
+                throw new RuntimeException($message);
+            }
+
+            throw new RuntimeException($e->getMessage());
+        }
+
+        $codeExecution = $this->pollNonInteractively($codeExecution);
+
+        $this->outputJsonIfWanted($codeExecution);
+
+        if ($codeExecution->failureReason) {
+            $this->failAndExit($codeExecution->failureReason);
+        }
+
+        if ($codeExecution->exitCode !== 0 && $codeExecution->exitCode !== null) {
+            if ($codeExecution->output) {
+                codeBlock($codeExecution->output, 'result');
+            }
+
+            $this->failAndExit('Code execution failed (exit code: '.$codeExecution->exitCode.').');
+        }
+
+        if ($codeExecution->output) {
+            codeBlock($codeExecution->output, 'result');
+        }
+
+        return self::SUCCESS;
+    }
+
+    protected function pollNonInteractively(CodeExecution $codeExecution): CodeExecution
+    {
+        $startedAt = time();
+        $timeout = (int) $this->option('timeout');
+        $lastStatus = '';
+
+        while (true) {
+            if (time() - $startedAt >= $timeout) {
+                throw new RuntimeException('Code execution timed out.');
+            }
+
+            $codeExecution = $this->client->codeExecutions()->get($codeExecution->id);
+
+            $currentStatus = $codeExecution->status->label();
+
+            if ($currentStatus !== $lastStatus) {
+                $this->writeJsonIfWanted([
+                    'code_execution_id' => $codeExecution->id,
+                    'status' => $codeExecution->status->value,
+                    'message' => $currentStatus,
+                ]);
+                $lastStatus = $currentStatus;
+            }
+
+            if ($codeExecution->output !== null) {
+                return $codeExecution;
+            }
+
+            Sleep::for(CarbonInterval::seconds(static::POLL_INTERVAL_SECONDS));
         }
     }
 
