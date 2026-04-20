@@ -34,4 +34,23 @@ trait DetectsNonInteractiveEnvironments
 
         return false;
     }
+
+    /**
+     * Pre-option-parse interactivity check — suitable for middleware where
+     * Symfony hasn't bound options yet, so we scan argv directly.
+     */
+    protected function isInteractiveSession(): bool
+    {
+        if ($this->isNonInteractiveEnvironment()) {
+            return false;
+        }
+
+        if (! stream_isatty(STDIN)) {
+            return false;
+        }
+
+        $args = $_SERVER['argv'] ?? [];
+
+        return collect($args)->intersect(['--json', '--no-interaction', '-n'])->isEmpty();
+    }
 }

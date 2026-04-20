@@ -34,25 +34,17 @@ class OffersSkillsInstall implements CommandMiddleware
 
         $name = is_string($command) ? $command : $command?->getName();
 
-        if (in_array($name, self::SKIP_COMMANDS, true)) {
-            return $next();
-        }
-
-        if (! $this->isInteractiveSession()) {
-            return $next();
-        }
-
-        if (! $this->isGloballyInstalled()) {
+        if (
+            in_array($name, self::SKIP_COMMANDS)
+            || ! $this->isInteractiveSession()
+            || ! $this->isGloballyInstalled()
+        ) {
             return $next();
         }
 
         $detectedAgents = $this->detectAgents();
 
-        if ($detectedAgents === []) {
-            return $next();
-        }
-
-        if ($this->skillsAlreadyInstalled($detectedAgents)) {
+        if ($detectedAgents === [] || $this->skillsAlreadyInstalled($detectedAgents)) {
             return $next();
         }
 
@@ -89,21 +81,6 @@ class OffersSkillsInstall implements CommandMiddleware
         note('You can install them later with: cloud skills:install');
     }
 
-    protected function isInteractiveSession(): bool
-    {
-        if ($this->isNonInteractiveEnvironment()) {
-            return false;
-        }
-
-        if (! stream_isatty(STDIN)) {
-            return false;
-        }
-
-        $args = $_SERVER['argv'] ?? [];
-
-        return collect($args)->intersect(['--json', '--no-interaction', '-n'])->isEmpty();
-    }
-
     protected function isGloballyInstalled(): bool
     {
         $cwd = getcwd();
@@ -112,7 +89,7 @@ class OffersSkillsInstall implements CommandMiddleware
             return true;
         }
 
-        return ! File::isDirectory($cwd.'/vendor/laravel/cloud-cli');
+        return ! File::isDirectory($cwd . '/vendor/laravel/cloud-cli');
     }
 
     /**
@@ -123,7 +100,7 @@ class OffersSkillsInstall implements CommandMiddleware
         foreach ($agents as $agent) {
             $skillsPath = $this->resolveAgentSkillPath($agent);
 
-            if (File::isDirectory($skillsPath.'/'.self::MARKER_SKILL)) {
+            if (File::isDirectory($skillsPath . '/' . self::MARKER_SKILL)) {
                 return true;
             }
         }
