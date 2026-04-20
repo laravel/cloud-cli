@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Middleware\CommandMiddlewareManager;
+use App\Middleware\OffersSkillsInstall;
 use App\Middleware\RequiresAuthToken;
 use App\Middleware\SuppressOutputIfJson;
 use App\Prompts\Answered;
@@ -81,6 +82,7 @@ class AppServiceProvider extends ServiceProvider
 
         $manager->register(SuppressOutputIfJson::class);
         $manager->register(RequiresAuthToken::class);
+        $manager->register(OffersSkillsInstall::class);
 
         if ($this->app->bound(EventDispatcherInterface::class)) {
             $dispatcher = $this->app->make(EventDispatcherInterface::class);

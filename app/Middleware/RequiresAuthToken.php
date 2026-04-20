@@ -4,16 +4,18 @@ namespace App\Middleware;
 
 use App\Concerns\HasAClient;
 use App\Contracts\NoAuthRequired;
+use App\Middleware\Concerns\SkipsInternalCommands;
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
 
 class RequiresAuthToken implements CommandMiddleware
 {
     use HasAClient;
+    use SkipsInternalCommands;
 
     public function handle($command, callable $next)
     {
-        if (in_array($command, ['list', 'help', 'app:build', '_complete', 'completion'])) {
+        if ($this->isInternalCommand($command)) {
             return $next();
         }
 

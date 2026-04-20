@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\HasAgentSkillPaths;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Http\Client\Pool;
 use Illuminate\Support\Facades\File;
@@ -15,6 +16,8 @@ use function Laravel\Prompts\warning;
 
 class SkillsInstall extends BaseCommand implements NoAuthRequired
 {
+    use HasAgentSkillPaths;
+
     protected $signature = 'skills:install
                             {--global : Install skills globally}
                             {--project : Install skills to the current project}
@@ -26,15 +29,6 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
     protected string $repo = 'laravel/agent-skills';
 
     protected string $repoPath = 'laravel-cloud/skills';
-
-    /** @var array<string, array{global: string, project: string}> */
-    protected array $agents = [
-        'claude' => ['global' => '~/.claude/skills', 'project' => '.claude/skills'],
-        'cursor' => ['global' => '~/.cursor/skills', 'project' => '.cursor/skills'],
-        'junie' => ['global' => '~/.junie/skills', 'project' => '.junie/skills'],
-        'github' => ['global' => '~/.github/skills', 'project' => '.github/skills'],
-        'agents' => ['global' => '~/.agents/skills', 'project' => '.agents/skills'],
-    ];
 
     public function handle(): int
     {
@@ -107,33 +101,24 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
      */
     protected function resolveSkillPaths(): array
     {
-        $home = $_SERVER['HOME'] ?? $_SERVER['USERPROFILE'] ?? '';
-        $cwd = getcwd();
-
         $isProject = match (true) {
             $this->option('global') => false,
             $this->option('project') => true,
-            default => File::isDirectory($cwd.'/vendor/laravel/cloud-cli'),
+            default => File::isDirectory(getcwd().'/vendor/laravel/cloud-cli'),
         };
 
         $scope = $isProject ? 'project' : 'global';
-        $selectedAgents = $this->resolveAgents($scope, $home, $cwd);
 
-        return array_map(function (string $agent) use ($scope, $home, $cwd) {
-            $path = $this->agents[$agent][$scope];
-
-            if ($scope === 'project') {
-                return $cwd.'/'.$path;
-            }
-
-            return str_replace('~', $home, $path);
-        }, $selectedAgents);
+        return array_map(
+            fn (string $agent) => $this->resolveAgentSkillPath($agent, $scope),
+            $this->resolveAgents($scope),
+        );
     }
 
     /**
      * @return array<int, string>
      */
-    protected function resolveAgents(string $scope, string $home, string $cwd): array
+    protected function resolveAgents(string $scope): array
     {
         $explicit = array_filter($this->option('agent'));
 
@@ -141,7 +126,7 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
             return array_values(array_intersect($explicit, array_keys($this->agents)));
         }
 
-        $detected = $this->detectAgents($scope, $home, $cwd);
+        $detected = $this->detectAgents($scope);
 
         if ($this->input->isInteractive()) {
             $options = collect($this->agents)->keys()->mapWithKeys(fn (string $agent) => [
@@ -159,31 +144,6 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
         }
 
         return $detected ?: array_keys($this->agents);
-    }
-
-    /**
-     * @return array<int, string>
-     */
-    protected function detectAgents(string $scope, string $home, string $cwd): array
-    {
-        $detected = [];
-
-        foreach ($this->agents as $agent => $paths) {
-            $skillPath = $paths[$scope];
-            $parentDir = dirname($skillPath);
-
-            if ($scope === 'project') {
-                $parentDir = $cwd.'/'.$parentDir;
-            } else {
-                $parentDir = str_replace('~', $home, $parentDir);
-            }
-
-            if (File::isDirectory($parentDir)) {
-                $detected[] = $agent;
-            }
-        }
-
-        return $detected;
     }
 
     /**

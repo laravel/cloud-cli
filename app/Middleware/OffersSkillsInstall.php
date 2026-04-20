@@ -1,0 +1,133 @@
+<?php
+
+namespace App\Middleware;
+
+use App\Concerns\HasAgentSkillPaths;
+use App\ConfigRepository;
+use App\Middleware\Concerns\SkipsInternalCommands;
+use App\Support\DetectsNonInteractiveEnvironments;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\note;
+
+class OffersSkillsInstall implements CommandMiddleware
+{
+    use DetectsNonInteractiveEnvironments;
+    use HasAgentSkillPaths;
+    use SkipsInternalCommands;
+
+    protected const SKIP_COMMANDS = [
+        'skills:install',
+        'auth',
+        'login',
+    ];
+
+    protected const MARKER_SKILL = 'deploying-laravel-cloud';
+
+    public function handle($command, callable $next)
+    {
+        if ($this->isInternalCommand($command)) {
+            return $next();
+        }
+
+        $name = is_string($command) ? $command : $command?->getName();
+
+        if (in_array($name, self::SKIP_COMMANDS, true)) {
+            return $next();
+        }
+
+        if (! $this->isInteractiveSession()) {
+            return $next();
+        }
+
+        if (! $this->isGloballyInstalled()) {
+            return $next();
+        }
+
+        $detectedAgents = $this->detectAgents();
+
+        if ($detectedAgents === []) {
+            return $next();
+        }
+
+        if ($this->skillsAlreadyInstalled($detectedAgents)) {
+            return $next();
+        }
+
+        $config = app(ConfigRepository::class);
+
+        if ($config->get('skills_install_prompted')) {
+            return $next();
+        }
+
+        $config->set('skills_install_prompted', true);
+
+        $install = confirm(
+            label: 'Install Laravel Cloud skills for AI agents?',
+            default: true,
+            hint: 'Adds slash commands/guidance so your agent knows how to use the CLI.',
+        );
+
+        if ($install) {
+            $this->runInstall();
+        } else {
+            $this->showDeclineHint();
+        }
+
+        return $next();
+    }
+
+    protected function runInstall(): void
+    {
+        Artisan::call('skills:install');
+    }
+
+    protected function showDeclineHint(): void
+    {
+        note('You can install them later with: cloud skills:install');
+    }
+
+    protected function isInteractiveSession(): bool
+    {
+        if ($this->isNonInteractiveEnvironment()) {
+            return false;
+        }
+
+        if (! stream_isatty(STDIN)) {
+            return false;
+        }
+
+        $args = $_SERVER['argv'] ?? [];
+
+        return collect($args)->intersect(['--json', '--no-interaction', '-n'])->isEmpty();
+    }
+
+    protected function isGloballyInstalled(): bool
+    {
+        $cwd = getcwd();
+
+        if ($cwd === false) {
+            return true;
+        }
+
+        return ! File::isDirectory($cwd.'/vendor/laravel/cloud-cli');
+    }
+
+    /**
+     * @param  array<int, string>  $agents
+     */
+    protected function skillsAlreadyInstalled(array $agents): bool
+    {
+        foreach ($agents as $agent) {
+            $skillsPath = $this->resolveAgentSkillPath($agent);
+
+            if (File::isDirectory($skillsPath.'/'.self::MARKER_SKILL)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+}
