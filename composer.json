@@ -20,24 +20,24 @@
         }
     ],
     "require": {
-        "php": "^8.2",
+        "php": "^8.2"
+    },
+    "require-dev": {
         "illuminate/http": "^12.17",
         "illuminate/translation": "^12.53",
         "illuminate/validation": "^12.53",
+        "laravel-zero/framework": "^12.0.2",
         "laravel-zero/phar-updater": "^1.4",
+        "laravel/pint": "^1.25.1",
+        "mockery/mockery": "^1.6.12",
+        "pestphp/pest": "^3.8.4|^4.1.2",
         "php-parallel-lint/php-console-highlighter": "^1.0",
+        "phpstan/phpstan": "^2.1",
         "saloonphp/cache-plugin": "^3.1",
         "saloonphp/pagination-plugin": "^2.3",
         "saloonphp/saloon": "^4.0",
         "shipfastlabs/agent-detector": "^1.0",
         "spatie/laravel-data": "^4.19"
-    },
-    "require-dev": {
-        "laravel-zero/framework": "^12.0.2",
-        "laravel/pint": "^1.25.1",
-        "mockery/mockery": "^1.6.12",
-        "pestphp/pest": "^3.8.4|^4.1.2",
-        "phpstan/phpstan": "^2.1"
     },
     "autoload": {
         "psr-4": {
