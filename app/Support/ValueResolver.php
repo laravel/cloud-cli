@@ -28,7 +28,7 @@ class ValueResolver
         protected mixed $value = null,
         public readonly string $resolveFromType = 'argument',
     ) {
-        $this->label = str($argumentName)->replace('-', ' ')->ucfirst()->toString();
+        $this->label = str($argumentName)->replace('-', ' ')->replace(' id', '')->ucfirst()->toString();
     }
 
     public function setPreviousValue(mixed $value): self

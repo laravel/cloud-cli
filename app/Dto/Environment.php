@@ -43,6 +43,9 @@ class Environment extends Data
         public readonly ?string $currentDeploymentId = null,
         public readonly array $domainIds = [],
         public readonly ?string $primaryDomainId = null,
+        public readonly ?string $databaseSchemaId = null,
+        public readonly ?string $cacheId = null,
+        public readonly ?string $websocketApplicationId = null,
     ) {
         //
     }
@@ -108,6 +111,18 @@ class Environment extends Data
 
         if (isset($relationships['primaryDomain']['data']['id'])) {
             $transformed['primaryDomainId'] = $relationships['primaryDomain']['data']['id'];
+        }
+
+        if (isset($relationships['database']['data']['id'])) {
+            $transformed['databaseSchemaId'] = $relationships['database']['data']['id'];
+        }
+
+        if (isset($relationships['cache']['data']['id'])) {
+            $transformed['cacheId'] = $relationships['cache']['data']['id'];
+        }
+
+        if (isset($relationships['websocketApplication']['data']['id'])) {
+            $transformed['websocketApplicationId'] = $relationships['websocketApplication']['data']['id'];
         }
 
         return self::from($transformed);
