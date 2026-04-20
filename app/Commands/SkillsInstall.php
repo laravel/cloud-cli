@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\DetectsInstallScope;
 use App\Concerns\HasAgentSkillPaths;
 use App\Contracts\NoAuthRequired;
 use Illuminate\Http\Client\Pool;
@@ -16,6 +17,7 @@ use function Laravel\Prompts\warning;
 
 class SkillsInstall extends BaseCommand implements NoAuthRequired
 {
+    use DetectsInstallScope;
     use HasAgentSkillPaths;
 
     protected $signature = 'skills:install
@@ -104,7 +106,7 @@ class SkillsInstall extends BaseCommand implements NoAuthRequired
         $isProject = match (true) {
             $this->option('global') => false,
             $this->option('project') => true,
-            default => File::isDirectory(getcwd().'/vendor/laravel/cloud-cli'),
+            default => ! $this->isGloballyInstalled(),
         };
 
         $scope = $isProject ? 'project' : 'global';

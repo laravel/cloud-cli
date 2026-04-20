@@ -2,6 +2,8 @@
 
 namespace App\Middleware;
 
+use App\Commands\SkillsInstall;
+use App\Concerns\DetectsInstallScope;
 use App\Concerns\HasAgentSkillPaths;
 use App\ConfigRepository;
 use App\Middleware\Concerns\SkipsInternalCommands;
@@ -11,10 +13,10 @@ use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
-use function Laravel\Prompts\note;
 
 class OffersSkillsInstall implements CommandMiddleware
 {
+    use DetectsInstallScope;
     use DetectsNonInteractiveEnvironments;
     use HasAgentSkillPaths;
     use SkipsInternalCommands;
@@ -74,23 +76,12 @@ class OffersSkillsInstall implements CommandMiddleware
 
     protected function runInstall(): void
     {
-        Artisan::call('skills:install');
+        Artisan::call(SkillsInstall::class);
     }
 
     protected function showDeclineHint(): void
     {
         info('You can install them later with: <comment>cloud skills:install</comment>');
-    }
-
-    protected function isGloballyInstalled(): bool
-    {
-        $cwd = getcwd();
-
-        if ($cwd === false) {
-            return true;
-        }
-
-        return ! File::isDirectory($cwd . '/vendor/laravel/cloud-cli');
     }
 
     /**
@@ -101,7 +92,7 @@ class OffersSkillsInstall implements CommandMiddleware
         foreach ($agents as $agent) {
             $skillsPath = $this->resolveAgentSkillPath($agent);
 
-            if (File::isDirectory($skillsPath . '/' . self::MARKER_SKILL)) {
+            if (File::isDirectory($skillsPath.'/'.self::MARKER_SKILL)) {
                 return true;
             }
         }
