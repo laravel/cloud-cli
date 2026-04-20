@@ -78,7 +78,7 @@ it('skips when skills are already installed for a detected agent', function () {
 });
 
 it('skips when the prompted flag is already set', function () {
-    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted')->andReturn(true);
+    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted_at')->andReturn('2026-04-20T12:00:00+00:00');
     $this->mockConfig->shouldNotReceive('set');
 
     $middleware = partialMiddleware();
@@ -89,8 +89,10 @@ it('skips when the prompted flag is already set', function () {
 it('prompts, installs skills, and records the choice when the user confirms', function () {
     Prompt::fake([Key::ENTER]);
 
-    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted')->andReturn(false);
-    $this->mockConfig->shouldReceive('set')->with('skills_install_prompted', true)->once();
+    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted_at')->andReturn(null);
+    $this->mockConfig->shouldReceive('set')
+        ->with('skills_install_prompted_at', Mockery::type('string'))
+        ->once();
 
     $middleware = partialMiddleware();
     $middleware->shouldReceive('runInstall')->once();
@@ -102,8 +104,10 @@ it('prompts, installs skills, and records the choice when the user confirms', fu
 it('records the choice without installing when the user declines', function () {
     Prompt::fake([Key::TAB, Key::ENTER]);
 
-    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted')->andReturn(false);
-    $this->mockConfig->shouldReceive('set')->with('skills_install_prompted', true)->once();
+    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted_at')->andReturn(null);
+    $this->mockConfig->shouldReceive('set')
+        ->with('skills_install_prompted_at', Mockery::type('string'))
+        ->once();
 
     $middleware = partialMiddleware();
     $middleware->shouldReceive('runInstall')->never();

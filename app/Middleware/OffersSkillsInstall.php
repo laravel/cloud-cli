@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 
 use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\note;
 
 class OffersSkillsInstall implements CommandMiddleware
@@ -50,14 +51,14 @@ class OffersSkillsInstall implements CommandMiddleware
 
         $config = app(ConfigRepository::class);
 
-        if ($config->get('skills_install_prompted')) {
+        if ($config->get('skills_install_prompted_at')) {
             return $next();
         }
 
-        $config->set('skills_install_prompted', true);
+        $config->set('skills_install_prompted_at', now()->toIso8601String());
 
         $install = confirm(
-            label: 'Install Laravel Cloud skills for AI agents?',
+            label: 'Install Laravel Cloud CLI skills for AI agents?',
             default: true,
             hint: 'Adds slash commands/guidance so your agent knows how to use the CLI.',
         );
@@ -78,7 +79,7 @@ class OffersSkillsInstall implements CommandMiddleware
 
     protected function showDeclineHint(): void
     {
-        note('You can install them later with: cloud skills:install');
+        info('You can install them later with: <comment>cloud skills:install</comment>');
     }
 
     protected function isGloballyInstalled(): bool
