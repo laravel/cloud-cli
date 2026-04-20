@@ -171,7 +171,7 @@ class EnvironmentUpdate extends BaseCommand
             $selectedClusterId = (string) select(
                 label: 'Database cluster',
                 options: $clusterOptions,
-                default: $currentCluster?->id ?? '',
+                default: $currentCluster !== null ? $currentCluster->id : '',
             );
 
             if ($selectedClusterId === '') {
@@ -248,7 +248,7 @@ class EnvironmentUpdate extends BaseCommand
             $selectedClusterId = (string) select(
                 label: 'WebSocket cluster',
                 options: $clusterOptions,
-                default: $currentCluster?->id ?? '',
+                default: $currentCluster !== null ? $currentCluster->id : '',
             );
 
             if ($selectedClusterId === '') {
