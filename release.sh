@@ -136,6 +136,22 @@ if [ -f ".env.bak" ]; then
     info "Restored .env from .env.bak"
 fi
 
+info "Smoke testing binary..."
+
+if [ ! -f "builds/cloud" ]; then
+    abort "Build output builds/cloud not found."
+fi
+
+SMOKE_VERSION=$(./builds/cloud --version 2>&1) || abort "Binary failed to execute: $SMOKE_VERSION"
+
+if ! echo "$SMOKE_VERSION" | grep -qF "$NEW_TAG"; then
+    abort "Binary reported unexpected version. Expected '$NEW_TAG', got: $SMOKE_VERSION"
+fi
+
+./builds/cloud list >/dev/null 2>&1 || abort "Binary failed to list commands — bundled dependencies may be broken."
+
+success "Smoke test passed: $SMOKE_VERSION"
+
 info "Committing build..."
 git add builds/cloud
 git commit -m "Build $NEW_TAG"
