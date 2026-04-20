@@ -87,7 +87,7 @@ class WebsocketApplicationUpdate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => textarea(
                     label: 'Allowed origins',
-                    default: $value ?? implode(PHP_EOL, $app->allowedOrigins ?? []),
+                    default: $value ?? implode(PHP_EOL, $app->allowedOrigins),
                     hint: 'Origins that are allowed to connect to the application, separated by new lines, prefixed with the protocol (https://)',
                 ),
             ),
