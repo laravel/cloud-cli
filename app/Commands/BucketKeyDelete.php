@@ -8,6 +8,7 @@ use function Laravel\Prompts\spin;
 class BucketKeyDelete extends BaseCommand
 {
     protected $signature = 'bucket-key:delete
+                            {bucket? : The bucket ID or name}
                             {key? : The key ID or name}
                             {--force : Skip confirmation}';
 
@@ -19,7 +20,7 @@ class BucketKeyDelete extends BaseCommand
 
         intro('Deleting Bucket Key');
 
-        $bucket = $this->resolvers()->objectStorageBucket()->resolve();
+        $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
         $key = $this->resolvers()->bucketKey()->from($bucket, $this->argument('key'));
 
         $this->confirmDestructive("Delete key '{$key->name}'?");
