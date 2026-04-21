@@ -42,7 +42,7 @@ class WebsocketApplicationList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No WebSocket applications found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

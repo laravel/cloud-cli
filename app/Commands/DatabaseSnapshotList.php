@@ -42,7 +42,7 @@ class DatabaseSnapshotList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No snapshots found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

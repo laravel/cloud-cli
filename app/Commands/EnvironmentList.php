@@ -44,7 +44,7 @@ class EnvironmentList extends BaseCommand
         if ($envItems->isEmpty()) {
             warning('No environments found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

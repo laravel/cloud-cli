@@ -37,7 +37,7 @@ class CacheTypes extends BaseCommand
         if ($items->isEmpty()) {
             warning('No cache types found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         $rows = collect($types)->map(fn (CacheType $type, $index) => [

@@ -39,7 +39,7 @@ class DomainList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No domains found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

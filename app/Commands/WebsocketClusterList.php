@@ -41,7 +41,7 @@ class WebsocketClusterList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No WebSocket clusters found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

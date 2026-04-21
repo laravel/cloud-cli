@@ -44,7 +44,7 @@ class BucketList extends BaseCommand
         if ($buckets->isEmpty()) {
             warning('No buckets found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

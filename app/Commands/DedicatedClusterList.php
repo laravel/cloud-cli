@@ -38,7 +38,7 @@ class DedicatedClusterList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No dedicated clusters found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         $rows = $items->map(fn (DedicatedCluster $cluster) => [

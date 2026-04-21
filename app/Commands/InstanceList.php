@@ -40,7 +40,7 @@ class InstanceList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No instances found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

@@ -40,7 +40,7 @@ class BucketKeyList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No keys found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

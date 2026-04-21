@@ -39,7 +39,7 @@ class DatabaseClusterList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No databases found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

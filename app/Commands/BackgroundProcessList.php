@@ -41,7 +41,7 @@ class BackgroundProcessList extends BaseCommand
         if ($items->isEmpty()) {
             warning('No background processes found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(

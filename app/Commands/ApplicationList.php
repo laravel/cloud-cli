@@ -39,7 +39,7 @@ class ApplicationList extends BaseCommand
         if ($applications->isEmpty()) {
             warning('No applications found.');
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         dataTable(
