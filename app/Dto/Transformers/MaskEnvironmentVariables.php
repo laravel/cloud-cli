@@ -16,7 +16,7 @@ class MaskEnvironmentVariables implements Transformer
         }
 
         return array_map(
-            fn(array $item) => array_merge($item, [
+            fn (array $item) => array_merge($item, [
                 'value' => '*****',
             ]),
             $value,
