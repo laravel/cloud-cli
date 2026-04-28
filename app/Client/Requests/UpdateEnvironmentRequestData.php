@@ -2,6 +2,8 @@
 
 namespace App\Client\Requests;
 
+use SensitiveParameter;
+
 class UpdateEnvironmentRequestData extends RequestData
 {
     public function __construct(
@@ -25,6 +27,7 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?int $sleepTimeout = null,
         public readonly ?int $shutdownTimeout = null,
         public readonly ?bool $usesPurgeEdgeCacheOnDeploy = null,
+        #[SensitiveParameter]
         public readonly ?string $nightwatchToken = null,
         public readonly ?string $cacheStrategy = null,
         public readonly ?string $responseHeadersFrame = null,

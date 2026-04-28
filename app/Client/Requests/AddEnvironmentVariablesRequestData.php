@@ -2,6 +2,8 @@
 
 namespace App\Client\Requests;
 
+use SensitiveParameter;
+
 class AddEnvironmentVariablesRequestData extends RequestData
 {
     /**
@@ -9,6 +11,7 @@ class AddEnvironmentVariablesRequestData extends RequestData
      */
     public function __construct(
         public readonly string $environmentId,
+        #[SensitiveParameter]
         public readonly array $variables,
         public readonly string $method = 'append',
     ) {

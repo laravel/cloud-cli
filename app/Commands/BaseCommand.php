@@ -10,6 +10,7 @@ use App\Prompts\SuppressedOutput;
 use App\Resolvers\Resolvers;
 use App\Support\DetectsNonInteractiveEnvironments;
 use App\Support\Form;
+use App\Support\SensitiveValues;
 use App\Support\ValueResolver;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
@@ -51,6 +52,7 @@ abstract class BaseCommand extends Command
 
         $this->addOption('json', null, InputOption::VALUE_NONE, 'Output as JSON');
         $this->addOption('fields', null, InputOption::VALUE_REQUIRED, 'Filter JSON output to specific fields (comma-separated, supports dot notation for nested fields)');
+        $this->addOption('show-sensitive', null, InputOption::VALUE_NONE, 'Reveal sensitive values (e.g. environment variables) in JSON output (masked by default)');
 
         if ($this->jsonDataClass) {
             $fields = $this->describeJsonFields($this->jsonDataClass);
@@ -236,6 +238,8 @@ abstract class BaseCommand extends Command
         if (! $this->wantsJson()) {
             return;
         }
+
+        SensitiveValues::$reveal = (bool) $this->option('show-sensitive');
 
         $json = $this->toJson($data);
 

@@ -2,9 +2,11 @@
 
 namespace App\Dto;
 
+use App\Dto\Transformers\MaskEnvironmentVariables;
 use App\Enums\EnvironmentStatus;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Casts\EnumCast;
 use Spatie\LaravelData\Data;
@@ -31,6 +33,7 @@ class Environment extends Data
         public readonly bool $usesHibernation = false,
         public readonly bool $usesPushToDeploy = false,
         public readonly bool $usesDeployHook = false,
+        #[WithTransformer(MaskEnvironmentVariables::class)]
         public readonly array $environmentVariables = [],
         public readonly array $networkSettings = [],
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
