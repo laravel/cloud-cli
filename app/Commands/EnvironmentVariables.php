@@ -8,6 +8,7 @@ use App\Dto\Environment;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -112,6 +113,8 @@ class EnvironmentVariables extends BaseCommand
 
     protected function collectVariables(Environment $environment): array
     {
+        $reveal = (bool) $this->option('show-sensitive');
+        $variables = [];
         $adding = true;
         $counter = 0;
 
@@ -125,19 +128,31 @@ class EnvironmentVariables extends BaseCommand
                 )),
             );
 
+            $key = $this->form()->get('variables.'.$counter.'.key');
+
             $existingValue = collect($environment->environmentVariables)->firstWhere(
                 'key',
-                $this->form()->get('variables.'.$counter.'.key'),
+                $key,
             )['value'] ?? '';
 
-            $this->form()->prompt(
-                'variables.'.$counter.'.value',
-                fn ($resolver) => $resolver->fromInput(fn ($value) => text(
-                    label: 'Value',
-                    required: true,
-                    default: $value ?? $existingValue,
-                )),
-            );
+            if ($existingValue !== '' && confirm(
+                label: "Keep existing value for {$key}?",
+                default: true,
+            )) {
+                $value = $existingValue;
+            } else {
+                $this->form()->prompt(
+                    'variables.'.$counter.'.value',
+                    fn ($resolver) => $resolver->fromInput(fn ($value) => $reveal
+                        ? text(label: 'Value', required: true, default: $value ?? '')
+                        : password(label: 'Value', required: true),
+                    ),
+                );
+
+                $value = $this->form()->get('variables.'.$counter.'.value');
+            }
+
+            $variables[] = ['key' => $key, 'value' => $value];
 
             $adding = confirm(
                 'Add another variable?',
@@ -149,16 +164,6 @@ class EnvironmentVariables extends BaseCommand
             $counter++;
         }
 
-        $variables = collect($this->form()->filled())
-            ->filter(fn ($field) => str_starts_with($field->key, 'variables.'))
-            ->undot()
-            ->toArray();
-
-        return collect($variables['variables'])
-            ->map(fn ($var) => [
-                'key' => $var['key']->value(),
-                'value' => $var['value']->value(),
-            ])
-            ->toArray();
+        return $variables;
     }
 }
