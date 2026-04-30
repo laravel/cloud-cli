@@ -20,6 +20,7 @@ use App\Client\Resources\EnvironmentsResource;
 use App\Client\Resources\InstancesResource;
 use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
+use App\Client\Resources\UsageResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
 use App\Support\ContextDetector;
@@ -196,6 +197,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function dedicatedClusters(): DedicatedClustersResource
     {
         return new DedicatedClustersResource($this);
+    }
+
+    public function usage(): UsageResource
+    {
+        return new UsageResource($this);
     }
 
     public function cliAuth(): CliAuthResource

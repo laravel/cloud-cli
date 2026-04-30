@@ -102,3 +102,116 @@ function setupApplicationListMocks(?array $applications = null, int $status = 20
         ], $status),
     ]);
 }
+
+function usageResponse(array $overrides = []): array
+{
+    $base = [
+        'data' => [
+            'summary' => [
+                'current_spend_cents' => 12345,
+                'bandwidth' => [
+                    'cost_cents' => 100,
+                    'usage_percentage' => 42,
+                    'allowance_bytes' => 107374182400,
+                ],
+                'credits' => [
+                    'used_cents' => 250,
+                    'total_cents' => 1000,
+                ],
+                'alert' => [
+                    'threshold_cents' => 50000,
+                    'remaining_percentage' => 75,
+                ],
+            ],
+            'resources' => [
+                'total_cost_cents' => 8000,
+                'databases' => [
+                    [
+                        'name' => 'primary',
+                        'identifier' => 'db-1',
+                        'type' => 'serverless-postgres',
+                        'storage_gb' => 12.5,
+                        'storage_cents' => 1500,
+                        'compute_units' => 3.2,
+                        'compute_unit_label' => 'CU',
+                        'compute_cents' => 2000,
+                        'backups_gb' => 4,
+                        'backups_cents' => 500,
+                        'total_cents' => 4000,
+                    ],
+                ],
+                'caches' => [
+                    [
+                        'name' => 'sessions',
+                        'identifier' => 'cache-1',
+                        'type' => 'valkey',
+                        'storage' => '256 MB',
+                        'compute_hours' => 720,
+                        'compute_cents' => 1500,
+                        'total_cents' => 1500,
+                    ],
+                ],
+                'buckets' => [
+                    [
+                        'name' => 'media',
+                        'identifier' => 'bucket-1',
+                        'class_a_requests_count' => 1000,
+                        'class_a_requests_cents' => 50,
+                        'class_b_requests_count' => 5000,
+                        'class_b_requests_cents' => 25,
+                        'storage_gb' => 8,
+                        'storage_cents' => 200,
+                        'total_cents' => 275,
+                    ],
+                ],
+                'websockets' => [
+                    [
+                        'name' => 'realtime',
+                        'identifier' => 'ws-1',
+                        'max_connections' => 250,
+                        'usage_time_hours' => 720,
+                        'usage_time_cents' => 1000,
+                        'total_cents' => 1000,
+                    ],
+                ],
+            ],
+            'addons' => [
+                'total_cost_cents' => 1500,
+                'items' => [
+                    ['name' => 'Custom domain SSL', 'total_cents' => 1500],
+                ],
+            ],
+            'application_totals' => [
+                'total_cost_cents' => 5000,
+                'application_count' => 1,
+                'applications' => [
+                    ['identifier' => 'app-123', 'total_cost_cents' => 5000],
+                ],
+            ],
+            'environment_usage' => [
+                'total_cost_cents' => 5000,
+                'items' => [
+                    [
+                        'identifier' => 'production',
+                        'type' => 'app',
+                        'compute_profile' => 'standard-1',
+                        'compute_description' => '1 vCPU / 2GB',
+                        'cpu_hours' => 720,
+                        'total_cents' => 5000,
+                    ],
+                ],
+            ],
+        ],
+        'meta' => [
+            'currency' => 'USD',
+            'period' => 0,
+            'available_periods' => [
+                ['from' => '2026-04-01T00:00:00Z', 'to' => '2026-04-30T23:59:59Z'],
+                ['from' => '2026-03-01T00:00:00Z', 'to' => '2026-03-31T23:59:59Z'],
+            ],
+            'last_updated_at' => '2026-04-29T10:00:00Z',
+        ],
+    ];
+
+    return array_replace_recursive($base, $overrides);
+}
