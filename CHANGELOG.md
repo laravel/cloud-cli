@@ -1,6 +1,18 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.2.6...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.3.0...main)
+
+## [v0.3.0](https://github.com/laravel/cloud-cli/compare/v0.2.6...v0.3.0) - 2026-04-30
+
+### What's Changed
+
+* feat(billing): add usage command by [@Frostist](https://github.com/Frostist) in https://github.com/laravel/cloud-cli/pull/153
+
+### New Contributors
+
+* [@Frostist](https://github.com/Frostist) made their first contribution in https://github.com/laravel/cloud-cli/pull/153
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.2.6...v0.3.0
 
 ## [v0.2.6](https://github.com/laravel/cloud-cli/compare/v0.2.5...v0.2.6) - 2026-04-28
 
