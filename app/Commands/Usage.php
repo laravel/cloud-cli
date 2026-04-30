@@ -294,7 +294,7 @@ class Usage extends BaseCommand
             return;
         }
 
-        $this->totalsHeader('Websockets', collect($websockets)->sum('totalCents'));
+        $this->totalsHeader('WebSockets', collect($websockets)->sum('totalCents'));
 
         table(
             headers: [
