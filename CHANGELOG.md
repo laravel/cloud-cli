@@ -1,6 +1,10 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.0...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.1...main)
+
+## [v0.4.1](https://github.com/laravel/cloud-cli/compare/v0.4.0...v0.4.1) - 2026-05-16
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.4.0...v0.4.1
 
 ## [v0.4.0](https://github.com/laravel/cloud-cli/compare/v0.3.0...v0.4.0) - 2026-05-16
 
