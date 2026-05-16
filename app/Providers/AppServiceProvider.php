@@ -49,6 +49,7 @@ class AppServiceProvider extends ServiceProvider
             'CodeBlockRenderer',
             'TextareaPromptRenderer',
             'TextPromptRenderer',
+            'AutoCompletePromptRenderer',
         ])
             ->mapWithKeys(function ($class) {
                 $promptClass = str_replace('Renderer', '', $class);
