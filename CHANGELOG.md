@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.3.0...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.0...main)
+
+## [v0.4.0](https://github.com/laravel/cloud-cli/compare/v0.3.0...v0.4.0) - 2026-05-16
+
+### What's Changed
+
+* Add --history flag to command:run by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/157
+* Autocomplete artisan commands in command:run prompt by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/158
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.3.0...v0.4.0
 
 ## [v0.3.0](https://github.com/laravel/cloud-cli/compare/v0.2.6...v0.3.0) - 2026-04-30
 
