@@ -12,6 +12,7 @@ use Carbon\CarbonInterval;
 use Illuminate\Support\Sleep;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\text;
 
 class CommandRun extends BaseCommand
@@ -23,6 +24,7 @@ class CommandRun extends BaseCommand
     protected $signature = 'command:run
                             {environment? : The environment ID}
                             {--cmd= : The command to run}
+                            {--history : Select a command from recent history}
                             {--no-monitor : Do not monitor the command in real-time}
                             {--copy-output : Copy the output to the clipboard}';
 
@@ -105,7 +107,7 @@ class CommandRun extends BaseCommand
             fn (ValueResolver $resolver) => $resolver->fromInput(
                 fn ($value) => text(
                     label: 'Command',
-                    default: $value ?? 'php artisan ',
+                    default: $this->resolveDefaultCommand($value, $environmentId),
                     required: true,
                 ),
             ),
@@ -120,6 +122,44 @@ class CommandRun extends BaseCommand
                 ),
             ),
             'Running command...',
+        );
+    }
+
+    protected function resolveDefaultCommand(?string $value, string $environmentId): string
+    {
+        if ($value) {
+            return $value;
+        }
+
+        $default = 'php artisan ';
+
+        if ($this->option('history')) {
+            return $this->selectFromHistory($environmentId) ?? $default;
+        }
+
+        return $default;
+    }
+
+    protected function selectFromHistory(string $environmentId): ?string
+    {
+        $recentCommands = dynamicSpinner(
+            fn () => $this->client->commands()->list($environmentId)
+                ->collect()
+                ->map(fn ($cmd) => $cmd->command)
+                ->unique()
+                ->take(10)
+                ->values(),
+            'Loading command history...',
+        );
+
+        if ($recentCommands->isEmpty()) {
+            return null;
+        }
+
+        return select(
+            label: 'Command history',
+            options: $recentCommands->toArray(),
+            hint: 'You will be able to edit the command in the next step',
         );
     }
 }
