@@ -1,6 +1,16 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.1...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.2...main)
+
+## [v0.4.2](https://github.com/laravel/cloud-cli/compare/v0.4.1...v0.4.2) - 2026-05-18
+
+### What's Changed
+
+* Fix ASCII art alignment by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/159
+* Fix command history spinner by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/160
+* Pin GitHub Actions to commit SHAs and add Dependabot config by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/156
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.4.1...v0.4.2
 
 ## [v0.4.1](https://github.com/laravel/cloud-cli/compare/v0.4.0...v0.4.1) - 2026-05-16
 
