@@ -258,7 +258,8 @@ class CommandRun extends BaseCommand
                 ->map(fn ($cmd) => $cmd->command)
                 ->unique()
                 ->take(10)
-                ->values(),
+                ->values()
+                ->collect(),
             'Loading command history...',
         );
 
