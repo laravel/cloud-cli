@@ -3,6 +3,7 @@
 namespace App\Resolvers;
 
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceType;
 use App\Resolvers\Concerns\HasAnApplication;
 
 use function Laravel\Prompts\select;
@@ -19,9 +20,9 @@ class InstanceResolver extends Resolver
         return $this->from();
     }
 
-    public function ofType(string $type): self
+    public function ofType(InstanceType $type): self
     {
-        $this->instanceType = $type;
+        $this->instanceType = $type->value;
 
         return $this;
     }
@@ -32,7 +33,7 @@ class InstanceResolver extends Resolver
             ?? $this->fromInput();
 
         if (! $instance) {
-            $this->failAndExit('Unable to resolve instance: ' . ($idOrName ?? 'Provide a valid instance ID or name.') . '. Run `cloud instance:list --json` to see available instances.');
+            $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name.').'. Run `cloud instance:list --json` to see available instances.');
         }
 
         $this->displayResolved('Instance', $instance->name, $instance->id);
@@ -44,8 +45,8 @@ class InstanceResolver extends Resolver
     {
         return $this->resolveFromIdentifier(
             $identifier,
-            fn() => spin(
-                fn() => $this->client->instances()->include('environment')->get($identifier),
+            fn () => spin(
+                fn () => $this->client->instances()->include('environment')->get($identifier),
                 'Fetching instance...',
             ),
         );
@@ -62,17 +63,17 @@ class InstanceResolver extends Resolver
             ->include('environment')
             ->list($environment->id)
             ->collect()
-            ->filter(fn($instance) => $this->instanceType ? $instance->type === $this->instanceType : true);
+            ->filter(fn ($instance) => $this->instanceType ? $instance->type === $this->instanceType : true);
 
         if ($instances->isEmpty()) {
-            $this->failAndExit('No instances found for environment ' . $environment->name);
+            $this->failAndExit('No instances found for environment '.$environment->name);
         }
 
         if ($instances->hasSole()) {
             return $instances->first();
         }
 
-        $options = $instances->mapWithKeys(fn($instance) => [
+        $options = $instances->mapWithKeys(fn ($instance) => [
             $instance->id => $instance->name,
         ])->toArray();
 

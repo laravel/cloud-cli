@@ -3,6 +3,8 @@
 namespace App\Commands;
 
 use App\Dto\ManagedQueueFailedJob;
+use App\Enums\InstanceType;
+use Illuminate\Support\Str;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -25,10 +27,10 @@ class ManagedQueueFailedJobList extends BaseCommand
 
         intro('Failed Jobs');
 
-        $instance = $this->resolvers()->instance()->ofType('managed_queue')->from($this->argument('instance'));
+        $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
         $jobs = spin(
-            fn() => $this->client->instances()->failedJobs($instance->id),
+            fn () => $this->client->instances()->failedJobs($instance->id),
             'Fetching failed jobs...',
         );
 
@@ -43,22 +45,49 @@ class ManagedQueueFailedJobList extends BaseCommand
         }
 
         dataTable(
-            headers: ['ID', 'Queue', 'Attempts', 'Failed At'],
-            rows: $items->map(fn($job) => [
+            headers: ['ID', 'Name', 'Queue', 'Exception', 'Failed At'],
+            rows: $items->map(fn ($job) => [
                 $job->id,
+                $job->name,
                 $job->queue,
-                $job->attempts,
+                Str::limit($job->exception ?? '-', 30),
                 $job->failedAt?->format('Y-m-d H:i:s') ?? '-',
             ])->toArray(),
             actions: [
-                Key::ENTER => [
-                    fn($row) => $this->call('managed-queue:retry-failed-job', [
+                'r' => [
+                    fn ($row) => $this->call('managed-queue:retry-failed-job', [
                         'instance' => $instance->id,
                         'job' => $row[0],
                     ]),
                     'Retry',
                 ],
+                'd' => [
+                    fn ($row) => $this->call('managed-queue:delete-failed-job', [
+                        'instance' => $instance->id,
+                        'job' => $row[0],
+                    ]),
+                    'Delete',
+                ],
+                Key::ENTER => [
+                    fn ($row) => $this->showJobDetail($items->firstWhere('id', $row[0])),
+                    'Details',
+                ],
             ],
         );
+    }
+
+    protected function showJobDetail(ManagedQueueFailedJob $job)
+    {
+        dataList([
+            'ID' => $job->id,
+            'Name' => $job->name,
+            'Queue' => $job->queue,
+            'Attempts' => $job->attempts,
+            'Exception' => $job->exception ?? '-',
+            'Failed At' => $job->failedAt?->format('Y-m-d H:i:s') ?? '-',
+            'Started At' => $job->startedAt?->format('Y-m-d H:i:s') ?? '-',
+            'Retried At' => $job->retriedAt?->format('Y-m-d H:i:s') ?? '-',
+            'Retry Reserved Until' => $job->retryReservedUntil?->format('Y-m-d H:i:s') ?? '-',
+        ]);
     }
 }

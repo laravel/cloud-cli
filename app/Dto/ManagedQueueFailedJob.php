@@ -11,16 +11,17 @@ class ManagedQueueFailedJob extends Data
 {
     public function __construct(
         public readonly string $id,
+        public readonly string $name,
         public readonly string $queue,
         public readonly int $attempts,
         public readonly ?string $exception = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class, format: 'Y-m-d H:i:s.u')]
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $failedAt = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class, format: 'Y-m-d H:i:s.u')]
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $startedAt = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class, format: 'Y-m-d H:i:s.u')]
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $retriedAt = null,
-        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class, format: 'Y-m-d H:i:s.u')]
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $retryReservedUntil = null,
     ) {
         //
@@ -33,6 +34,7 @@ class ManagedQueueFailedJob extends Data
 
         return self::from([
             'id' => $data['id'],
+            'name' => $attributes['name'] ?? $data['id'],
             'queue' => $attributes['queue'],
             'attempts' => (int) ($attributes['attempts'] ?? 0),
             'exception' => $attributes['exception'] ?: null,

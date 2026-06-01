@@ -2,8 +2,11 @@
 
 namespace App\Commands;
 
+use App\Enums\InstanceType;
+use Illuminate\Support\Str;
+use Laravel\Prompts\Key;
+
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class ManagedQueueFailedJobRetry extends BaseCommand
@@ -18,7 +21,7 @@ class ManagedQueueFailedJobRetry extends BaseCommand
 
         intro('Retry Failed Job');
 
-        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
+        $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
         $jobId = $this->argument('job') ?? $this->selectFailedJob($instance->id);
 
@@ -45,11 +48,25 @@ class ManagedQueueFailedJobRetry extends BaseCommand
 
         $this->ensureInteractive('No failed jobs found. Provide a job ID.');
 
-        return select(
-            label: 'Failed Job',
-            options: $jobs->mapWithKeys(fn ($job) => [
-                $job->id => $job->queue.' — '.($job->failedAt?->format('Y-m-d H:i:s') ?? 'unknown'),
+        $jobId = null;
+
+        dataTable(
+            headers: ['ID', 'Name', 'Queue', 'Exception', 'Failed At'],
+            rows: $jobs->map(fn ($job) => [
+                $job->id,
+                $job->name,
+                $job->queue,
+                Str::limit($job->exception ?? '-', 30),
+                $job->failedAt?->format('Y-m-d H:i:s') ?? '-',
             ])->toArray(),
+            actions: [
+                Key::ENTER => [
+                    fn ($row) => $row[0],
+                    'Select',
+                ],
+            ],
         );
+
+        return $jobId ?? '';
     }
 }
