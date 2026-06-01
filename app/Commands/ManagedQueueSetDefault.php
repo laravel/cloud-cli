@@ -22,7 +22,7 @@ class ManagedQueueSetDefault extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Set Default Managed Queue');
+        intro('Setting Default Managed Queue');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 

@@ -22,7 +22,7 @@ class ManagedQueueResume extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Resume Managed Queue');
+        intro('Resuming Managed Queue');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 

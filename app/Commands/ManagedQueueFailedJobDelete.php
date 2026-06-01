@@ -21,7 +21,7 @@ class ManagedQueueFailedJobDelete extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Delete Failed Job');
+        intro('Deleting Failed Job');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 

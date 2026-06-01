@@ -37,7 +37,7 @@ class ManagedQueueCreate extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Create Managed Queue');
+        intro('Creating Managed Queue');
 
         $composer = app(Composer::class)->setWorkingPath(getcwd());
 

@@ -22,7 +22,7 @@ class ManagedQueuePause extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Pause Managed Queue');
+        intro('Pausing Managed Queue');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 

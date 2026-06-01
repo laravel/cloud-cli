@@ -21,7 +21,7 @@ class ManagedQueueFailedJobRetry extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Retry Failed Job');
+        intro('Retrying Failed Job');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 

@@ -22,7 +22,7 @@ class ManagedQueuePurge extends BaseCommand
     {
         $this->ensureClient();
 
-        intro('Purge Managed Queue');
+        intro('Purging Managed Queue');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
