@@ -19,6 +19,9 @@ class UpdateInstanceRequestData extends RequestData
         public readonly ?int $sleepTimeout = null,
         public readonly ?int $scalingCpuThresholdPercentage = null,
         public readonly ?int $scalingMemoryThresholdPercentage = null,
+        public readonly ?int $visibilityTimeout = null,
+        public readonly ?int $pollingInterval = null,
+        public readonly ?int $shutdownTimeout = null,
     ) {
         //
     }
@@ -39,6 +42,9 @@ class UpdateInstanceRequestData extends RequestData
             'sleep_timeout' => $this->sleepTimeout,
             'scaling_cpu_threshold_percentage' => $this->scalingCpuThresholdPercentage,
             'scaling_memory_threshold_percentage' => $this->scalingMemoryThresholdPercentage,
+            'visibility_timeout' => $this->visibilityTimeout,
+            'polling_interval' => $this->pollingInterval,
+            'shutdown_timeout' => $this->shutdownTimeout,
         ]);
     }
 }

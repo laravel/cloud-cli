@@ -15,6 +15,9 @@ class CreateInstanceRequestData extends RequestData
         public readonly ?bool $usesScheduler = null,
         public readonly ?int $scalingCpuThresholdPercentage = null,
         public readonly ?int $scalingMemoryThresholdPercentage = null,
+        public readonly ?int $visibilityTimeout = null,
+        public readonly ?int $pollingInterval = null,
+        public readonly ?int $shutdownTimeout = null,
     ) {
         //
     }
@@ -31,6 +34,9 @@ class CreateInstanceRequestData extends RequestData
             'uses_scheduler' => $this->usesScheduler,
             'scaling_cpu_threshold_percentage' => $this->scalingCpuThresholdPercentage,
             'scaling_memory_threshold_percentage' => $this->scalingMemoryThresholdPercentage,
+            'visibility_timeout' => $this->visibilityTimeout,
+            'polling_interval' => $this->pollingInterval,
+            'shutdown_timeout' => $this->shutdownTimeout,
         ]);
     }
 }
