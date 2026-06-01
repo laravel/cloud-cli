@@ -1,6 +1,19 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.4.2...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.0...main)
+
+## [v0.5.0](https://github.com/laravel/cloud-cli/compare/v0.4.2...v0.5.0) - 2026-06-01
+
+### What's Changed
+
+* Bump shivammathur/setup-php from 2.37.0 to 2.37.1 in the github-actions group across 1 directory by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/cloud-cli/pull/161
+* Add managed queue commands by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/164
+
+### New Contributors
+
+* [@dependabot](https://github.com/dependabot)[bot] made their first contribution in https://github.com/laravel/cloud-cli/pull/161
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.4.2...v0.5.0
 
 ## [v0.4.2](https://github.com/laravel/cloud-cli/compare/v0.4.1...v0.4.2) - 2026-05-18
 
