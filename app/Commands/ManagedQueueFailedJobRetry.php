@@ -61,7 +61,9 @@ class ManagedQueueFailedJobRetry extends BaseCommand
             ])->toArray(),
             actions: [
                 Key::ENTER => [
-                    fn ($row) => $row[0],
+                    function ($row) use (&$jobId) {
+                        $jobId = $row[0];
+                    },
                     'Select',
                 ],
             ],
