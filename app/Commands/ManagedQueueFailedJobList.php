@@ -31,12 +31,10 @@ class ManagedQueueFailedJobList extends BaseCommand
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
-        $jobs = spin(
-            fn () => $this->client->instances()->failedJobs($instance->id),
+        $items = spin(
+            fn () => $this->client->instances()->failedJobs($instance->id)->collect(),
             'Fetching failed jobs...',
         );
-
-        $items = $jobs->collect();
 
         $this->outputJsonIfWanted($items);
 
