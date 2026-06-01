@@ -3,6 +3,7 @@
 namespace App\Resolvers;
 
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceType;
 use App\Resolvers\Concerns\HasAnApplication;
 
 use function Laravel\Prompts\select;
@@ -12,9 +13,18 @@ class InstanceResolver extends Resolver
 {
     use HasAnApplication;
 
+    protected ?string $instanceType = null;
+
     public function resolve(): ?EnvironmentInstance
     {
         return $this->from();
+    }
+
+    public function ofType(InstanceType $type): self
+    {
+        $this->instanceType = $type->value;
+
+        return $this;
     }
 
     public function from(?string $idOrName = null): ?EnvironmentInstance
@@ -24,6 +34,10 @@ class InstanceResolver extends Resolver
 
         if (! $instance) {
             $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name.').'. Run `cloud instance:list --json` to see available instances.');
+        }
+
+        if ($this->instanceType && $instance->type !== $this->instanceType) {
+            $this->failAndExit("Instance '{$instance->name}' is not of type {$this->instanceType}.");
         }
 
         $this->displayResolved('Instance', $instance->name, $instance->id);
@@ -49,15 +63,17 @@ class InstanceResolver extends Resolver
             ->withApplication($this->application())
             ->include('instances')
             ->resolve();
-        $instances = $this->client->instances()->include('environment')->list($environment->id)->collect();
+        $instances = $this->client->instances()
+            ->include('environment')
+            ->list($environment->id)
+            ->collect()
+            ->filter(fn ($instance) => $this->instanceType ? $instance->type === $this->instanceType : true);
 
         if ($instances->isEmpty()) {
             $this->failAndExit('No instances found for environment '.$environment->name);
         }
 
         if ($instances->hasSole()) {
-            answered(label: 'Instance', answer: $instances->first()->name);
-
             return $instances->first();
         }
 
