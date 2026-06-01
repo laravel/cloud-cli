@@ -29,7 +29,7 @@ class ManagedQueuePurge extends BaseCommand
         $this->confirmDestructive("Purge all messages from queue '{$instance->name}'?");
 
         $updated = spin(
-            fn() => $this->client->instances()->purge($instance->id),
+            fn () => $this->client->instances()->purge($instance->id),
             'Purging managed queue...',
         );
 
