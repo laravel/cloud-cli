@@ -36,6 +36,10 @@ class InstanceResolver extends Resolver
             $this->failAndExit('Unable to resolve instance: '.($idOrName ?? 'Provide a valid instance ID or name.').'. Run `cloud instance:list --json` to see available instances.');
         }
 
+        if ($this->instanceType && $instance->type !== $this->instanceType) {
+            $this->failAndExit("Instance '{$instance->name}' is not of type {$this->instanceType}.");
+        }
+
         $this->displayResolved('Instance', $instance->name, $instance->id);
 
         return $instance;
