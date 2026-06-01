@@ -12,7 +12,7 @@ class ManagedQueueResume extends BaseCommand
 {
     protected ?string $jsonDataClass = EnvironmentInstance::class;
 
-    protected $signature = 'managed-queue:resume {instance? : The instance ID} {--force : Skip confirmation}';
+    protected $signature = 'managed-queue:resume {instance? : The instance ID}';
 
     protected $description = 'Resume a managed queue';
 
@@ -25,8 +25,6 @@ class ManagedQueueResume extends BaseCommand
         intro('Resume Managed Queue');
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
-
-        $this->confirmDestructive("Resume managed queue '{$instance->name}'?");
 
         $updated = spin(
             fn () => $this->client->instances()->resume($instance->id),
