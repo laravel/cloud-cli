@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceType;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -21,7 +22,7 @@ class ManagedQueuePurge extends BaseCommand
 
         intro('Purge Managed Queue');
 
-        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
+        $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
         $this->confirmDestructive("Purge all messages from queue '{$instance->name}'?");
 

@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceType;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
@@ -11,7 +12,7 @@ class ManagedQueueResume extends BaseCommand
 {
     protected ?string $jsonDataClass = EnvironmentInstance::class;
 
-    protected $signature = 'managed-queue:resume {instance? : The instance ID}';
+    protected $signature = 'managed-queue:resume {instance? : The instance ID} {--force : Skip confirmation}';
 
     protected $description = 'Resume a managed queue';
 
@@ -21,7 +22,9 @@ class ManagedQueueResume extends BaseCommand
 
         intro('Resume Managed Queue');
 
-        $instance = $this->resolvers()->instance()->from($this->argument('instance'));
+        $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
+
+        $this->confirmDestructive("Resume managed queue '{$instance->name}'?");
 
         $updated = spin(
             fn () => $this->client->instances()->resume($instance->id),
