@@ -4,6 +4,8 @@ namespace App\Commands;
 
 use App\Client\Requests\CreateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
+use App\Enums\InstanceScalingType;
+use App\Enums\InstanceType;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -82,12 +84,12 @@ class InstanceCreate extends BaseCommand
             'scaling_type',
             fn ($resolver) => $resolver
                 ->fromInput(
-                    fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? 'custom' : 'none'),
+                    fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? InstanceScalingType::CUSTOM : InstanceScalingType::NONE),
                 )
                 ->nonInteractively(fn () => 'none'),
         );
 
-        $isCustom = $this->form()->get('scaling_type') === 'custom';
+        $isCustom = $this->form()->get('scaling_type') === InstanceScalingType::CUSTOM;
 
         $this->form()->prompt(
             'min_replicas',
@@ -144,11 +146,6 @@ class InstanceCreate extends BaseCommand
         }
 
         $this->form()->prompt(
-            'type',
-            fn ($resolver) => $resolver->fromInput(fn () => 'service'),
-        );
-
-        $this->form()->prompt(
             'uses_scheduler',
             fn ($resolver) => $resolver
                 ->fromInput(
@@ -165,7 +162,7 @@ class InstanceCreate extends BaseCommand
                 new CreateInstanceRequestData(
                     environmentId: $environmentId,
                     name: $this->form()->get('name'),
-                    type: $this->form()->get('type'),
+                    type: InstanceType::SERVICE,
                     size: $this->form()->get('size'),
                     scalingType: $this->form()->get('scaling_type'),
                     minReplicas: $this->form()->integer('min_replicas'),
