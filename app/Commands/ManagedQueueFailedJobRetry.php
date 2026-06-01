@@ -15,6 +15,8 @@ class ManagedQueueFailedJobRetry extends BaseCommand
 
     protected $description = 'Retry a failed job on a managed queue';
 
+    protected $aliases = ['queue:retry-failed-job'];
+
     public function handle()
     {
         $this->ensureClient();

@@ -16,6 +16,8 @@ class ManagedQueueSetDefault extends BaseCommand
 
     protected $description = 'Set a managed queue as the default';
 
+    protected $aliases = ['queue:set-default'];
+
     public function handle()
     {
         $this->ensureClient();

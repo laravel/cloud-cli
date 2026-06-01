@@ -21,6 +21,8 @@ class ManagedQueueFailedJobList extends BaseCommand
 
     protected $description = 'List failed jobs for a managed queue';
 
+    protected $aliases = ['queue:failed-jobs'];
+
     public function handle()
     {
         $this->ensureClient();

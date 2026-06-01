@@ -15,6 +15,8 @@ class ManagedQueueFailedJobDelete extends BaseCommand
 
     protected $description = 'Delete a failed job from a managed queue';
 
+    protected $aliases = ['queue:delete-failed-job'];
+
     public function handle()
     {
         $this->ensureClient();

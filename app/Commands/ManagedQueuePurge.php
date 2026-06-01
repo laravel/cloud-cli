@@ -14,6 +14,8 @@ class ManagedQueuePurge extends BaseCommand
 
     protected $signature = 'managed-queue:purge {instance? : The instance ID} {--force : Skip confirmation}';
 
+    protected $aliases = ['queue:purge'];
+
     protected $description = 'Purge all messages from a managed queue';
 
     public function handle()
@@ -27,7 +29,7 @@ class ManagedQueuePurge extends BaseCommand
         $this->confirmDestructive("Purge all messages from queue '{$instance->name}'?");
 
         $updated = spin(
-            fn () => $this->client->instances()->purge($instance->id),
+            fn() => $this->client->instances()->purge($instance->id),
             'Purging managed queue...',
         );
 

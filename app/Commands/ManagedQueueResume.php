@@ -16,6 +16,8 @@ class ManagedQueueResume extends BaseCommand
 
     protected $description = 'Resume a managed queue';
 
+    protected $aliases = ['queue:resume'];
+
     public function handle()
     {
         $this->ensureClient();

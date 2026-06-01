@@ -16,6 +16,8 @@ class ManagedQueuePause extends BaseCommand
 
     protected $description = 'Pause a managed queue';
 
+    protected $aliases = ['queue:pause'];
+
     public function handle()
     {
         $this->ensureClient();

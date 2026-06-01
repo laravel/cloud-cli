@@ -31,6 +31,8 @@ class ManagedQueueCreate extends BaseCommand
 
     protected $description = 'Create a new managed queue';
 
+    protected $aliases = ['queue:create'];
+
     public function handle()
     {
         $this->ensureClient();
