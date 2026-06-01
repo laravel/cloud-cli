@@ -4,9 +4,9 @@ namespace App\Commands;
 
 use App\Enums\InstanceType;
 use Illuminate\Support\Str;
-use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\spin;
 
 class ManagedQueueFailedJobDelete extends BaseCommand
@@ -25,21 +25,29 @@ class ManagedQueueFailedJobDelete extends BaseCommand
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
-        $jobId = $this->argument('job') ?? $this->selectFailedJob($instance->id);
+        $jobIds = $this->argument('job') ?? $this->selectFailedJob($instance->id);
 
-        $this->confirmDestructive("Delete failed job '{$jobId}'?");
+        if (! is_array($jobIds)) {
+            $jobIds = [$jobIds];
+        }
+
+        $jobLabel = Str::plural('job', count($jobIds));
+
+        $this->confirmDestructive("Delete failed {$jobLabel}?");
 
         spin(
-            fn () => $this->client->instances()->deleteFailedJob($instance->id, $jobId),
-            'Deleting failed job...',
+            fn () => collect($jobIds)->each(
+                fn ($jobId) => $this->client->instances()->deleteFailedJob($instance->id, $jobId),
+            ),
+            "Deleting failed {$jobLabel}...",
         );
 
-        $this->outputJsonIfWanted('Failed job deleted.');
+        $this->outputJsonIfWanted("Failed {$jobLabel} deleted.");
 
-        success('Failed job deleted');
+        success("Failed {$jobLabel} deleted");
     }
 
-    protected function selectFailedJob(string $instanceId): string
+    protected function selectFailedJob(string $instanceId): array
     {
         $jobs = spin(
             fn () => $this->client->instances()->failedJobs($instanceId)->collect(),
@@ -52,27 +60,11 @@ class ManagedQueueFailedJobDelete extends BaseCommand
 
         $this->ensureInteractive('No failed jobs found. Provide a job ID.');
 
-        $jobId = null;
-
-        dataTable(
-            headers: ['ID', 'Name', 'Queue', 'Exception', 'Failed At'],
-            rows: $jobs->map(fn ($job) => [
-                $job->id,
-                $job->name,
-                $job->queue,
-                Str::limit($job->exception ?? '-', 30),
-                $job->failedAt?->format('Y-m-d H:i:s') ?? '-',
+        return multiselect(
+            label: 'Select failed jobs to delete',
+            options: $jobs->mapWithKeys(fn ($job) => [
+                $job->id => "{$job->name} ({$job->queue}, failed at {$job->failedAt?->format('Y-m-d H:i:s')})",
             ])->toArray(),
-            actions: [
-                Key::ENTER => [
-                    function ($row) use (&$jobId) {
-                        $jobId = $row[0];
-                    },
-                    'Select',
-                ],
-            ],
         );
-
-        return $jobId ?? '';
     }
 }
