@@ -129,6 +129,7 @@ if [ -f ".env" ]; then
 fi
 
 info "Building binary..."
+composer install --no-dev
 php cloud app:build --build-version="$NEW_TAG"
 
 if [ -f ".env.bak" ]; then
