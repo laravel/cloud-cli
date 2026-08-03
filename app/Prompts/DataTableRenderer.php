@@ -96,7 +96,10 @@ class DataTableRenderer extends Renderer
         }
 
         if (empty($headers)) {
-            $tableStyle->setCrossingChars('┼', '', '', '', '┤', '┘</>', '┴', '└', '├', '<fg=gray>╭', '┬', '╮');
+            // A header-less table draws its first separator with the "top" crossings on
+            // symfony/console 7.4.15 and 8.1.2 and above, and with the "top bottom"
+            // ones before that, so the corners are given to both...
+            $tableStyle->setCrossingChars('┼', '<fg=gray>╭', '┬', '╮', '┤', '┘</>', '┴', '└', '├', '<fg=gray>╭', '┬', '╮');
         } else {
             $tableStyle->setCrossingChars('┼', '<fg=gray>╭', '┬', '╮', '┤', '╯</>', '┴', '╰', '├');
         }
