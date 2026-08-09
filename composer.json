@@ -28,6 +28,7 @@
         "illuminate/validation": "^13.0",
         "laravel-zero/framework": "^13.0",
         "laravel-zero/phar-updater": "^1.4",
+        "laravel/agent-detector": "^2.0",
         "laravel/pint": "^1.25.1",
         "mockery/mockery": "^1.6.12",
         "pestphp/pest": "^3.8.4|^4.1.2",
@@ -36,7 +37,6 @@
         "saloonphp/cache-plugin": "^3.1",
         "saloonphp/pagination-plugin": "^2.3",
         "saloonphp/saloon": "^4.0",
-        "laravel/agent-detector": "^2.0",
         "spatie/laravel-data": "^4.19"
     },
     "autoload": {
