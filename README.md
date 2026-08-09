@@ -4,7 +4,7 @@ A Laravel Zero CLI for deploying and managing applications on [Laravel Cloud](ht
 
 ## Requirements
 
-- **PHP 8.2+**
+- **PHP 8.3+**
 - **Composer**
 - **GitHub CLI (`gh`)** — installed and authenticated (used for repo linking and GitHub API)
 - **Git** — for repository detection and `repo:config`
