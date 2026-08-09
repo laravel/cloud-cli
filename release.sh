@@ -123,18 +123,8 @@ if [[ ! "$CONFIRM" =~ ^[Yy]$ ]]; then
     exit 0
 fi
 
-if [ -f ".env" ]; then
-    mv .env .env.bak
-    info "Backed up .env to .env.bak"
-fi
-
-info "Building binary..."
-php cloud app:build --build-version="$NEW_TAG"
-
-if [ -f ".env.bak" ]; then
-    mv .env.bak .env
-    info "Restored .env from .env.bak"
-fi
+info "Building $NEW_TAG..."
+bash scripts/build.sh "$NEW_TAG"
 
 info "Smoke testing binary..."
 
