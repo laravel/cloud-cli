@@ -1,9 +1,8 @@
 <?php
 
-use App\Commands\BaseCommand;
-use App\Dto\Environment;
 use App\Support\SensitiveValues;
 use Illuminate\Support\Facades\Artisan;
+use Tests\Fixtures\SensitiveJsonOutputTestCommand;
 
 beforeEach(function () {
     Artisan::registerCommand(new SensitiveJsonOutputTestCommand);
@@ -41,33 +40,3 @@ it('reveals environmentVariables when --show-sensitive is passed', function () {
         ['key' => 'STRIPE_SECRET', 'value' => 'sk_live_xyz'],
     ]);
 });
-
-class SensitiveJsonOutputTestCommand extends BaseCommand
-{
-    protected $signature = 'test:sensitive-json';
-
-    public function handle(): void
-    {
-        $env = Environment::from([
-            'id' => 'env-1',
-            'url' => 'https://example.com',
-            'name' => 'production',
-            'branch' => 'main',
-            'status' => 'running',
-            'instances' => null,
-            'buildCommand' => null,
-            'deployCommand' => null,
-            'slug' => 'production',
-            'statusEnum' => 'running',
-            'createdFromAutomation' => false,
-            'vanityDomain' => 'example.com',
-            'phpMajorVersion' => '8.3',
-            'environmentVariables' => [
-                ['key' => 'APP_KEY', 'value' => 'base64:secret'],
-                ['key' => 'STRIPE_SECRET', 'value' => 'sk_live_xyz'],
-            ],
-        ]);
-
-        $this->outputJsonIfWanted($env);
-    }
-}
