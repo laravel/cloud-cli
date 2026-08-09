@@ -2,7 +2,7 @@
 
 namespace App\Support;
 
-use AgentDetector\AgentDetector;
+use Laravel\AgentDetector\AgentDetector;
 
 trait DetectsNonInteractiveEnvironments
 {

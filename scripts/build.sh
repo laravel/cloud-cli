@@ -16,11 +16,11 @@ RUNTIME_PACKAGES=(
     "illuminate/validation"
     "laravel-zero/framework"
     "laravel-zero/phar-updater"
+    "laravel/agent-detector"
     "php-parallel-lint/php-console-highlighter"
     "saloonphp/cache-plugin"
     "saloonphp/pagination-plugin"
     "saloonphp/saloon"
-    "shipfastlabs/agent-detector"
     "spatie/laravel-data"
 )
 
