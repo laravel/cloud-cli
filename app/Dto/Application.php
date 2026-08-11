@@ -94,7 +94,7 @@ class Application extends Data
         $environment ??= collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
 
         $parts = [
-            config('app.base_url'),
+            config('cloud.base_url'),
             $this->organization->slug,
             $this->slug,
         ];

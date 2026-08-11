@@ -77,7 +77,7 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function resolveBaseUrl(): string
     {
-        return config('app.base_url').'/api';
+        return config('cloud.base_url').'/api';
     }
 
     protected function defaultAuth(): TokenAuthenticator

@@ -16,8 +16,8 @@ class ConfigRepository
     {
         $filename = 'config.json';
 
-        if (config('app.has_custom_base_url')) {
-            $filename = str_replace('.', '-', parse_url(config('app.base_url'))['host']).'-config.json';
+        if (config('cloud.has_custom_base_url')) {
+            $filename = str_replace('.', '-', parse_url(config('cloud.base_url'))['host']).'-config.json';
         }
 
         $this->configPath = join_paths($this->getConfigDirectory(), $filename);
