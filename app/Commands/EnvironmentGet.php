@@ -31,7 +31,7 @@ class EnvironmentGet extends BaseCommand
             'ID' => $environment->id,
             'Name' => $environment->name,
             'Branch' => $environment->branch ?? 'N/A',
-            'Status' => $environment->status,
+            'Status' => $environment->statusEnum->label(),
             'Web URL' => $environment->url,
             'Dashboard URL' => $application->url($environment),
             'PHP Version' => $environment->phpMajorVersion,

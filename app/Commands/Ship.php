@@ -314,7 +314,7 @@ class Ship extends BaseCommand
 
         $enableOptions = [
             'scheduler' => 'Laravel Scheduler',
-            'hibernation' => 'Hibernation',
+            'scale_to_zero' => 'Scale to Zero',
             'database_cluster' => 'Database Cluster',
         ];
 
@@ -346,7 +346,7 @@ class Ship extends BaseCommand
             'scheduler' => 'uses_scheduler',
             'octane' => 'uses_octane',
             'inertia_ssr' => 'uses_inertia_ssr',
-            'hibernation' => 'uses_sleep_mode',
+            'scale_to_zero' => 'uses_sleep_mode',
         ];
 
         foreach ($mapping as $option => $param) {
@@ -356,16 +356,16 @@ class Ship extends BaseCommand
         }
 
         if ($instanceParams['uses_sleep_mode'] ?? false) {
-            $hibernateFor = number(
-                label: 'Hibernate after',
+            $scaleToZeroAfter = number(
+                label: 'Scale to zero after',
                 default: '5',
                 required: true,
-                hint: 'The number of minutes without HTTP requests received before your application hibernates (1-60)',
+                hint: 'The number of minutes without HTTP requests received before your application scales to zero (1-60)',
                 min: 1,
                 max: 60,
             );
 
-            $instanceParams['sleep_timeout'] = $hibernateFor;
+            $instanceParams['sleep_timeout'] = $scaleToZeroAfter;
         }
 
         if (in_array('database_cluster', $selectedOptions)) {

@@ -28,11 +28,34 @@ class InstanceUpdate extends BaseCommand
                             {--scaling-memory-threshold-percentage= : Scaling memory threshold percentage}
                             {--uses-octane= : Uses Octane}
                             {--uses-inertia-ssr= : Uses Inertia SSR}
-                            {--hibernation= : Uses hibernation}
-                            {--hibernation-timeout= : Hibernation timeout}
+                            {--scale-to-zero= : Uses scale to zero}
+                            {--scale-to-zero-timeout= : Scale to zero timeout}
+                            {--hibernation= : Deprecated alias for --scale-to-zero}
+                            {--hibernation-timeout= : Deprecated alias for --scale-to-zero-timeout}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update an instance';
+
+    /**
+     * @var array<string, string>
+     */
+    protected array $deprecatedOptions = [
+        'hibernation' => 'scale-to-zero',
+        'hibernation-timeout' => 'scale-to-zero-timeout',
+    ];
+
+    public function options()
+    {
+        $options = parent::options();
+
+        foreach ($this->deprecatedOptions as $deprecated => $current) {
+            if (($options[$deprecated] ?? null) !== null && ($options[$current] ?? null) === null) {
+                $options[$current] = $options[$deprecated];
+            }
+        }
+
+        return $options;
+    }
 
     public function handle()
     {
@@ -209,25 +232,25 @@ class InstanceUpdate extends BaseCommand
             'uses_sleep_mode',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
-                    label: 'Use sleep mode?',
+                    label: 'Use scale to zero?',
                     default: $value ?? $instance->environment->usesHibernation ?? true,
                 ),
             ),
-            'hibernation',
-        )->setPreviousValue($instance->environment->usesHibernation)->setLabel('Hibernation');
+            'scale-to-zero',
+        )->setPreviousValue($instance->environment->usesHibernation)->setLabel('Scale to zero');
 
         $this->form()->define(
             'sleep_timeout',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => number(
-                    label: 'Sleep timeout',
+                    label: 'Scale to zero timeout',
                     default: (string) ($value ?? ''),
                     min: 1,
                     max: 60,
                 ),
             ),
-            'hibernation-timeout',
-        )->setLabel('Hibernation timeout');
+            'scale-to-zero-timeout',
+        )->setLabel('Scale to zero timeout');
     }
 
     protected function collectDataAndUpdate(EnvironmentInstance $instance): EnvironmentInstance
