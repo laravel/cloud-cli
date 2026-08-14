@@ -2,9 +2,11 @@
 
 namespace App\Dto;
 
+use App\Dto\Transformers\MaskSensitiveKeys;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
@@ -17,6 +19,7 @@ class DatabaseCluster extends Data
         public readonly string $status,
         public readonly string $region,
         public readonly array $config,
+        #[WithTransformer(MaskSensitiveKeys::class)]
         public readonly array $connection,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,

@@ -2,8 +2,10 @@
 
 namespace App\Dto;
 
+use App\Dto\Transformers\MaskSensitiveValue;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
@@ -16,6 +18,7 @@ class BucketKey extends Data
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $accessKeyId = null,
+        #[WithTransformer(MaskSensitiveValue::class)]
         public readonly ?string $secretAccessKey = null,
     ) {
         //
