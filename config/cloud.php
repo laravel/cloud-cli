@@ -18,6 +18,6 @@ return [
 
     'default_url' => $defaultUrl,
 
-    'base_url' => trim(env('CLOUD_BASE_URL') ?: $defaultUrl, '/'),
+    'base_url' => rtrim(env('CLOUD_BASE_URL') ?: $defaultUrl, '/'),
 
 ];
