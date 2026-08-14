@@ -80,7 +80,7 @@ class DatabaseClusterUpdate extends BaseCommand
         foreach ($type->configSchema as $schemaField) {
             $schema = is_array($schemaField) ? $schemaField : $schemaField->toArray();
             $name = $schema['name'];
-            $value = $this->form()->get($name);
+            $value = $this->form()->get('config.'.$name);
 
             if ($value !== null) {
                 $config[$name] = $this->coerceConfigValue($name, $value, $type);
@@ -91,12 +91,7 @@ class DatabaseClusterUpdate extends BaseCommand
             fn () => $this->client->databaseClusters()->update(
                 new UpdateDatabaseClusterRequestData(
                     clusterId: $cluster->id,
-                    config: collect($config)
-                        ->filter(fn ($value, $key) => str_starts_with($key, 'config.'))
-                        ->mapWithKeys(fn ($value, $key) => [
-                            str_replace('config.', '', $key) => $value,
-                        ])
-                        ->toArray(),
+                    config: $config,
                 ),
             ),
             'Updating database cluster...',
@@ -109,7 +104,8 @@ class DatabaseClusterUpdate extends BaseCommand
     {
         foreach ($type->configSchema as $field) {
             $schema = is_array($field) ? $field : $field->toArray();
-            $name = 'config.'.$schema['name'];
+            $name = $schema['name'];
+            $key = 'config.'.$name;
             $optionName = str_replace('_', '-', $name);
             $current = $cluster->config[$name] ?? $schema['example'] ?? null;
             $fieldType = $schema['type'] ?? 'string';
@@ -128,7 +124,7 @@ class DatabaseClusterUpdate extends BaseCommand
                 $options = is_array($enum) ? array_combine($enum, $enum) : $enum;
 
                 $this->form()->define(
-                    $name,
+                    $key,
                     fn ($resolver) => $resolver->fromInput(
                         fn ($value) => select(
                             label: $label,
@@ -138,10 +134,10 @@ class DatabaseClusterUpdate extends BaseCommand
                         ),
                     ),
                     $optionName,
-                )->setPreviousValue($current !== null ? (string) $current : '');
+                )->setLabel($label)->setPreviousValue($current !== null ? (string) $current : '');
             } elseif ($fieldType === 'boolean') {
                 $this->form()->define(
-                    $name,
+                    $key,
                     fn ($resolver) => $resolver->fromInput(
                         fn ($value) => confirm(
                             label: $label,
@@ -150,10 +146,10 @@ class DatabaseClusterUpdate extends BaseCommand
                         ),
                     ),
                     $optionName,
-                )->setPreviousValue($current !== null ? ($current ? 'true' : 'false') : '');
+                )->setLabel($label)->setPreviousValue($current !== null ? ($current ? 'true' : 'false') : '');
             } elseif ($fieldType === 'integer') {
                 $this->form()->define(
-                    $name,
+                    $key,
                     fn ($resolver) => $resolver->fromInput(
                         fn ($value) => (int) number(
                             label: $label,
@@ -165,10 +161,10 @@ class DatabaseClusterUpdate extends BaseCommand
                         ),
                     ),
                     $optionName,
-                )->setPreviousValue($current !== null ? (string) $current : '');
+                )->setLabel($label)->setPreviousValue($current !== null ? (string) $current : '');
             } elseif ($fieldType === 'number') {
                 $this->form()->define(
-                    $name,
+                    $key,
                     fn ($resolver) => $resolver->fromInput(
                         fn ($value) => (float) number(
                             label: $label,
@@ -180,10 +176,10 @@ class DatabaseClusterUpdate extends BaseCommand
                         ),
                     ),
                     $optionName,
-                )->setPreviousValue($current !== null ? (string) $current : '');
+                )->setLabel($label)->setPreviousValue($current !== null ? (string) $current : '');
             } else {
                 $this->form()->define(
-                    $name,
+                    $key,
                     fn ($resolver) => $resolver->fromInput(
                         fn ($value) => text(
                             label: $label,
@@ -193,7 +189,7 @@ class DatabaseClusterUpdate extends BaseCommand
                         ),
                     ),
                     $optionName,
-                )->setPreviousValue($current !== null ? (string) $current : '');
+                )->setLabel($label)->setPreviousValue($current !== null ? (string) $current : '');
             }
         }
     }

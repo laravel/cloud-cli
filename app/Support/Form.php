@@ -117,7 +117,8 @@ class Form
     {
         $result = $this->get($key, $default);
 
-        return ($result === null) ? null : (bool) $result;
+        // Options arrive as strings, so "false" and "0" must not cast to true.
+        return ($result === null) ? null : filter_var($result, FILTER_VALIDATE_BOOLEAN);
     }
 
     /**
