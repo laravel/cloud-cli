@@ -28,7 +28,7 @@ class DatabaseClusterUpdate extends BaseCommand
                             {--uses-scheduled-snapshots= : Whether scheduled backups are enabled}
                             {--cu-min= : Minimum compute units (Neon)}
                             {--cu-max= : Maximum compute units (Neon)}
-                            {--suspend-seconds= : Seconds before hibernation (Neon)}
+                            {--suspend-seconds= : Seconds before scale to zero (Neon)}
                             {--uses-pitr= : Whether point-in-time recovery is enabled}
                             {--maintenance-window= : UTC maintenance window}
                             {--deployment-option= : single-az or multi-az}

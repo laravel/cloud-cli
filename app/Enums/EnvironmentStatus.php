@@ -8,4 +8,12 @@ enum EnvironmentStatus: string
     case RUNNING = 'running';
     case HIBERNATING = 'hibernating';
     case STOPPED = 'stopped';
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::HIBERNATING => 'scaled to zero',
+            default => $this->value,
+        };
+    }
 }

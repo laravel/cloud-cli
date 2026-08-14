@@ -53,7 +53,7 @@ class EnvironmentList extends BaseCommand
                 $env->id,
                 $env->name,
                 $env->branch ?? '—',
-                $env->status ?? '—',
+                $env->status ? $env->statusEnum->label() : '—',
             ])->toArray(),
             actions: [
                 Key::ENTER => [

@@ -100,13 +100,13 @@ enum DatabaseClusterPreset: string
             self::NeonServerlessPostgres18 => fn ($preset) => sprintf(
                 '%s vCPU units · %s · %s',
                 $preset['cu_min'] === $preset['cu_max'] ? $this->formatNumber($preset['cu_min']) : $this->formatNumber($preset['cu_min']).' – '.$this->formatNumber($preset['cu_max']),
-                $preset['suspend_seconds'] > 0 ? 'Hibernate after '.$preset['suspend_seconds'].' seconds' : 'No hibernation',
+                $preset['suspend_seconds'] > 0 ? 'Scale to zero after '.$preset['suspend_seconds'].' seconds' : 'No scale to zero',
                 $preset['retention_days'] === 0 ? 'No backups' : $preset['retention_days'].' days PITR',
             ),
             self::NeonServerlessPostgres17 => fn ($preset) => sprintf(
                 '%s vCPU units · %s · %s',
                 $preset['cu_min'] === $preset['cu_max'] ? $this->formatNumber($preset['cu_min']) : $this->formatNumber($preset['cu_min']).' – '.$this->formatNumber($preset['cu_max']),
-                $preset['suspend_seconds'] === 0 ? 'No hibernation' : 'Hibernate after '.$preset['suspend_seconds'].' seconds',
+                $preset['suspend_seconds'] === 0 ? 'No scale to zero' : 'Scale to zero after '.$preset['suspend_seconds'].' seconds',
                 $preset['retention_days'] === 0 ? 'No backups' : $preset['retention_days'].' days PITR',
             ),
         };
