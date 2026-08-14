@@ -33,18 +33,24 @@ class DatabaseRestoreCreate extends BaseCommand
 
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
+        [$snapshotId, $pointInTime] = $this->resolveRestoreSource($cluster);
+
+        $restored = $this->loopUntilValid(
+            fn () => $this->createRestore($cluster, $snapshotId, $pointInTime),
+        );
+
+        $this->outputJsonIfWanted($restored);
+
+        success("Database restore created: {$restored->name}");
+    }
+
+    /**
+     * @return array{0: ?string, 1: ?string}
+     */
+    protected function resolveRestoreSource(DatabaseCluster $cluster): array
+    {
         $snapshotId = $this->option('snapshot');
         $pointInTime = $this->option('point-in-time');
-
-        $this->form()->prompt(
-            'name',
-            fn ($resolver) => $resolver->fromInput(
-                fn (?string $value) => text(
-                    label: 'Name',
-                    default: $value ?? '',
-                ),
-            ),
-        );
 
         if (! $snapshotId && ! $pointInTime && $this->isInteractive()) {
             $snapshots = spin(
@@ -89,7 +95,23 @@ class DatabaseRestoreCreate extends BaseCommand
             throw new CommandExitException(self::FAILURE);
         }
 
-        $restored = spin(
+        return [$snapshotId, $pointInTime];
+    }
+
+    protected function createRestore(DatabaseCluster $cluster, ?string $snapshotId, ?string $pointInTime): DatabaseCluster
+    {
+        $this->form()->prompt(
+            'name',
+            fn ($resolver) => $resolver->fromInput(
+                fn (?string $value) => text(
+                    label: 'Name',
+                    default: $value ?? '',
+                    required: true,
+                ),
+            ),
+        );
+
+        return spin(
             fn () => $this->client->databaseRestores()->create(
                 new CreateDatabaseRestoreRequestData(
                     name: $this->form()->get('name'),
@@ -100,9 +122,5 @@ class DatabaseRestoreCreate extends BaseCommand
             ),
             'Creating restore...',
         );
-
-        $this->outputJsonIfWanted($restored);
-
-        success("Database restore created: {$restored->name}");
     }
 }

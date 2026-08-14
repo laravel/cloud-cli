@@ -103,6 +103,25 @@ function setupApplicationListMocks(?array $applications = null, int $status = 20
     ]);
 }
 
+function databaseClusterResponse(array $overrides = []): array
+{
+    return [
+        'data' => [
+            'id' => $overrides['id'] ?? 'db-123',
+            'type' => 'databaseClusters',
+            'attributes' => array_merge([
+                'name' => 'my-cluster',
+                'type' => 'laravel-mysql',
+                'status' => 'available',
+                'region' => 'us-east-1',
+                'config' => [],
+                'connection' => [],
+            ], $overrides['attributes'] ?? []),
+        ],
+        'included' => [],
+    ];
+}
+
 function usageResponse(array $overrides = []): array
 {
     $base = [
