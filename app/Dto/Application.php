@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Cloud;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
@@ -94,7 +95,7 @@ class Application extends Data
         $environment ??= collect($this->environments)->firstWhere('id', $this->defaultEnvironmentId);
 
         $parts = [
-            config('cloud.base_url'),
+            Cloud::baseUrl(),
             $this->organization->slug,
             $this->slug,
         ];

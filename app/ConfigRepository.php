@@ -15,9 +15,10 @@ class ConfigRepository
     public function __construct()
     {
         $filename = 'config.json';
+        $baseUrl = Cloud::baseUrl();
 
-        if (config('cloud.has_custom_base_url')) {
-            $filename = str_replace('.', '-', parse_url(config('cloud.base_url'))['host']).'-config.json';
+        if ($baseUrl !== config('cloud.default_url')) {
+            $filename = str_replace('.', '-', parse_url($baseUrl)['host']).'-config.json';
         }
 
         $this->configPath = join_paths($this->getConfigDirectory(), $filename);

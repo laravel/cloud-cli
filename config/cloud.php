@@ -12,10 +12,12 @@
 |
 */
 
+$defaultUrl = 'https://cloud.laravel.com';
+
 return [
 
-    'base_url' => rtrim(env('CLOUD_BASE_URL', 'https://cloud.laravel.com'), '/'),
+    'default_url' => $defaultUrl,
 
-    'has_custom_base_url' => env('CLOUD_BASE_URL') !== null,
+    'base_url' => trim(env('CLOUD_BASE_URL') ?: $defaultUrl, '/'),
 
 ];
