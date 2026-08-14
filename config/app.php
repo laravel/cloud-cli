@@ -63,8 +63,4 @@ return [
         TranslationServiceProvider::class,
     ],
 
-    'base_url' => rtrim(env('CLOUD_BASE_URL', 'https://cloud.laravel.com'), '/'),
-
-    'has_custom_base_url' => env('CLOUD_BASE_URL') !== null,
-
 ];

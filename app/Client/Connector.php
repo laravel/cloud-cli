@@ -23,6 +23,7 @@ use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\UsageResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
+use App\Cloud;
 use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Driver;
@@ -77,7 +78,7 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function resolveBaseUrl(): string
     {
-        return config('app.base_url').'/api';
+        return Cloud::baseUrl().'/api';
     }
 
     protected function defaultAuth(): TokenAuthenticator
