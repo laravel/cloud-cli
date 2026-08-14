@@ -2,8 +2,10 @@
 
 namespace App\Dto;
 
+use App\Dto\Transformers\MaskSensitiveKeys;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
@@ -20,6 +22,7 @@ class Cache extends Data
         public readonly bool $isPublic,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
+        #[WithTransformer(MaskSensitiveKeys::class)]
         public readonly array $connection = [],
         public readonly array $environmentIds = [],
     ) {

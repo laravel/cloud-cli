@@ -2,8 +2,10 @@
 
 namespace App\Dto;
 
+use App\Dto\Transformers\MaskSensitiveValue;
 use Carbon\CarbonImmutable;
 use Spatie\LaravelData\Attributes\WithCast;
+use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
 
@@ -19,6 +21,7 @@ class WebsocketApplication extends Data
         public readonly int $maxMessageSize,
         public readonly int $maxConnections,
         public readonly string $key,
+        #[WithTransformer(MaskSensitiveValue::class)]
         public readonly string $secret,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
