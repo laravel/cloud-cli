@@ -81,6 +81,11 @@ class ValueResolver
         return $this->value;
     }
 
+    public function canPromptForInput(): bool
+    {
+        return $this->isInteractive && $this->fromInputCallback !== null;
+    }
+
     public function retrieve(): mixed
     {
         return $this->value = $this->retrieveValue();

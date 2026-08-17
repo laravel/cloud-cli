@@ -21,6 +21,27 @@ class Form
 
     protected array $prompted = [];
 
+    protected ?string $scope = null;
+
+    /**
+     * Run the callback with every field it defines namespaced under $scope.
+     *
+     * A command that creates more than one resource (shipping an app also creates a
+     * database cluster) would otherwise reuse one `name` field for all of them, so the
+     * first prompt defined wins and every later resource is sent the wrong value.
+     */
+    public function withScope(string $scope, callable $callback): mixed
+    {
+        $previous = $this->scope;
+        $this->scope = $previous === null ? $scope : $previous.'.'.$scope;
+
+        try {
+            return $callback();
+        } finally {
+            $this->scope = $previous;
+        }
+    }
+
     /**
      * @param  callable(ValueResolver): ValueResolver  $callback
      */
@@ -29,6 +50,8 @@ class Form
         if ($callback) {
             $this->define($key, $callback, $optionOrArgKey);
         }
+
+        $key = $this->scopedKey($key);
 
         if (! in_array($key, $this->prompted)) {
             $this->prompted[] = $key;
@@ -47,11 +70,17 @@ class Form
      */
     public function define(string $key, callable $callback, ?string $optionOrArgKey = null): ValueResolver
     {
+        $scopedKey = $this->scopedKey($key);
         $optionOrArgKey = $optionOrArgKey ?? str($key)->replace('_', '-')->toString();
-        $argOrOptionValue = $this->options[$optionOrArgKey] ?? $this->arguments[$optionOrArgKey] ?? null;
+
+        // A scoped field belongs to a nested resource, so the command's own options are not its input.
+        $argOrOptionValue = $this->scope === null
+            ? $this->options[$optionOrArgKey] ?? $this->arguments[$optionOrArgKey] ?? null
+            : null;
+
         $resolutionType = array_key_exists($optionOrArgKey, $this->options) ? 'option' : 'argument';
 
-        $this->fields[$key] ??= [
+        $this->fields[$scopedKey] ??= [
             'resolver' => new ValueResolver(
                 $key,
                 $optionOrArgKey,
@@ -62,11 +91,16 @@ class Form
             'callback' => $callback,
         ];
 
-        if ($argOrOptionValue !== null && ! in_array($key, $this->prompted)) {
-            $this->prompted[] = $key;
+        if ($argOrOptionValue !== null && ! in_array($scopedKey, $this->prompted)) {
+            $this->prompted[] = $scopedKey;
         }
 
-        return $this->fields[$key]['resolver'];
+        return $this->fields[$scopedKey]['resolver'];
+    }
+
+    protected function scopedKey(string $key): string
+    {
+        return $this->scope === null ? $key : $this->scope.'.'.$key;
     }
 
     public function isInteractive(bool $isInteractive): self
@@ -99,11 +133,27 @@ class Form
 
     public function get(string $key, mixed $default = null): mixed
     {
+        $key = $this->scopedKey($key);
+
         if (! array_key_exists($key, $this->fields)) {
             return $default;
         }
 
         return $this->fields[$key]['resolver']->value();
+    }
+
+    /**
+     * Whether any of these errors belongs to a field the user can be prompted for again.
+     */
+    public function canPromptForAnyOf(ValidationErrors $errors): bool
+    {
+        foreach ($this->fields as $field) {
+            if ($errors->has($field['resolver']->key) && $field['resolver']->canPromptForInput()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public function integer(string $key, ?int $default = null): ?int

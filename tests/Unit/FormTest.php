@@ -60,6 +60,60 @@ it('requires a value when the non-interactive default is null', function () {
         ->toThrow(RuntimeException::class, 'type is required. Provide --type option.');
 });
 
+it('keeps a scoped field separate from the field of the same name outside the scope', function () {
+    $form = (new Form)
+        ->isInteractive(true)
+        ->options([])
+        ->arguments([]);
+
+    $form->prompt('name', fn ($resolver) => $resolver->fromInput(fn () => 'My App'));
+
+    $form->withScope('database_cluster', fn () => $form->prompt(
+        'name',
+        fn ($resolver) => $resolver->fromInput(fn () => 'my_app'),
+    ));
+
+    expect($form->get('name'))->toBe('My App');
+    expect($form->withScope('database_cluster', fn () => $form->get('name')))->toBe('my_app');
+});
+
+it('does not read the command options for a scoped field', function () {
+    $form = (new Form)
+        ->isInteractive(true)
+        ->options(['name' => 'my-app'])
+        ->arguments([]);
+
+    $form->withScope('database_cluster', fn () => $form->prompt(
+        'name',
+        fn ($resolver) => $resolver->fromInput(fn ($value) => $value ?? 'prompted'),
+    ));
+
+    expect($form->withScope('database_cluster', fn () => $form->get('name')))->toBe('prompted');
+});
+
+it('matches errors to a scoped field by the field name the API returned', function () {
+    $errors = new ValidationErrors;
+    $errors->add('name', 'The cluster name may only contain lowercase letters.');
+
+    $form = (new Form)
+        ->isInteractive(true)
+        ->options([])
+        ->arguments([])
+        ->errors($errors);
+
+    $form->withScope('database_cluster', fn () => $form->prompt(
+        'name',
+        fn ($resolver) => $resolver->fromInput(fn ($value) => $value === null ? 'TimeKeeper' : 'timekeeper'),
+    ));
+
+    expect($form->canPromptForAnyOf($errors))->toBeTrue();
+
+    // The error is still there, so prompting again asks the user for a new value.
+    $form->withScope('database_cluster', fn () => $form->prompt('name'));
+
+    expect($form->withScope('database_cluster', fn () => $form->get('name')))->toBe('timekeeper');
+});
+
 it('keeps errors passed in before prompting', function () {
     $errors = new ValidationErrors;
     $errors->add('name', 'Name has already been taken.');
