@@ -42,7 +42,6 @@ First deploy? → `cloud ship -n` (discover options via `cloud ship -h`)
 
 Existing app? →
 ```sh
-cloud repo:config
 cloud deploy {app_name} {environment} -n --open
 cloud deploy:monitor -n
 ```
@@ -158,8 +157,12 @@ Delegate `--detailed --json` to a subagent — the payload includes every databa
 ## Config
 
 1. Global: `~/.config/cloud/config.json` — auth tokens and preferences
-2. Repo-local: `.cloud/config.json` — app and environment defaults (set by `cloud repo:config`)
+2. Repo-local: `.cloud/config.json` — app and environment defaults (set by `cloud repo:config {application} -n`)
 3. CLI arguments override both
+
+Pass the application to `repo:config` — without it the command has to ask, and under `-n` it fails when the organization has more than one application. Deploy commands don't need these defaults; pass the application and environment to them directly.
+
+Multiple organizations means multiple stored API tokens. Every command reads `organization_id` from `.cloud/config.json` to pick one; if it isn't set, they fail. Set it with `cloud repo:config {application} --organization=<id|name|slug> -n`.
 
 ## Documentation
 

@@ -21,9 +21,9 @@ trait HasAClient
 
     protected Connector $client;
 
-    protected function ensureClient(bool $ignoreLocalConfig = false)
+    protected function ensureClient(bool $ignoreLocalConfig = false, ?string $organization = null)
     {
-        $apiToken = $this->resolveApiToken($ignoreLocalConfig);
+        $apiToken = $this->resolveApiToken($ignoreLocalConfig, $organization);
 
         $this->client = new Connector($apiToken);
     }
@@ -40,7 +40,7 @@ trait HasAClient
         $this->resolveApiToken();
     }
 
-    protected function resolveApiToken(bool $ignoreLocalConfig = false): string
+    protected function resolveApiToken(bool $ignoreLocalConfig = false, ?string $organization = null): string
     {
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
@@ -85,16 +85,26 @@ trait HasAClient
                 return $orgs->keys()->first();
             }
 
+            if ($organization) {
+                foreach ($orgs as $token => $org) {
+                    if (in_array($organization, [$org->id, $org->name, $org->slug], true)) {
+                        return $token;
+                    }
+                }
+
+                throw new RuntimeException("Unable to resolve organization [{$organization}]. Available organizations: ".$orgs->map(fn ($org) => $org->name)->join(', ').'.');
+            }
+
             if (! $ignoreLocalConfig && $defaultOrganizationId = app(LocalConfig::class)->get('organization_id')) {
-                foreach ($orgs as $token => $organization) {
-                    if ($organization->id === $defaultOrganizationId) {
+                foreach ($orgs as $token => $org) {
+                    if ($org->id === $defaultOrganizationId) {
                         return $token;
                     }
                 }
             }
 
             if (! stream_isatty(STDIN) || $this->isNonInteractiveEnvironment()) {
-                throw new RuntimeException('Multiple API tokens found. Set organization_id in .cloud/config.json or use `cloud auth:token` to manage tokens.');
+                throw new RuntimeException('Multiple API tokens found. Run `cloud repo:config --organization=<id|name|slug>` to set a default for this repository, or use `cloud auth:token` to manage tokens.');
             }
 
             $apiToken = select(
