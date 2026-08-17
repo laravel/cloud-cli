@@ -329,10 +329,8 @@ class Usage extends BaseCommand
 
         return match ($input) {
             'current' => 0,
-            'previous', '1' => 1,
-            '2' => 2,
-            '3' => 3,
-            default => 0,
+            'previous' => 1,
+            default => (int) $input,
         };
     }
 
