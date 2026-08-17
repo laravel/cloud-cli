@@ -94,4 +94,19 @@ class EnvironmentsResource extends Resource
     {
         $this->send(new StopEnvironmentRequest(new StopEnvironmentRequestData($environmentId)));
     }
+
+    public function withDefaultIncludes(): static
+    {
+        return $this->include(
+            'application',
+            'branch',
+            'deployments',
+            'currentDeployment',
+            'primaryDomain',
+            'instances',
+            'database',
+            'cache',
+            'websocketApplication',
+        );
+    }
 }

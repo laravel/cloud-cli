@@ -63,6 +63,10 @@ function createEnvironmentResponse(array $overrides = []): array
         $base['attributes'] = array_merge($base['attributes'], $overrides['attributes']);
     }
 
+    if (isset($overrides['relationships'])) {
+        $base['relationships'] = array_merge($base['relationships'] ?? [], $overrides['relationships']);
+    }
+
     return $base;
 }
 

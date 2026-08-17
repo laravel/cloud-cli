@@ -23,8 +23,6 @@ class EnvironmentResolver extends Resolver
 
     public function from(?string $idOrName = null): ?Environment
     {
-        $this->include('application', 'branch', 'deployments', 'currentDeployment', 'primaryDomain', 'instances');
-
         $identifier = $idOrName ?? $this->localConfig->environmentId();
         $environment = ($identifier ? $this->fromIdentifier($identifier) : null) ?? $this->fromBranch() ?? $this->fromInput();
 
