@@ -6,6 +6,7 @@ use App\Client\Requests\CreateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
 use App\Enums\InstanceScalingType;
 use App\Enums\InstanceType;
+use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -86,10 +87,12 @@ class InstanceCreate extends BaseCommand
                 ->fromInput(
                     fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? InstanceScalingType::CUSTOM : InstanceScalingType::NONE),
                 )
-                ->nonInteractively(fn () => 'none'),
+                ->nonInteractively(fn () => InstanceScalingType::NONE),
         );
 
-        $isCustom = $this->form()->get('scaling_type') === InstanceScalingType::CUSTOM;
+        $scalingType = $this->resolveScalingType($this->form()->get('scaling_type'));
+
+        $isCustom = $scalingType === InstanceScalingType::CUSTOM;
 
         $this->form()->prompt(
             'min_replicas',
@@ -164,7 +167,7 @@ class InstanceCreate extends BaseCommand
                     name: $this->form()->get('name'),
                     type: InstanceType::SERVICE,
                     size: $this->form()->get('size'),
-                    scalingType: $this->form()->get('scaling_type'),
+                    scalingType: $scalingType,
                     minReplicas: $this->form()->integer('min_replicas'),
                     maxReplicas: $this->form()->integer('max_replicas'),
                     usesScheduler: $this->form()->boolean('uses_scheduler'),
@@ -174,5 +177,24 @@ class InstanceCreate extends BaseCommand
             ),
             'Creating instance...',
         );
+    }
+
+    protected function resolveScalingType(mixed $value): InstanceScalingType
+    {
+        if ($value instanceof InstanceScalingType) {
+            return $value;
+        }
+
+        $scalingType = InstanceScalingType::tryFrom(strtolower(trim((string) $value)));
+
+        if ($scalingType === null) {
+            $valid = implode(', ', array_column(InstanceScalingType::cases(), 'value'));
+
+            $this->outputErrorOrThrow('Invalid --scaling-type value "'.$value.'". Must be one of: '.$valid);
+
+            throw new CommandExitException(self::FAILURE);
+        }
+
+        return $scalingType;
     }
 }
