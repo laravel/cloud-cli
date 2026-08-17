@@ -112,8 +112,13 @@ class ValueResolver
             return null;
         }
 
-        if ($this->nonInteractivelyCallback && $result = ($this->nonInteractivelyCallback)($this->value)) {
-            return $result;
+        if ($this->nonInteractivelyCallback) {
+            // Only null means "no default"; false and 0 are real defaults, so don't test truthiness.
+            $result = ($this->nonInteractivelyCallback)($this->value);
+
+            if ($result !== null) {
+                return $result;
+            }
         }
 
         $message = match ($this->resolveFromType) {
