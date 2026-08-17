@@ -6,14 +6,18 @@ use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
 use App\Prompts\Renderer;
+use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SuppressedOutput;
 use App\Resolvers\Resolvers;
 use App\Support\DetectsNonInteractiveEnvironments;
 use App\Support\Form;
 use App\Support\SensitiveValues;
 use App\Support\ValueResolver;
+use Closure;
 use Illuminate\Contracts\Support\Jsonable;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
+use Laravel\Prompts\AutoCompletePrompt;
 use Laravel\Prompts\Concerns\Colors;
 use Laravel\Prompts\Prompt;
 use LaravelZero\Framework\Commands\Command;
@@ -125,9 +129,37 @@ abstract class BaseCommand extends Command
     {
         parent::configurePrompts($input);
 
+        $this->configureAdditionalPromptFallbacks();
+
         if (Renderer::$suppressOutput) {
             Prompt::setOutput(new SuppressedOutput);
         }
+    }
+
+    /**
+     * Laravel Prompts keys fallbacks by exact class name, and Illuminate only registers
+     * them for the prompts it ships with. Without these, our own prompt subclasses have
+     * no fallback and throw on terminals that can't render prompts (native Windows).
+     */
+    protected function configureAdditionalPromptFallbacks(): void
+    {
+        SelectWithContextPrompt::fallbackUsing(fn (SelectWithContextPrompt $prompt) => $this->promptUntilValid(
+            fn () => $this->components->choice($prompt->label, $prompt->options, $prompt->default),
+            false,
+            $prompt->validate,
+        ));
+
+        AutoCompletePrompt::fallbackUsing(fn (AutoCompletePrompt $prompt) => $this->promptUntilValid(
+            fn () => $this->components->askWithCompletion(
+                $prompt->label,
+                $prompt->options instanceof Closure
+                    ? fn (string $typed) => Collection::wrap(($prompt->options)($typed))->all()
+                    : $prompt->options,
+                $prompt->default ?: null,
+            ) ?? '',
+            $prompt->required,
+            $prompt->validate,
+        ));
     }
 
     protected function failAndExit(string $message): void
