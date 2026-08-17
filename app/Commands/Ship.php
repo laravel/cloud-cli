@@ -435,6 +435,7 @@ class Ship extends BaseCommand
 
                     return false;
                 },
+                shouldRetry: fn ($errors) => $errors->messageContains('global', 'wait a few seconds'),
             );
         }
     }
@@ -641,7 +642,8 @@ class Ship extends BaseCommand
             return $applications->firstWhere('id', $application);
         }
 
-        return $this->loopUntilValid(
+        return $this->createInScope(
+            'websocket_application',
             fn () => $this->createWebSocketApplication($cluster, []),
         );
     }
@@ -657,8 +659,9 @@ class Ship extends BaseCommand
             $createWebsocketCluster = confirm('Do you want to create a new websocket cluster?');
 
             if ($createWebsocketCluster) {
-                return $this->loopUntilValid(
-                    fn () => $this->createWebSocketCluster(),
+                return $this->createInScope(
+                    'websocket_cluster',
+                    fn () => $this->createWebSocketCluster($this->getWebSocketClusterDefaults()),
                 );
             }
 
@@ -679,7 +682,8 @@ class Ship extends BaseCommand
             return $clusters->firstWhere('id', $cluster);
         }
 
-        return $this->loopUntilValid(
+        return $this->createInScope(
+            'websocket_cluster',
             fn () => $this->createWebSocketCluster($this->getWebSocketClusterDefaults()),
         );
     }
@@ -708,7 +712,8 @@ class Ship extends BaseCommand
             return collect($database->schemas)->firstWhere('id', $schema);
         }
 
-        return $this->loopUntilValid(
+        return $this->createInScope(
+            'database',
             fn () => $this->createDatabase($database),
         );
     }
@@ -724,7 +729,8 @@ class Ship extends BaseCommand
             $createDatabase = confirm('Do you want to create a new database?');
 
             if ($createDatabase) {
-                return $this->loopUntilValid(
+                return $this->createInScope(
+                    'database_cluster',
                     fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
                 );
             }
@@ -746,8 +752,21 @@ class Ship extends BaseCommand
             return $databases->firstWhere('id', $database);
         }
 
-        return $this->loopUntilValid(
+        return $this->createInScope(
+            'database_cluster',
             fn () => $this->createDatabaseCluster($this->databaseClusterDefaults()),
+        );
+    }
+
+    /**
+     * Shipping creates several resources in one run, so each one prompts in its own form scope.
+     * Sharing the form means the application's `name` and `region` answers would be reused as
+     * the database cluster's, which the API then rejects.
+     */
+    protected function createInScope(string $scope, callable $callback): mixed
+    {
+        return $this->loopUntilValid(
+            fn () => $this->form()->withScope($scope, $callback),
         );
     }
 

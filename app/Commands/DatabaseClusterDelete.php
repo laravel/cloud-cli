@@ -55,6 +55,7 @@ class DatabaseClusterDelete extends BaseCommand
                             'Deleting schema '.$schema->name.'...',
                         );
                     },
+                    shouldRetry: fn ($errors) => $errors->messageContains('global', 'please wait'),
                 );
             }
 
@@ -70,6 +71,7 @@ class DatabaseClusterDelete extends BaseCommand
                         'Deleting database cluster...',
                     );
                 },
+                shouldRetry: fn ($errors) => $errors->messageContains('global', 'please wait'),
             );
 
             $this->outputJsonIfWanted('Database cluster deleted.');
