@@ -23,7 +23,7 @@ class Dashboard extends BaseCommand
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
 
-        $environment = $this->resolvers()->environment()->include('application')->resolve();
+        $environment = $this->resolvers()->environment()->resolve();
         $application = $this->client->applications()->get($environment->application->id);
 
         $url = $application->url($environment);

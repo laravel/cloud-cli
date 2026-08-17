@@ -22,7 +22,7 @@ class EnvironmentGet extends BaseCommand
 
         intro('Environment Details');
 
-        $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
         $application = $this->client->applications()->get($environment->application->id);
 
         $this->outputJsonIfWanted($environment);

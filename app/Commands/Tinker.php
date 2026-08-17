@@ -51,7 +51,7 @@ class Tinker extends BaseCommand
 
         intro('Tinker');
 
-        $environment = $this->resolvers()->environment()->include('application')->from($this->argument('environment'));
+        $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
         if (! $this->isInteractive() || $this->option('code')) {
             return $this->handleNonInteractively($environment);
