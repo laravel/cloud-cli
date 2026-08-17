@@ -65,7 +65,17 @@ Link the current Git repo to a Laravel Cloud application and set defaults (appli
 cloud repo:config
 ```
 
-Run this from your project root after `cloud auth`.
+Run this from your project root after `cloud auth`. Pass the application to skip the prompt, which is required when running non-interactively with more than one application:
+
+```sh
+cloud repo:config my-app -n
+```
+
+If you have tokens for more than one organization, name the one you want with `--organization` (its ID, name, or slug):
+
+```sh
+cloud repo:config my-app --organization=acme -n
+```
 
 ## Quick start
 

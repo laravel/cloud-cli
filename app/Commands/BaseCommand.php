@@ -162,7 +162,7 @@ abstract class BaseCommand extends Command
         ));
     }
 
-    protected function failAndExit(string $message): void
+    protected function failAndExit(string $message): never
     {
         $this->outputError($message);
 
