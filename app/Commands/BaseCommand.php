@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
+use App\Exceptions\UnreadableResponseException;
 use App\Prompts\Renderer;
 use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SuppressedOutput;
@@ -187,6 +188,10 @@ abstract class BaseCommand extends Command
             return parent::run($input, $output);
         } catch (CommandExitException $e) {
             return $e->getExitCode();
+        } catch (UnreadableResponseException $e) {
+            $this->outputError($e->getMessage());
+
+            return self::FAILURE;
         } catch (RuntimeException $e) {
             if ($this->wantsJson()) {
                 $this->outputError($e->getMessage());
