@@ -1,6 +1,15 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.1...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.2...main)
+
+## [v0.5.2](https://github.com/laravel/cloud-cli/compare/v0.5.1...v0.5.2) - 2026-08-18
+
+### What's Changed
+
+* Read the API token from LARAVEL_CLOUD_TOKEN and make auth:token scriptable by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/197
+* Fix self-update 404 by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/198
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.5.1...v0.5.2
 
 ## [v0.5.1](https://github.com/laravel/cloud-cli/compare/v0.5.0...v0.5.1) - 2026-08-18
 
