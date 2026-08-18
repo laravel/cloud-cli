@@ -24,10 +24,12 @@ use App\Client\Resources\UsageResource;
 use App\Client\Resources\WebSocketApplicationsResource;
 use App\Client\Resources\WebSocketClustersResource;
 use App\Cloud;
+use App\Exceptions\UnreadableResponseException;
 use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
+use Saloon\Enums\PipeOrder;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
 use Saloon\Http\PendingRequest;
@@ -67,6 +69,25 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function boot(PendingRequest $pendingRequest): void
     {
+        $pendingRequest->middleware()->onResponse(
+            callable: static function (Response $response) {
+                // A failed response is already on its way to becoming a RequestException.
+                if ($response->failed()) {
+                    return;
+                }
+
+                $body = trim($response->body());
+
+                if ($body === '' || json_validate($body)) {
+                    return;
+                }
+
+                throw UnreadableResponseException::for($response);
+            },
+            name: 'failOnUnreadableBody',
+            order: PipeOrder::LAST,
+        );
+
         if (! method_exists($pendingRequest->getRequest(), 'getInclude')) {
             return;
         }
