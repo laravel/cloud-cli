@@ -79,7 +79,7 @@ echo ""
 if [ "$CURRENT_TAG" = "v0.0.0" ]; then
     COMMITS=$(git log --oneline)
 else
-    COMMITS=$(git log "v$CURRENT_TAG"..HEAD --oneline)
+    COMMITS=$(git log "$CURRENT_TAG"..HEAD --oneline)
 fi
 
 PR_NUMBERS=$(echo "$COMMITS" | grep -oE '#[0-9]+' | tr -d '#' | sort -rn)
