@@ -1,6 +1,40 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.0...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.1...main)
+
+## [v0.5.1](https://github.com/laravel/cloud-cli/compare/v0.5.0...v0.5.1) - 2026-08-18
+
+### What's Changed
+
+* Add Dependabot cooldown of 5 days by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/cloud-cli/pull/166
+* Enable Dependabot auto-merge by [@nunomaduro](https://github.com/nunomaduro) in https://github.com/laravel/cloud-cli/pull/167
+* Bump actions/checkout from 6.0.2 to 6.0.3 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/cloud-cli/pull/169
+* Bump shivammathur/setup-php from 2.37.1 to 2.37.2 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/cloud-cli/pull/170
+* Bump actions/checkout from 6.0.3 to 7.0.0 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/cloud-cli/pull/171
+* Bump actions/checkout from 7.0.0 to 7.0.1 in the github-actions group by [@dependabot](https://github.com/dependabot)[bot] in https://github.com/laravel/cloud-cli/pull/176
+* Reduce PHAR size with new build script by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/180
+* Fix missing corners on header-less tables by [@WaleedHU](https://github.com/WaleedHU) in https://github.com/laravel/cloud-cli/pull/178
+* Upgrade to Laravel 13 by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/181
+* Rename hibernation to scale to zero across user-facing output by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/184
+* Respect CLOUD_BASE_URL in built binaries by [@fideloper](https://github.com/fideloper) in https://github.com/laravel/cloud-cli/pull/182
+* Fix static analysis workflow by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/185
+* Mask credentials in JSON output, not just environment variables by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/186
+* Fix database-restore:create fataling on every invocation by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/187
+* Fix database-cluster:update ignoring every option by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/188
+* Fix instance:create scaling type handling by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/189
+* Include database, cache and websocket relationships when fetching environments by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/190
+* Register prompt fallbacks for our custom prompts so they work on Windows by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/191
+* Make repo:config work non-interactively by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/192
+* Scope form fields per resource, and stop retrying requests that cannot succeed by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/193
+* Fail with a readable error when the API sends back something that is not JSON by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/194
+* Add merged PRs to the release script by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/195
+
+### New Contributors
+
+* [@WaleedHU](https://github.com/WaleedHU) made their first contribution in https://github.com/laravel/cloud-cli/pull/178
+* [@fideloper](https://github.com/fideloper) made their first contribution in https://github.com/laravel/cloud-cli/pull/182
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.5.0...v0.5.1
 
 ## [v0.5.0](https://github.com/laravel/cloud-cli/compare/v0.4.2...v0.5.0) - 2026-06-01
 
