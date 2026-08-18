@@ -11,6 +11,8 @@ composer global require laravel/cloud-cli
 cloud auth -n
 ```
 
+`cloud auth` opens a browser. Where that isn't possible, set `LARAVEL_CLOUD_TOKEN` in the environment — it overrides any saved token and writes nothing to disk. To save a token instead: `cloud auth:token --add --token=<token> -n`, or pipe it: `echo "$TOKEN" | cloud auth:token --add -n`.
+
 ## Commands
 
 Commands follow a CRUD pattern: `resource:list`, `resource:get`, `resource:create`, `resource:update`, `resource:delete`.
@@ -156,13 +158,16 @@ Delegate `--detailed --json` to a subagent — the payload includes every databa
 
 ## Config
 
-1. Global: `~/.config/cloud/config.json` — auth tokens and preferences
-2. Repo-local: `.cloud/config.json` — app and environment defaults (set by `cloud repo:config {application} -n`)
-3. CLI arguments override both
+1. Environment: `LARAVEL_CLOUD_TOKEN` — an API token, taking precedence over any saved one (empty counts as unset)
+2. Global: `~/.config/cloud/config.json` — auth tokens and preferences
+3. Repo-local: `.cloud/config.json` — app and environment defaults (set by `cloud repo:config {application} -n`)
+4. CLI arguments override both config files
 
 Pass the application to `repo:config` — without it the command has to ask, and under `-n` it fails when the organization has more than one application. Deploy commands don't need these defaults; pass the application and environment to them directly.
 
 Multiple organizations means multiple stored API tokens. Every command reads `organization_id` from `.cloud/config.json` to pick one; if it isn't set, they fail. Set it with `cloud repo:config {application} --organization=<id|name|slug> -n`.
+
+`LARAVEL_CLOUD_TOKEN` holds one token, so it picks the organization on its own. Naming a different one with `--organization` fails rather than falling back to the token's organization.
 
 ## Documentation
 

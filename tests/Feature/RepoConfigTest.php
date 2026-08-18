@@ -22,6 +22,7 @@ beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
     $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect(['test-api-token']))->byDefault();
     $this->mockConfig->shouldReceive('setApiTokens')->byDefault();
+    $this->mockConfig->shouldReceive('path')->andReturn(sys_get_temp_dir().'/cloud-config.json')->byDefault();
     $this->app->instance(ConfigRepository::class, $this->mockConfig);
 });
 
@@ -184,6 +185,31 @@ it('fails when --organization does not match the only token', function () {
     setupApplicationListMocks();
 
     $exitCode = Artisan::call('repo:config', ['--organization' => 'Initech', '--no-interaction' => true]);
+
+    expect($exitCode)->toBe(1);
+    expect(File::exists($this->repoRoot.'/.cloud/config.json'))->toBeFalse();
+});
+
+it('configures the repository from a token in the environment', function () {
+    config()->set('cloud.api_token', 'env-token');
+    $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect());
+    setupApplicationListMocks();
+
+    $exitCode = Artisan::call('repo:config', ['application' => 'My App', '--organization' => 'my-org', '--no-interaction' => true]);
+
+    expect($exitCode)->toBe(0);
+    expect(File::json($this->repoRoot.'/.cloud/config.json'))->toMatchArray([
+        'organization_id' => 'org-1',
+        'application_id' => 'app-123',
+    ]);
+});
+
+it('refuses to configure the repository for an organization the environment token does not belong to', function () {
+    config()->set('cloud.api_token', 'env-token');
+    $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect());
+    setupApplicationListMocks();
+
+    $exitCode = Artisan::call('repo:config', ['application' => 'My App', '--organization' => 'globex', '--no-interaction' => true]);
 
     expect($exitCode)->toBe(1);
     expect(File::exists($this->repoRoot.'/.cloud/config.json'))->toBeFalse();

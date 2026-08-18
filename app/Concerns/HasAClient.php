@@ -3,6 +3,7 @@
 namespace App\Concerns;
 
 use App\Client\Connector;
+use App\Cloud;
 use App\Commands\Auth;
 use App\ConfigRepository;
 use App\LocalConfig;
@@ -30,6 +31,10 @@ trait HasAClient
 
     protected function ensureApiTokenExists(): void
     {
+        if (Cloud::apiTokenFromEnvironment()) {
+            return;
+        }
+
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
 
@@ -42,6 +47,14 @@ trait HasAClient
 
     protected function resolveApiToken(bool $ignoreLocalConfig = false, ?string $organization = null): string
     {
+        if ($envToken = Cloud::apiTokenFromEnvironment()) {
+            if ($organization) {
+                $this->assertEnvironmentTokenBelongsTo($envToken, $organization);
+            }
+
+            return $envToken;
+        }
+
         $config = app(ConfigRepository::class);
         $apiTokens = $config->apiTokens();
 
@@ -118,11 +131,37 @@ trait HasAClient
         }
 
         if (! stream_isatty(STDIN) && ! $this->isAgentEnvironment()) {
-            throw new RuntimeException('Not authenticated. Run `cloud auth` or `cloud auth:token --add` to add an API token.');
+            throw new RuntimeException('Not authenticated. Run `cloud auth`, set '.Cloud::API_TOKEN_ENV_VAR.' in your environment, or run `cloud auth:token --add --token=<token>` to save one.');
         }
 
         Artisan::call(Auth::class);
 
         return $this->resolveApiToken($ignoreLocalConfig);
+    }
+
+    /**
+     * An explicitly named organization is an assertion, not a selector: the environment
+     * holds one token, so a mismatch means the wrong credential, not the wrong choice.
+     */
+    protected function assertEnvironmentTokenBelongsTo(string $token, string $organization): void
+    {
+        $config = app(ConfigRepository::class);
+
+        try {
+            $org = spin(
+                fn () => (new Connector($token))->meta()->organization(),
+                'Verifying organization',
+            );
+        } catch (RequestException $e) {
+            if ($e->getResponse()->status() === 401) {
+                throw new RuntimeException('The API token in '.Cloud::API_TOKEN_ENV_VAR.' was rejected. Check that variable, or unset it to use the tokens in '.$config->path().'.');
+            }
+
+            throw $e;
+        }
+
+        if (! in_array($organization, [$org->id, $org->name, $org->slug], true)) {
+            throw new RuntimeException('The API token in '.Cloud::API_TOKEN_ENV_VAR." belongs to [{$org->name}], not [{$organization}]. Unset that variable to use the tokens in ".$config->path().'.');
+        }
     }
 }
