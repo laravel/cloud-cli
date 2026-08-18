@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Connector;
+use App\Cloud;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use Saloon\Exceptions\Request\RequestException as SaloonRequestException;
@@ -13,6 +14,7 @@ use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 class Auth extends BaseCommand implements NoAuthRequired
 {
@@ -135,6 +137,10 @@ class Auth extends BaseCommand implements NoAuthRequired
 
         foreach ($tokens as $tokenData) {
             success("Authenticated with <comment>{$tokenData['organization_name']}</comment>");
+        }
+
+        if (Cloud::apiTokenFromEnvironment()) {
+            warning(Cloud::API_TOKEN_ENV_VAR.' is set in your environment and takes precedence over these tokens. Unset it to use them.');
         }
 
         outro('Authentication successful! Tokens saved to '.$this->config->path());

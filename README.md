@@ -51,11 +51,43 @@ Before using most commands, authenticate with Laravel Cloud:
 cloud auth
 ```
 
-This opens a browser for OAuth. API tokens are stored in `~/.config/cloud/config.json`. To manage tokens (e.g. for CI):
+This opens a browser for OAuth. API tokens are stored in `~/.config/cloud/config.json`. To manage those tokens interactively:
 
 ```sh
 cloud auth:token
 ```
+
+### CI and other non-interactive use
+
+Browser OAuth needs a browser, so set the token in the environment instead. `LARAVEL_CLOUD_TOKEN` takes precedence over anything saved in `~/.config/cloud/config.json`, and nothing is written to disk:
+
+```sh
+export LARAVEL_CLOUD_TOKEN=your-api-token
+cloud application:list -n
+```
+
+Create a token at https://cloud.laravel.com/docs/api/authentication#create-an-api-token.
+
+An empty value counts as unset, so you can bypass it for a single command without unsetting it:
+
+```sh
+LARAVEL_CLOUD_TOKEN= cloud application:list -n
+```
+
+To save a token to the config file instead — on a machine you come back to, or when you need tokens for several organizations — pass it or pipe it:
+
+```sh
+cloud auth:token --add --token=your-api-token -n
+echo "$YOUR_API_TOKEN" | cloud auth:token --add -n
+```
+
+Prefer the pipe where the process list is visible to others. `--remove` takes `--token=` the same way, and `--list` names the source of each token:
+
+```sh
+cloud auth:token --list -n
+```
+
+The token carries its own organization, so `--organization` becomes a check rather than a choice: when `LARAVEL_CLOUD_TOKEN` is set and you name an organization the token doesn't belong to, the command fails instead of using the wrong one.
 
 ## Repository configuration
 

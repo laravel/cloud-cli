@@ -12,12 +12,14 @@
 |
 */
 
-$defaultUrl = 'https://cloud.laravel.com';
+use App\Cloud;
 
 return [
 
-    'default_url' => $defaultUrl,
+    'default_url' => Cloud::DEFAULT_URL,
 
-    'base_url' => rtrim(env('CLOUD_BASE_URL') ?: $defaultUrl, '/'),
+    'base_url' => rtrim(env('CLOUD_BASE_URL') ?: Cloud::DEFAULT_URL, '/'),
+
+    'api_token' => env(Cloud::API_TOKEN_ENV_VAR),
 
 ];
