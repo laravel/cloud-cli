@@ -73,7 +73,7 @@ else
     info "Current latest tag: ${BOLD}$CURRENT_TAG${RESET}"
 fi
 
-echo "Merged PRs since v$CURRENT_TAG:"
+echo "Merged PRs since $CURRENT_TAG:"
 echo ""
 
 if [ "$CURRENT_TAG" = "v0.0.0" ]; then
