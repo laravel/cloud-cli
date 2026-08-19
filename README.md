@@ -87,6 +87,8 @@ Prefer the pipe where the process list is visible to others. `--remove` takes `-
 cloud auth:token --list -n
 ```
 
+Listed tokens are masked down to their last four characters. Pass `--show-sensitive` to print them in full.
+
 The token carries its own organization, so `--organization` becomes a check rather than a choice: when `LARAVEL_CLOUD_TOKEN` is set and you name an organization the token doesn't belong to, the command fails instead of using the wrong one.
 
 ## Repository configuration

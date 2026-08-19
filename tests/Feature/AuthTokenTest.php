@@ -5,6 +5,7 @@ use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Cloud;
 use App\Concerns\HasAClient;
 use App\ConfigRepository;
+use App\Support\SensitiveValues;
 use App\Support\Stdin;
 use Illuminate\Support\Facades\Artisan;
 use Saloon\Http\Faking\MockClient;
@@ -27,6 +28,7 @@ beforeEach(function () {
 
 afterEach(function () {
     MockClient::destroyGlobal();
+    SensitiveValues::$reveal = false;
 });
 
 function pipeToStdin(?string $value): void
@@ -227,8 +229,44 @@ it('lists the environment token alongside saved tokens and names each source', f
 
     $listed = collect(json_decode(Artisan::output(), true));
 
-    expect($listed->pluck('token')->all())->toBe(['env-token', 'config-token']);
     expect($listed->pluck('source')->all())->toBe(['LARAVEL_CLOUD_TOKEN', '/tmp/cloud-config.json']);
+    expect($listed->pluck('organization')->all())->toBe(['My Org', 'My Org']);
+});
+
+it('masks listed tokens down to their last four characters by default', function () {
+    config()->set('cloud.api_token', 'env-token');
+    recordSigningTokens();
+
+    Artisan::call('auth:token', ['--list' => true, '--no-interaction' => true]);
+
+    $output = Artisan::output();
+
+    expect($output)
+        ->not->toContain('env-token')
+        ->not->toContain('config-token');
+
+    expect(collect(json_decode($output, true))->pluck('token')->all())
+        ->toBe(['*****oken', '*****oken']);
+});
+
+it('reveals listed tokens when --show-sensitive is passed', function () {
+    config()->set('cloud.api_token', 'env-token');
+    recordSigningTokens();
+
+    Artisan::call('auth:token', ['--list' => true, '--no-interaction' => true, '--show-sensitive' => true]);
+
+    expect(collect(json_decode(Artisan::output(), true))->pluck('token')->all())
+        ->toBe(['env-token', 'config-token']);
+});
+
+it('masks a token too short to keep a suffix from', function () {
+    config()->set('cloud.api_token', null);
+    $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect(['abcd']));
+    recordSigningTokens();
+
+    Artisan::call('auth:token', ['--list' => true, '--no-interaction' => true]);
+
+    expect(collect(json_decode(Artisan::output(), true))->pluck('token')->all())->toBe(['*****']);
 });
 
 it('names an action when none is given non-interactively', function () {

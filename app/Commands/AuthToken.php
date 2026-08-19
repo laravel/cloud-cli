@@ -6,7 +6,9 @@ use App\Client\Connector;
 use App\Cloud;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
+use App\Dto\ApiToken;
 use App\Exceptions\CommandExitException;
+use App\Support\SensitiveValues;
 use App\Support\Stdin;
 use Illuminate\Support\Collection;
 
@@ -155,6 +157,8 @@ class AuthToken extends BaseCommand implements NoAuthRequired
 
     protected function listTokens(Collection $existingTokens): void
     {
+        SensitiveValues::$reveal = (bool) $this->option('show-sensitive');
+
         $sources = $existingTokens
             ->map(fn ($token) => ['token' => $token, 'source' => $this->config->path()])
             ->when(
@@ -173,7 +177,11 @@ class AuthToken extends BaseCommand implements NoAuthRequired
                 return $sources->map(function ($entry) {
                     $organization = (new Connector($entry['token']))->meta()->organization();
 
-                    return [...$entry, 'organization' => $organization->name];
+                    return new ApiToken(
+                        organization: $organization->name,
+                        token: $entry['token'],
+                        source: $entry['source'],
+                    );
                 });
             },
             'Fetching token details',
@@ -183,7 +191,11 @@ class AuthToken extends BaseCommand implements NoAuthRequired
 
         table(
             headers: ['Organization', 'API Token', 'Source'],
-            rows: $orgs->map(fn ($org) => [$org['organization'], $org['token'], $org['source']]),
+            rows: $orgs->map(fn (ApiToken $entry) => [
+                $entry->organization,
+                SensitiveValues::maskWithSuffix($entry->token),
+                $entry->source,
+            ]),
         );
     }
 

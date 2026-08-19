@@ -85,3 +85,17 @@ it('handles empty environmentVariables arrays', function () {
 
     expect($env->toArray()['environmentVariables'])->toBe([]);
 });
+
+it('keeps the last four characters when masking with a suffix', function () {
+    expect(SensitiveValues::maskWithSuffix('cloud-token-abcdef'))->toBe('*****cdef');
+});
+
+it('masks a value entirely when it is no longer than the suffix', function (string $value) {
+    expect(SensitiveValues::maskWithSuffix($value))->toBe('*****');
+})->with(['', 'ab', 'abcd']);
+
+it('returns the whole value when revealing', function () {
+    SensitiveValues::$reveal = true;
+
+    expect(SensitiveValues::maskWithSuffix('cloud-token-abcdef'))->toBe('cloud-token-abcdef');
+});
