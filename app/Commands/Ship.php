@@ -42,6 +42,7 @@ use function Laravel\Prompts\number;
 use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
 
@@ -296,15 +297,15 @@ class Ship extends BaseCommand
             }),
         );
 
-        return dynamicSpinner(
-            fn () => $this->client->applications()->create(
+        return task(
+            label: 'Creating application',
+            callback: fn () => $this->client->applications()->create(
                 new CreateApplicationRequestData(
                     repository: $repository,
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
                 ),
             ),
-            'Creating application',
         );
     }
 
@@ -813,8 +814,9 @@ class Ship extends BaseCommand
 
         $varsToAdd = collect($varsToAdd)->map(fn ($key) => ['key' => $key, 'value' => $variables[$key]]);
 
-        dynamicSpinner(
-            function () use ($application, $varsToAdd) {
+        task(
+            label: 'Adding selected variables to Cloud environment',
+            callback: function () use ($application, $varsToAdd) {
                 while (count($application->environmentIds) === 0) {
                     $application = $this->client->applications()->withDefaultIncludes()->get($application->id);
                     Sleep::for(CarbonInterval::seconds(1));
@@ -827,7 +829,6 @@ class Ship extends BaseCommand
                     ),
                 );
             },
-            'Adding selected variables to Cloud environment',
         );
     }
 }

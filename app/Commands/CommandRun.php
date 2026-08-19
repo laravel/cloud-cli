@@ -19,6 +19,7 @@ use Throwable;
 use function Laravel\Prompts\autocomplete;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
+use function Laravel\Prompts\task;
 
 class CommandRun extends BaseCommand
 {
@@ -122,14 +123,14 @@ class CommandRun extends BaseCommand
             'cmd',
         );
 
-        return dynamicSpinner(
-            fn () => $this->client->commands()->run(
+        return task(
+            label: 'Running command...',
+            callback: fn () => $this->client->commands()->run(
                 new RunCommandRequestData(
                     environmentId: $environment->id,
                     command: $this->form()->get('command'),
                 ),
             ),
-            'Running command...',
         );
     }
 
@@ -252,15 +253,15 @@ class CommandRun extends BaseCommand
 
     protected function selectFromHistory(string $environmentId): ?string
     {
-        $recentCommands = dynamicSpinner(
-            fn () => $this->client->commands()->list($environmentId)
+        $recentCommands = task(
+            label: 'Loading command history...',
+            callback: fn () => $this->client->commands()->list($environmentId)
                 ->collect()
                 ->map(fn ($cmd) => $cmd->command)
                 ->unique()
                 ->take(10)
                 ->values()
                 ->collect(),
-            'Loading command history...',
         );
 
         if ($recentCommands->isEmpty()) {

@@ -11,11 +11,13 @@ use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
+use Laravel\Prompts\Support\Logger;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\task;
 use function Laravel\Prompts\warning;
 
 class Deploy extends BaseCommand
@@ -87,9 +89,9 @@ class Deploy extends BaseCommand
             return self::SUCCESS;
         }
 
-        dynamicSpinner(
-            fn (callable $updateMessage) => $this->updateDeploymentStatus($deployment, $updateMessage),
-            $this->getDeploymentMessage($deployment),
+        task(
+            label: $this->getDeploymentMessage($deployment),
+            callback: fn (Logger $log) => $this->updateDeploymentStatus($deployment, $log),
         );
 
         $deployment = $this->client->deployments()->get($deployment->id);
@@ -140,7 +142,7 @@ class Deploy extends BaseCommand
         outro($environment->url);
     }
 
-    protected function updateDeploymentStatus(Deployment $deployment, callable $updateMessage): void
+    protected function updateDeploymentStatus(Deployment $deployment, Logger $log): void
     {
         $checkApi = true;
         $count = 0;
@@ -164,7 +166,7 @@ class Deploy extends BaseCommand
                 ]));
             }
 
-            $updateMessage($newMessage, $lastMessage !== $deploymentStatus->status->monitorLabel());
+            $log->label($newMessage);
 
             $lastMessage = $deploymentStatus->status->monitorLabel();
 
