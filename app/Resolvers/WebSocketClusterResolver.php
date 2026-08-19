@@ -5,6 +5,7 @@ namespace App\Resolvers;
 use App\Dto\WebsocketCluster;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class WebSocketClusterResolver extends Resolver
@@ -56,9 +57,10 @@ class WebSocketClusterResolver extends Resolver
 
         $this->ensureInteractive('Multiple WebSocket clusters found. Provide a WebSocket cluster ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'WebSocket cluster',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

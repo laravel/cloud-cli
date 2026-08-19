@@ -7,6 +7,7 @@ use App\Dto\Environment;
 use App\Git;
 use App\Resolvers\Concerns\HasAnApplication;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class EnvironmentResolver extends Resolver
@@ -79,10 +80,11 @@ class EnvironmentResolver extends Resolver
 
         $this->ensureInteractive('Multiple environments found. Provide an environment ID or name.', ['options' => $options]);
 
-        $selectedEnv = selectWithContext(
+        $selectedEnv = select(
             label: 'Environment',
             options: $options,
             default: $envs->firstWhere('id', $this->application()->defaultEnvironmentId)?->id,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved environment name, it will be displayed from the select above

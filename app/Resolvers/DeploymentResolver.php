@@ -6,6 +6,7 @@ use App\Dto\Deployment;
 use App\Resolvers\Concerns\HasAnEnvironment;
 use Illuminate\Support\Collection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class DeploymentResolver extends Resolver
@@ -71,9 +72,10 @@ class DeploymentResolver extends Resolver
 
         $this->ensureInteractive('Multiple deployments found. Provide a deployment ID.', ['options' => $options]);
 
-        $selection = selectWithContext(
+        $selection = select(
             label: 'Deployment',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

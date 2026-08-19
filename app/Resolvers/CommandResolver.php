@@ -64,9 +64,10 @@ class CommandResolver extends Resolver
 
         $this->ensureInteractive('Multiple commands found. Provide a command ID.', ['options' => $options]);
 
-        $selectedCommand = selectWithContext(
+        $selectedCommand = select(
             label: 'Command',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved application name, it will be displayed from the select above

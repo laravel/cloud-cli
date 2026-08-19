@@ -9,6 +9,7 @@ use App\Dto\Environment;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\password;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -44,14 +45,20 @@ class EnvironmentVariables extends BaseCommand
     {
         $this->form()->prompt(
             'action',
-            fn ($resolver) => $resolver->fromInput(fn ($value) => selectWithContext(
+            fn ($resolver) => $resolver->fromInput(fn ($value) => select(
                 label: 'Action',
                 options: [
-                    'append' => ['Append', 'Add without checking for duplicates'],
-                    'set' => ['Set', 'Check for duplicates and update existing variables'],
-                    'replace' => ['Replace', 'Replace all existing variable'],
+                    'append' => 'Append',
+                    'set' => 'Set',
+                    'replace' => 'Replace',
                 ],
                 default: $value ?? 'add',
+                info: fn ($action) => match ($action) {
+                    'append' => 'Add without checking for duplicates',
+                    'set' => 'Check for duplicates and update existing variables',
+                    'replace' => 'Replace all existing variable',
+                    default => '',
+                },
             )),
         );
 

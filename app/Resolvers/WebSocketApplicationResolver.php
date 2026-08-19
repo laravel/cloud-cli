@@ -7,6 +7,7 @@ use App\Dto\WebsocketCluster;
 use App\Resolvers\Concerns\HasWebSocketCluster;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class WebSocketApplicationResolver extends Resolver
@@ -68,9 +69,10 @@ class WebSocketApplicationResolver extends Resolver
 
         $this->ensureInteractive('Multiple WebSocket applications found. Provide a WebSocket application ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'WebSocket application',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

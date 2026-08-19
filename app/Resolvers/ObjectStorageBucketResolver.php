@@ -6,6 +6,7 @@ use App\Dto\ObjectStorageBucket;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class ObjectStorageBucketResolver extends Resolver
@@ -57,9 +58,10 @@ class ObjectStorageBucketResolver extends Resolver
 
         $this->ensureInteractive('Multiple buckets found. Provide a bucket ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Bucket',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

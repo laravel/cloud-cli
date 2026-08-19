@@ -78,14 +78,19 @@ class DomainCreate extends BaseCommand
         $this->form()->prompt(
             'verification_method',
             fn ($resolver) => $resolver
-                ->fromInput(fn ($value) => selectWithContext(
+                ->fromInput(fn ($value) => select(
                     label: 'Verification method',
                     options: [
-                        'pre_verification' => ['Pre-verification', 'TXT before the domain is pointed to the environment.'],
-                        'real_time' => ['Real-time', 'Requires domain to be pointed to the environment.'],
+                        'pre_verification' => 'Pre-verification',
+                        'real_time' => 'Real-time',
                     ],
                     default: $value ?? 'pre_verification',
                     required: true,
+                    info: fn ($method) => match ($method) {
+                        'pre_verification' => 'TXT before the domain is pointed to the environment.',
+                        'real_time' => 'Requires domain to be pointed to the environment.',
+                        default => '',
+                    },
                 ))
                 ->nonInteractively(fn () => 'pre_verification'),
         );

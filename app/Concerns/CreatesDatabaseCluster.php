@@ -114,16 +114,14 @@ trait CreatesDatabaseCluster
             return $this->databaseClusterPreset === 'Custom' ? null : $presets[$this->databaseClusterPreset];
         }
 
-        $this->databaseClusterPreset = selectWithContext(
+        $this->databaseClusterPreset = select(
             label: 'Configuration',
-            options: collect($presets)->mapWithKeys(fn ($preset, $key) => [
-                $key => count($preset) > 0 ? [
-                    $key,
-                    $clusterPreset->description()($preset),
-                ] : [$key, $key.' configuration'],
-            ])->toArray(),
+            options: collect($presets)->keys()->mapWithKeys(fn ($key) => [$key => $key])->toArray(),
             default: array_key_first($presets),
             required: true,
+            info: fn ($key) => count($presets[$key]) > 0
+                ? $clusterPreset->description()($presets[$key])
+                : $key.' configuration',
         );
 
         if ($this->databaseClusterPreset !== 'Custom') {

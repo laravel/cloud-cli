@@ -83,9 +83,10 @@ class InstanceResolver extends Resolver
 
         $this->ensureInteractive('Multiple instances found. Provide an instance ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Instance',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved instance name, it will be displayed from the select above

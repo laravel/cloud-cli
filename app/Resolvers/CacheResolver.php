@@ -6,6 +6,7 @@ use App\Dto\Cache;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class CacheResolver extends Resolver
@@ -57,9 +58,10 @@ class CacheResolver extends Resolver
 
         $this->ensureInteractive('Multiple caches found. Provide a cache ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Cache',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

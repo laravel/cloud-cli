@@ -5,6 +5,7 @@ namespace Tests\Fixtures;
 use App\Commands\BaseCommand;
 
 use function Laravel\Prompts\autocomplete;
+use function Laravel\Prompts\select;
 
 class PromptFallbackTestCommand extends BaseCommand
 {
@@ -12,7 +13,7 @@ class PromptFallbackTestCommand extends BaseCommand
 
     public function handle(): void
     {
-        $application = selectWithContext(
+        $application = select(
             label: 'Application',
             options: ['app-1' => 'First app', 'app-2' => 'Second app'],
         );
