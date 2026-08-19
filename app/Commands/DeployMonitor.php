@@ -7,7 +7,6 @@ use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Deployment;
 use App\Dto\Environment;
 use App\Prompts\MonitorDeployments;
-use App\Support\Notification;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
@@ -16,6 +15,7 @@ use Illuminate\Support\Sleep;
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\notify;
 use function Laravel\Prompts\warning;
 
 class DeployMonitor extends BaseCommand
@@ -125,9 +125,10 @@ class DeployMonitor extends BaseCommand
             $deployment = $this->client->deployments()->get($deploymentId);
 
             if ($deployment->isFinished()) {
-                Notification::send(
-                    'Deployment Completed',
-                    'Deployment completed in '.$deployment->totalTime()->format('%I:%S'),
+                notify(
+                    title: 'Deployment Completed',
+                    body: 'Deployment completed in '.$deployment->totalTime()->format('%I:%S'),
+                    sound: 'Glass',
                 );
             }
 
