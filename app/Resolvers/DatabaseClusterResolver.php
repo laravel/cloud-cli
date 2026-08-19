@@ -5,6 +5,7 @@ namespace App\Resolvers;
 use App\Dto\DatabaseCluster;
 use Illuminate\Support\Collection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class DatabaseClusterResolver extends Resolver
@@ -56,9 +57,10 @@ class DatabaseClusterResolver extends Resolver
 
         $this->ensureInteractive('Multiple database clusters found. Provide a database cluster ID or name.', ['options' => $options]);
 
-        $selectedDatabase = selectWithContext(
+        $selectedDatabase = select(
             label: 'Database',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

@@ -42,7 +42,6 @@ class AppServiceProvider extends ServiceProvider
             'PasswordPromptRenderer',
             'SearchPromptRenderer',
             'SelectPromptRenderer',
-            'SelectWithContextPromptRenderer',
             'SlideInRenderer',
             'SpinnerRenderer',
             'TableRenderer',

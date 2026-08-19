@@ -7,6 +7,7 @@ use App\Dto\DatabaseCluster;
 use App\Resolvers\Concerns\HasDatabaseCluster;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class DatabaseResolver extends Resolver
@@ -68,9 +69,10 @@ class DatabaseResolver extends Resolver
 
         $this->ensureInteractive('Multiple databases found. Provide a database ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Database',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

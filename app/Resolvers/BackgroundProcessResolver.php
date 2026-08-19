@@ -60,9 +60,10 @@ class BackgroundProcessResolver extends Resolver
 
         $this->ensureInteractive('Multiple background processes found. Provide a background process ID.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Background Process',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved instance name, it will be displayed from the select above

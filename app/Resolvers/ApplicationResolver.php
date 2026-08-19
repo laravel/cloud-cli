@@ -76,9 +76,10 @@ class ApplicationResolver extends Resolver
             return null;
         }
 
-        $selectedApp = selectWithContext(
+        $selectedApp = select(
             label: 'Application',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved application name, it will be displayed from the select above
@@ -101,9 +102,10 @@ class ApplicationResolver extends Resolver
             return null;
         }
 
-        $selectedApp = selectWithContext(
+        $selectedApp = select(
             label: 'Application',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         // No need to display the resolved application name, it will be displayed from the select above

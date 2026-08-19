@@ -26,6 +26,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
                     $this->dim($this->truncate($prompt->label, $prompt->terminal()->cols() - 6)),
                     $this->truncate($prompt->label(), $maxWidth),
                     symbol: TimelineSymbol::SUCCESS,
+                    info: $prompt->infoText(),
                 ),
 
             'cancel' => $this
@@ -51,6 +52,7 @@ class SelectPromptRenderer extends Renderer implements Scrolling
                     $this->cyan($this->truncate($prompt->label, $prompt->terminal()->cols() - 6)),
                     $this->renderOptions($prompt),
                     symbol: TimelineSymbol::PENDING,
+                    info: $prompt->infoText(),
                 )
                 ->when(
                     $prompt->hint,

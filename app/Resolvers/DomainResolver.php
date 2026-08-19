@@ -5,6 +5,7 @@ namespace App\Resolvers;
 use App\Dto\Domain;
 use App\Resolvers\Concerns\HasAnApplication;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class DomainResolver extends Resolver
@@ -74,9 +75,10 @@ class DomainResolver extends Resolver
 
         $this->ensureInteractive('Multiple domains found. Provide a domain ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Domain',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

@@ -7,6 +7,7 @@ use App\Dto\DatabaseSnapshot;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class DatabaseSnapshotResolver extends Resolver
@@ -49,9 +50,10 @@ class DatabaseSnapshotResolver extends Resolver
 
         $this->ensureInteractive('Multiple snapshots found. Provide a snapshot ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Snapshot',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;

@@ -7,7 +7,6 @@ use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
 use App\Exceptions\UnreadableResponseException;
 use App\Prompts\Renderer;
-use App\Prompts\SelectWithContextPrompt;
 use App\Prompts\SuppressedOutput;
 use App\Resolvers\Resolvers;
 use App\Support\DetectsNonInteractiveEnvironments;
@@ -144,12 +143,6 @@ abstract class BaseCommand extends Command
      */
     protected function configureAdditionalPromptFallbacks(): void
     {
-        SelectWithContextPrompt::fallbackUsing(fn (SelectWithContextPrompt $prompt) => $this->promptUntilValid(
-            fn () => $this->components->choice($prompt->label, $prompt->options, $prompt->default),
-            false,
-            $prompt->validate,
-        ));
-
         AutoCompletePrompt::fallbackUsing(fn (AutoCompletePrompt $prompt) => $this->promptUntilValid(
             fn () => $this->components->askWithCompletion(
                 $prompt->label,

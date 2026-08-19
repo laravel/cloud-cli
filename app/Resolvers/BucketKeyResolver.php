@@ -6,6 +6,7 @@ use App\Dto\BucketKey;
 use App\Dto\ObjectStorageBucket;
 use Illuminate\Support\LazyCollection;
 
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 
 class BucketKeyResolver extends Resolver
@@ -48,9 +49,10 @@ class BucketKeyResolver extends Resolver
 
         $this->ensureInteractive('Multiple keys found. Provide a key ID or name.', ['options' => $options]);
 
-        $selected = selectWithContext(
+        $selected = select(
             label: 'Key',
             options: $options,
+            info: fn ($id) => $id,
         );
 
         $this->displayResolved = false;
