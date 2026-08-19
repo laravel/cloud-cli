@@ -7,9 +7,7 @@ use App\Middleware\OffersSkillsInstall;
 use App\Middleware\RequiresAuthToken;
 use App\Middleware\SuppressOutputIfJson;
 use App\Prompts\Answered;
-use App\Prompts\DynamicSpinner;
 use App\Prompts\Renderer as PromptRenderer;
-use App\Prompts\SpinnerRenderer;
 use App\Prompts\TextPromptRenderer;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
@@ -45,6 +43,7 @@ class AppServiceProvider extends ServiceProvider
             'SlideInRenderer',
             'SpinnerRenderer',
             'TableRenderer',
+            'TaskRenderer',
             'CodeBlockRenderer',
             'TextareaPromptRenderer',
             'TextPromptRenderer',
@@ -65,7 +64,6 @@ class AppServiceProvider extends ServiceProvider
             });
 
         $renderers->offsetSet(Answered::class, TextPromptRenderer::class);
-        $renderers->offsetSet(DynamicSpinner::class, SpinnerRenderer::class);
 
         Prompt::addTheme('cloud', $renderers->toArray());
         Prompt::theme('cloud');

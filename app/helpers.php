@@ -4,7 +4,6 @@ use App\Prompts\Answered;
 use App\Prompts\CodeBlock;
 use App\Prompts\DataList;
 use App\Prompts\DataTable;
-use App\Prompts\DynamicSpinner;
 use App\Prompts\SlideIn;
 use Illuminate\Support\Facades\Process;
 use Laravel\Prompts\Note;
@@ -27,13 +26,6 @@ if (! function_exists('slideIn')) {
     function slideIn(string $message): void
     {
         (new SlideIn(message: $message))->animate();
-    }
-}
-
-if (! function_exists('dynamicSpinner')) {
-    function dynamicSpinner(callable $callback, string $message): mixed
-    {
-        return (new DynamicSpinner(message: $message))->spin($callback);
     }
 }
 
