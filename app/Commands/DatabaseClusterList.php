@@ -28,7 +28,7 @@ class DatabaseClusterList extends BaseCommand
         intro('Database Clusters');
 
         $databases = spin(
-            fn () => $this->client->databaseClusters()->include('schemas')->list(),
+            fn () => $this->client->databaseClusters()->include('databases')->list(),
             'Fetching databases...',
         );
 
