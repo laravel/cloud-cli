@@ -24,7 +24,7 @@ class CreateDatabaseRestoreRequest extends Request implements HasBody
 
     public function resolveEndpoint(): string
     {
-        return "/databases/clusters/{$this->data->clusterId}/restores";
+        return "/databases/clusters/{$this->data->clusterId}/restore";
     }
 
     protected function defaultBody(): array

@@ -373,7 +373,7 @@ class Ship extends BaseCommand
             $cluster = $this->getDatabaseCluster();
 
             if ($cluster) {
-                $cluster = $this->client->databaseClusters()->include('schemas')->get($cluster->id);
+                $cluster = $this->client->databaseClusters()->include('databases')->get($cluster->id);
                 $database = $this->getDatabase($cluster);
                 $environmentParams['database_schema_id'] = $database->id;
             }
@@ -587,7 +587,7 @@ class Ship extends BaseCommand
 
         if (! $cluster) {
             $cluster = $this->createDatabaseClusterWithOptions($type->type, $preset, $name, $region);
-            $cluster = $this->client->databaseClusters()->include('schemas')->get($cluster->id);
+            $cluster = $this->client->databaseClusters()->include('databases')->get($cluster->id);
         }
 
         return $this->loopUntilValid(
@@ -721,7 +721,7 @@ class Ship extends BaseCommand
 
     protected function getDatabaseCluster(): ?DatabaseCluster
     {
-        $databasesPaginator = $this->client->databaseClusters()->include('schemas')->list();
+        $databasesPaginator = $this->client->databaseClusters()->include('databases')->list();
         $databases = $databasesPaginator->collect();
 
         if ($databases->isEmpty()) {

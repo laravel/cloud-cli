@@ -26,7 +26,7 @@ class DatabaseClusterDelete extends BaseCommand
 
         $database = $this->resolvers()->databaseCluster()->from($this->argument('database'));
         $schemas = spin(
-            fn () => $this->client->databaseClusters()->include('schemas')->get($database->id)->schemas,
+            fn () => $this->client->databaseClusters()->include('databases')->get($database->id)->schemas,
             'Fetching database cluster schemas...',
         );
 

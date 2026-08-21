@@ -34,7 +34,7 @@ class DatabaseClusterResolver extends Resolver
         return $this->resolveFromIdentifier(
             $identifier,
             fn () => spin(
-                fn () => $this->client->databaseClusters()->include('schemas')->get($identifier),
+                fn () => $this->client->databaseClusters()->include('databases')->get($identifier),
                 'Fetching database...',
             ),
             fn () => $this->fetchAndFind($identifier),
@@ -82,7 +82,7 @@ class DatabaseClusterResolver extends Resolver
     protected function fetchAll(): Collection
     {
         return collect(spin(
-            fn () => $this->client->databaseClusters()->include('schemas')->list()->items(),
+            fn () => $this->client->databaseClusters()->include('databases')->list()->items(),
             'Fetching databases...',
         ));
     }
