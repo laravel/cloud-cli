@@ -52,7 +52,7 @@ Environment variables? → `cloud environment:variables -n --force`
 
 Provision infrastructure? → `cloud <resource>:create --json -n`
 
-Monorepo (app in a subdirectory)? → `cloud application:create --root-directory=<subdir> --json -n`
+Monorepo (app in a subdirectory)? → add `--root-directory=<subdir>` to `cloud ship` or `cloud application:create`
 
 Custom domain? → `cloud domain:create --json -n` then `cloud domain:verify -n`
 
