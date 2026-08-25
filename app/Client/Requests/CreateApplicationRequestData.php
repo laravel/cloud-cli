@@ -8,16 +8,23 @@ class CreateApplicationRequestData extends RequestData
         public readonly string $repository,
         public readonly string $name,
         public readonly string $region,
+        public readonly ?string $rootDirectory = null,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
-        return [
+        $data = [
             'repository' => $this->repository,
             'name' => $this->name,
             'region' => $this->region,
         ];
+
+        if ($this->rootDirectory !== null) {
+            $data['root_directory'] = $this->rootDirectory;
+        }
+
+        return $data;
     }
 }
