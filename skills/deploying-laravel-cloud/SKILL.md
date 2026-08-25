@@ -52,6 +52,8 @@ Environment variables? → `cloud environment:variables -n --force`
 
 Provision infrastructure? → `cloud <resource>:create --json -n`
 
+Monorepo (app in a subdirectory)? → `cloud application:create --root-directory=<subdir> --json -n`
+
 Custom domain? → `cloud domain:create --json -n` then `cloud domain:verify -n`
 
 For multi-step operations, see [reference/checklists.md](reference/checklists.md).
