@@ -26,7 +26,7 @@ afterEach(function () {
     MockClient::destroyGlobal();
 });
 
-function mockApplicationCreateRequests(array $attributeOverrides = [], ?MockResponse $createResponse = null): void
+function setupApplicationCreateMocks(array $attributeOverrides = [], ?MockResponse $createResponse = null): void
 {
     MockClient::global([
         GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
@@ -42,7 +42,7 @@ function mockApplicationCreateRequests(array $attributeOverrides = [], ?MockResp
 }
 
 it('sends the root directory when the option is passed', function (string $rootDirectory) {
-    mockApplicationCreateRequests(['root_directory' => $rootDirectory]);
+    setupApplicationCreateMocks(['root_directory' => $rootDirectory]);
 
     $this->artisan('application:create', [
         '--name' => 'My App',
@@ -59,7 +59,7 @@ it('sends the root directory when the option is passed', function (string $rootD
 })->with(['backend', 'apps/api']);
 
 it('omits the root directory from the request body when the option is not passed', function () {
-    mockApplicationCreateRequests();
+    setupApplicationCreateMocks();
 
     $this->artisan('application:create', [
         '--name' => 'My App',
@@ -75,7 +75,7 @@ it('omits the root directory from the request body when the option is not passed
 });
 
 it('outputs the root directory in the JSON representation', function () {
-    mockApplicationCreateRequests(['root_directory' => 'backend']);
+    setupApplicationCreateMocks(['root_directory' => 'backend']);
 
     $exitCode = Artisan::call('application:create', [
         '--name' => 'My App',
@@ -95,7 +95,7 @@ it('outputs the root directory in the JSON representation', function () {
 });
 
 it('parses responses without a root directory attribute as null', function () {
-    mockApplicationCreateRequests();
+    setupApplicationCreateMocks();
 
     $exitCode = Artisan::call('application:create', [
         '--name' => 'My App',
@@ -114,7 +114,7 @@ it('parses responses without a root directory attribute as null', function () {
 });
 
 it('fails when the API rejects the root directory', function () {
-    mockApplicationCreateRequests(createResponse: MockResponse::make([
+    setupApplicationCreateMocks(createResponse: MockResponse::make([
         'message' => 'Validation failed',
         'errors' => ['root_directory' => ['The selected directory is invalid.']],
     ], 422));

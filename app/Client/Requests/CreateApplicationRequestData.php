@@ -15,16 +15,11 @@ class CreateApplicationRequestData extends RequestData
 
     public function toRequestData(): array
     {
-        $data = [
+        return $this->filter([
             'repository' => $this->repository,
             'name' => $this->name,
             'region' => $this->region,
-        ];
-
-        if ($this->rootDirectory !== null) {
-            $data['root_directory'] = $this->rootDirectory;
-        }
-
-        return $data;
+            'root_directory' => $this->rootDirectory,
+        ]);
     }
 }

@@ -95,13 +95,15 @@ class ApplicationCreate extends BaseCommand
                 ->nonInteractively(fn () => $this->getDefaultRegion()),
         );
 
+        $rootDirectory = $this->option('root-directory');
+
         return spin(
             fn () => $this->client->applications()->create(
                 new CreateApplicationRequestData(
                     repository: $this->form()->get('repository'),
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
-                    rootDirectory: $this->option('root-directory') ?: null,
+                    rootDirectory: $rootDirectory === '' ? null : $rootDirectory,
                 ),
             ),
             'Creating application...',
