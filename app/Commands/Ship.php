@@ -61,6 +61,7 @@ class Ship extends BaseCommand
                             {--database-preset= : Preset tier for the database (dev, prod, scale — case-insensitive). Default: dev}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
+                            {--root-directory= : Repository subdirectory containing the app (monorepos)}
 ';
 
     protected $description = 'Ship a new application to Laravel Cloud';
@@ -237,6 +238,7 @@ class Ship extends BaseCommand
             repository: $repository,
             name: $name,
             region: $region,
+            rootDirectory: $this->rootDirectoryOption(),
         );
 
         try {
@@ -304,9 +306,17 @@ class Ship extends BaseCommand
                     repository: $repository,
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
+                    rootDirectory: $this->rootDirectoryOption(),
                 ),
             ),
         );
+    }
+
+    protected function rootDirectoryOption(): ?string
+    {
+        $rootDirectory = $this->option('root-directory');
+
+        return $rootDirectory === '' ? null : $rootDirectory;
     }
 
     protected function collectOptionsToEnable(Environment $environment): void
