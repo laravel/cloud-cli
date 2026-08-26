@@ -174,13 +174,14 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 
 Secrets are organization-wide encrypted values that can be attached to environments. Values are encrypted locally with the organization's public key before they are sent, so plaintext never leaves your machine.
 
-| Command                           | Description                      |
-| --------------------------------- | -------------------------------- |
-| `cloud secret:list`               | List secrets                     |
-| `cloud secret:create`             | Create a secret                  |
-| `cloud secret:update`             | Update a secret                  |
-| `cloud secret:delete`             | Delete a secret                  |
-| `cloud environment-secret:attach` | Attach secrets to an environment |
+| Command                           | Description                             |
+| --------------------------------- | --------------------------------------- |
+| `cloud secret:list`               | List secrets                            |
+| `cloud secret:create`             | Create a secret                         |
+| `cloud secret:update`             | Update a secret                         |
+| `cloud secret:delete`             | Delete a secret                         |
+| `cloud environment-secret:list`   | List secrets attached to an environment |
+| `cloud environment-secret:attach` | Attach secrets to an environment        |
 
 ### Deploy & ship
 
