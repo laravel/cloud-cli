@@ -5,6 +5,7 @@ namespace App\Client\Resources;
 use App\Client\Requests\CreateSecretRequestData;
 use App\Client\Requests\UpdateSecretRequestData;
 use App\Client\Resources\Secrets\CreateSecretRequest;
+use App\Client\Resources\Secrets\DeleteSecretRequest;
 use App\Client\Resources\Secrets\GetSecretPublicKeyRequest;
 use App\Client\Resources\Secrets\ListSecretsRequest;
 use App\Client\Resources\Secrets\UpdateSecretRequest;
@@ -41,5 +42,12 @@ class SecretsResource extends Resource
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
+    }
+
+    public function delete(string $secretId): void
+    {
+        $this->send(new DeleteSecretRequest(
+            secretId: $secretId,
+        ));
     }
 }
