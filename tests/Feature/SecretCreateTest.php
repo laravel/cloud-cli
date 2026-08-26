@@ -42,22 +42,6 @@ function secretPublicKeyResponse(): array
     ];
 }
 
-function createdSecretResponse(array $attributes = []): array
-{
-    return [
-        'data' => [
-            'id' => 'secret-1',
-            'type' => 'secrets',
-            'attributes' => array_merge([
-                'key' => 'STRIPE_KEY',
-                'notes' => null,
-                'created_at' => '2026-01-01T00:00:00.000000Z',
-                'updated_at' => '2026-01-01T00:00:00.000000Z',
-            ], $attributes),
-        ],
-    ];
-}
-
 function decryptSecretValue(string $value): string
 {
     return sodium_crypto_box_seal_open(
@@ -76,7 +60,7 @@ function setupSecretCreateMocks(): Closure
         CreateSecretRequest::class => function (PendingRequest $request) use ($sentBody) {
             $sentBody->value = $request->body()->all();
 
-            return MockResponse::make(createdSecretResponse(), 201);
+            return MockResponse::make(['data' => secretResponse()], 201);
         },
     ]);
 

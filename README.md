@@ -176,6 +176,7 @@ Secrets are organization-wide encrypted values that can be attached to environme
 
 | Command               | Description     |
 | --------------------- | --------------- |
+| `cloud secret:list`   | List secrets    |
 | `cloud secret:create` | Create a secret |
 
 ### Deploy & ship

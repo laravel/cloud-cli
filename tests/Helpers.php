@@ -107,6 +107,20 @@ function setupApplicationListMocks(?array $applications = null, int $status = 20
     ]);
 }
 
+function secretResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'secret-1',
+        'type' => 'secrets',
+        'attributes' => array_merge([
+            'key' => 'STRIPE_KEY',
+            'notes' => null,
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+            'updated_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseClusterResponse(array $overrides = []): array
 {
     return [
