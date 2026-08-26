@@ -8,7 +8,7 @@ use function Laravel\Prompts\spin;
 class SecretDelete extends BaseCommand
 {
     protected $signature = 'secret:delete
-                            {secret? : The secret ID or name}
+                            {secret? : The secret ID}
                             {--force : Skip confirmation}';
 
     protected $description = 'Delete a secret';

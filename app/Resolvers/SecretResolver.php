@@ -16,13 +16,13 @@ class SecretResolver extends Resolver
         return $this->from();
     }
 
-    public function from(?string $idOrName = null): ?Secret
+    public function from(?string $id = null): ?Secret
     {
-        $secret = ($idOrName ? $this->fromIdentifier($idOrName) : null)
-            ?? $this->fromInput();
+        // An unknown ID is not passed on to the picker: silently prompting would hide the typo.
+        $secret = $id ? $this->fromIdentifier($id) : $this->fromInput();
 
         if (! $secret) {
-            $this->failAndExit('Unable to resolve secret: '.($idOrName ?? 'Provide a valid secret ID or name.').'. Run `cloud secret:list --json` to see available secrets.');
+            $this->failAndExit('Unable to resolve secret: '.($id ?? 'Provide a valid secret ID.').'. Run `cloud secret:list --json` to see available secret IDs.');
         }
 
         $this->displayResolved('Secret', $secret->key, $secret->id);
@@ -30,7 +30,7 @@ class SecretResolver extends Resolver
         return $secret;
     }
 
-    // The API has no endpoint for a single secret, so an ID is matched against the list too.
+    // The API has no endpoint for a single secret, so the ID is matched against the list.
     public function fromIdentifier(string $identifier): ?Secret
     {
         return $this->fromCollection($this->fetchAll(), $identifier);
@@ -50,7 +50,7 @@ class SecretResolver extends Resolver
 
         $options = $secrets->mapWithKeys(fn (Secret $secret) => [$secret->id => $secret->key])->toArray();
 
-        $this->ensureInteractive('Multiple secrets found. Provide a secret ID or name.', ['options' => $options]);
+        $this->ensureInteractive('Multiple secrets found. Provide a secret ID.', ['options' => $options]);
 
         $selected = select(
             label: 'Secret',
@@ -63,10 +63,10 @@ class SecretResolver extends Resolver
         return $secrets->firstWhere('id', $selected);
     }
 
-    public function fromCollection(Collection|LazyCollection $secrets, string $identifier): ?Secret
+    // Only IDs are accepted: secret names are not unique within an organization.
+    public function fromCollection(Collection|LazyCollection $secrets, string $id): ?Secret
     {
-        return $secrets->firstWhere('id', $identifier)
-            ?? $secrets->firstWhere('key', $identifier);
+        return $secrets->firstWhere('id', $id);
     }
 
     protected function fetchAll(): LazyCollection

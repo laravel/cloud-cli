@@ -52,11 +52,24 @@ it('updates the name and resends it as the key', function () {
     expect($sentBody())->toMatchArray(['key' => 'STRIPE_SECRET']);
 });
 
-it('resolves a secret by name', function () {
+it('rejects a secret name', function () {
+    $sentBody = setupSecretUpdateMocks();
+
+    // Names are not unique, so only IDs are accepted.
+    $this->artisan('secret:update', [
+        'secret' => 'STRIPE_KEY',
+        '--notes' => 'Rotated quarterly.',
+        '--no-interaction' => true,
+    ])->assertFailed();
+
+    expect($sentBody())->toBeNull();
+});
+
+it('updates the notes', function () {
     $sentBody = setupSecretUpdateMocks();
 
     $this->artisan('secret:update', [
-        'secret' => 'STRIPE_KEY',
+        'secret' => 'secret-1',
         '--notes' => 'Rotated quarterly.',
         '--no-interaction' => true,
     ])->assertSuccessful();

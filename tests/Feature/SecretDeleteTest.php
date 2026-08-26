@@ -53,16 +53,17 @@ it('deletes a secret by ID with --force', function () {
     expect($deletedUrl())->toEndWith('/secrets/secret-2');
 });
 
-it('deletes a secret resolved by name', function () {
+it('rejects a secret name', function () {
     $deletedUrl = setupSecretDeleteMocks();
 
+    // Names are not unique, so only IDs are accepted.
     $this->artisan('secret:delete', [
         'secret' => 'MAILGUN_SECRET',
         '--force' => true,
         '--no-interaction' => true,
-    ])->assertSuccessful();
+    ])->assertFailed();
 
-    expect($deletedUrl())->toEndWith('/secrets/secret-2');
+    expect($deletedUrl())->toBeNull();
 });
 
 it('requires --force when non-interactive', function () {

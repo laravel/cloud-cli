@@ -17,7 +17,7 @@ class SecretUpdate extends BaseCommand
     protected ?string $jsonDataClass = Secret::class;
 
     protected $signature = 'secret:update
-                            {secret? : The secret ID or name}
+                            {secret? : The secret ID}
                             {--name= : The secret name, e.g. STRIPE_KEY}
                             {--value= : A new secret value}
                             {--notes= : Notes describing the secret (max 500 characters)}
