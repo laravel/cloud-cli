@@ -7,9 +7,9 @@ use App\Dto\Secret;
 use App\Dto\SecretPublicKey;
 
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
-use function Laravel\Prompts\textarea;
 
 class SecretCreate extends BaseCommand
 {
@@ -53,15 +53,21 @@ class SecretCreate extends BaseCommand
             'name',
         );
 
-        // A textarea so multi-line values (private keys, certificates) can be pasted in.
         $this->form()->prompt(
             'value',
-            fn ($resolver) => $resolver->fromInput(fn (?string $value) => textarea(
-                label: 'Value',
-                default: $value ?? '',
-                required: true,
-                hint: 'The value is encrypted before it leaves your machine.',
-            )),
+            fn ($resolver) => $resolver->fromInput(fn (?string $value) => $this->option('show-sensitive')
+                ? text(
+                    label: 'Value',
+                    default: $value ?? '',
+                    required: true,
+                    hint: 'The value is encrypted before it leaves your machine.',
+                )
+                : password(
+                    label: 'Value',
+                    required: true,
+                    hint: 'The value is encrypted before it leaves your machine.',
+                ),
+            ),
         );
 
         $this->form()->prompt(

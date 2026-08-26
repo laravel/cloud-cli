@@ -8,9 +8,9 @@ use App\Exceptions\CommandExitException;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
+use function Laravel\Prompts\password;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
-use function Laravel\Prompts\textarea;
 
 class SecretUpdate extends BaseCommand
 {
@@ -92,12 +92,19 @@ class SecretUpdate extends BaseCommand
 
         $this->form()->define(
             'value',
-            fn ($resolver) => $resolver->fromInput(fn (?string $value) => textarea(
-                label: 'Value',
-                default: $value ?? '',
-                required: true,
-                hint: 'The value is encrypted before it leaves your machine.',
-            )),
+            fn ($resolver) => $resolver->fromInput(fn (?string $value) => $this->option('show-sensitive')
+                ? text(
+                    label: 'Value',
+                    default: $value ?? '',
+                    required: true,
+                    hint: 'The value is encrypted before it leaves your machine.',
+                )
+                : password(
+                    label: 'Value',
+                    required: true,
+                    hint: 'The value is encrypted before it leaves your machine.',
+                ),
+            ),
         );
 
         $this->form()->define(
