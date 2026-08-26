@@ -170,6 +170,14 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:variables` | Manage environment variables (append, set, or replace) |
 | `cloud environment:logs`      | View environment logs                                  |
 
+### Secrets
+
+Secrets are organization-wide encrypted values that can be attached to environments. Values are encrypted locally with the organization's public key before they are sent, so plaintext never leaves your machine.
+
+| Command               | Description     |
+| --------------------- | --------------- |
+| `cloud secret:create` | Create a secret |
+
 ### Deploy & ship
 
 | Command                 | Description                                    |
