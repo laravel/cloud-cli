@@ -27,7 +27,7 @@ class SecretList extends BaseCommand
         answered('Organization', $this->client->meta()->organization()->name);
 
         $items = spin(
-            fn () => $this->client->secrets()->list()->collect(),
+            fn () => collect($this->client->secrets()->list()->collect()),
             'Fetching secrets...',
         );
 

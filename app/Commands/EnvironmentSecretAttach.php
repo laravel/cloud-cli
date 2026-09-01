@@ -5,7 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\AttachEnvironmentSecretsRequestData;
 use App\Dto\Environment;
 use App\Dto\Secret;
-use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\multiselect;
@@ -52,7 +52,7 @@ class EnvironmentSecretAttach extends BaseCommand
     protected function resolveSecrets(): array
     {
         $secrets = spin(
-            fn () => $this->client->secrets()->list()->collect(),
+            fn () => collect($this->client->secrets()->list()->collect()),
             'Fetching secrets...',
         );
 
@@ -66,9 +66,11 @@ class EnvironmentSecretAttach extends BaseCommand
             return $this->selectSecrets($secrets);
         }
 
+        $resolver = $this->resolvers()->secret();
+
         // Only IDs are accepted: secret names are not unique within an organization.
-        return collect($identifiers)->map(function (string $identifier) use ($secrets) {
-            $secret = $secrets->firstWhere('id', $identifier);
+        return collect($identifiers)->map(function (string $identifier) use ($secrets, $resolver) {
+            $secret = $resolver->fromCollection($secrets, $identifier);
 
             if (! $secret) {
                 $this->failAndExit("Unable to resolve secret: {$identifier}. Provide a secret ID; run `cloud secret:list --json` to see them.");
@@ -81,7 +83,7 @@ class EnvironmentSecretAttach extends BaseCommand
     /**
      * @return list<Secret>
      */
-    protected function selectSecrets(LazyCollection $secrets): array
+    protected function selectSecrets(Collection $secrets): array
     {
         // Names are not unique, so each option carries its ID.
         $options = $secrets->mapWithKeys(fn (Secret $secret) => [$secret->id => "{$secret->key} ({$secret->id})"])->toArray();
