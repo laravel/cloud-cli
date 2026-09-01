@@ -145,7 +145,7 @@ class EnvironmentUpdate extends BaseCommand
     protected function selectDatabase(?string $value, ?string $currentId): string
     {
         $clusters = spin(
-            fn () => $this->client->databaseClusters()->include('schemas')->list()->collect(),
+            fn () => $this->client->databaseClusters()->include('databases')->list()->collect(),
             'Fetching databases...',
         );
 

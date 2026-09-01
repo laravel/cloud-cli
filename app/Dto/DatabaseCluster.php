@@ -49,11 +49,20 @@ class DatabaseCluster extends Data
             'updatedAt' => $attributes['updated_at'] ?? null,
         ];
 
-        $schemaData = collect($included)
-            ->filter(fn ($item) => $item['type'] === 'databaseSchemas')
+        $schemas = collect($included)->filter(fn ($item) => $item['type'] === 'databaseSchemas');
+
+        // List responses share one `included` array across every cluster, so the
+        // relationship is the only thing tying a schema to its own cluster.
+        if (isset($data['relationships']['databases']['data'])) {
+            $schemaIds = collect($data['relationships']['databases']['data'])->pluck('id');
+
+            $schemas = $schemas->filter(fn ($item) => $schemaIds->contains($item['id']));
+        }
+
+        $transformed['schemas'] = $schemas
+            ->map(fn ($item) => Database::createFromResponse(['data' => $item, 'included' => $included])->toArray())
             ->values()
             ->toArray();
-        $transformed['schemas'] = collect($schemaData)->map(fn ($item) => Database::createFromResponse(['data' => $item, 'included' => $included])->toArray())->toArray();
 
         return self::from($transformed);
     }
