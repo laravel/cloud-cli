@@ -107,8 +107,23 @@ function setupApplicationListMocks(?array $applications = null, int $status = 20
     ]);
 }
 
+function databaseSchemaResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'schema-1',
+        'type' => 'databaseSchemas',
+        'attributes' => array_merge([
+            'name' => 'my_schema',
+            'status' => 'available',
+            'created_at' => '2024-01-15T12:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseClusterResponse(array $overrides = []): array
 {
+    $schemas = $overrides['included'] ?? [databaseSchemaResponse()];
+
     return [
         'data' => [
             'id' => $overrides['id'] ?? 'db-123',
@@ -121,8 +136,16 @@ function databaseClusterResponse(array $overrides = []): array
                 'config' => [],
                 'connection' => [],
             ], $overrides['attributes'] ?? []),
+            'relationships' => [
+                'databases' => [
+                    'data' => array_map(
+                        fn ($schema) => ['id' => $schema['id'], 'type' => $schema['type']],
+                        $schemas,
+                    ),
+                ],
+            ],
         ],
-        'included' => [],
+        'included' => $schemas,
     ];
 }
 
