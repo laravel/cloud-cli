@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\UpdateSecretRequestData;
+use App\Concerns\AcceptsPipedInput;
 use App\Dto\Secret;
 use App\Exceptions\CommandExitException;
 
@@ -14,12 +15,14 @@ use function Laravel\Prompts\text;
 
 class SecretUpdate extends BaseCommand
 {
+    use AcceptsPipedInput;
+
     protected ?string $jsonDataClass = Secret::class;
 
     protected $signature = 'secret:update
                             {secret? : The secret ID}
                             {--name= : The secret name, e.g. STRIPE_KEY}
-                            {--value= : A new secret value}
+                            {--value= : A new secret value (may also be piped to STDIN)}
                             {--notes= : Notes describing the secret (max 500 characters)}
                             {--force : Force update without confirmation}';
 
@@ -30,6 +33,8 @@ class SecretUpdate extends BaseCommand
         $this->ensureClient();
 
         intro('Updating Secret');
+
+        $this->fillOptionFromStdin('value');
 
         $secret = $this->resolvers()->secret()->from($this->argument('secret'));
 

@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\CreateSecretRequestData;
+use App\Concerns\AcceptsPipedInput;
 use App\Dto\Secret;
 use App\Dto\SecretPublicKey;
 
@@ -13,11 +14,13 @@ use function Laravel\Prompts\text;
 
 class SecretCreate extends BaseCommand
 {
+    use AcceptsPipedInput;
+
     protected ?string $jsonDataClass = Secret::class;
 
     protected $signature = 'secret:create
                             {--name= : The secret name, e.g. STRIPE_KEY}
-                            {--value= : The secret value}
+                            {--value= : The secret value (may also be piped to STDIN)}
                             {--notes= : Notes describing the secret (max 500 characters)}';
 
     protected $description = 'Create a new secret';
@@ -27,6 +30,8 @@ class SecretCreate extends BaseCommand
         $this->ensureClient();
 
         intro('Creating Secret');
+
+        $this->fillOptionFromStdin('value');
 
         $publicKey = spin(
             fn () => $this->client->secrets()->publicKey(),

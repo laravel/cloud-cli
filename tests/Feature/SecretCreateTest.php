@@ -4,6 +4,7 @@ use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Secrets\CreateSecretRequest;
 use App\Client\Resources\Secrets\GetSecretPublicKeyRequest;
 use App\ConfigRepository;
+use App\Support\Stdin;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -12,6 +13,10 @@ beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
     $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect(['test-api-token']));
     $this->app->instance(ConfigRepository::class, $this->mockConfig);
+
+    $this->mockStdin = Mockery::mock(Stdin::class);
+    $this->mockStdin->shouldReceive('read')->andReturn(null)->byDefault();
+    $this->app->instance(Stdin::class, $this->mockStdin);
 });
 
 afterEach(function () {
@@ -89,4 +94,62 @@ it('encrypts multi-line values', function () {
     ])->assertSuccessful();
 
     expect(decryptSecretValue($sentBody()['value']))->toBe($value);
+});
+
+function pipeSecretValue(?string $value): void
+{
+    test()->mockStdin->shouldReceive('read')->andReturn($value);
+}
+
+it('reads the value from STDIN when --value is not given', function () {
+    $sentBody = setupSecretCreateMocks();
+
+    pipeSecretValue('sk_test_piped');
+
+    $this->artisan('secret:create', [
+        '--name' => 'STRIPE_KEY',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect(decryptSecretValue($sentBody()['value']))->toBe('sk_test_piped');
+});
+
+it('prefers --value over STDIN', function () {
+    $sentBody = setupSecretCreateMocks();
+
+    pipeSecretValue('sk_test_piped');
+
+    $this->artisan('secret:create', [
+        '--name' => 'STRIPE_KEY',
+        '--value' => 'sk_test_option',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect(decryptSecretValue($sentBody()['value']))->toBe('sk_test_option');
+});
+
+it('encrypts a multi-line value piped to STDIN', function () {
+    $sentBody = setupSecretCreateMocks();
+
+    $value = "-----BEGIN PRIVATE KEY-----\nline-one\nline-two\n-----END PRIVATE KEY-----";
+
+    pipeSecretValue($value);
+
+    $this->artisan('secret:create', [
+        '--name' => 'SSH_KEY',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect(decryptSecretValue($sentBody()['value']))->toBe($value);
+});
+
+it('fails when neither --value nor STDIN provides a value', function () {
+    $sentBody = setupSecretCreateMocks();
+
+    $this->artisan('secret:create', [
+        '--name' => 'STRIPE_KEY',
+        '--no-interaction' => true,
+    ])->assertFailed();
+
+    expect($sentBody())->toBeNull();
 });

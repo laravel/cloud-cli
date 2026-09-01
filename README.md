@@ -183,6 +183,12 @@ Secrets are organization-wide encrypted values that can be attached to environme
 | `cloud environment-secret:list`   | List secrets attached to an environment |
 | `cloud environment-secret:attach` | Attach secrets to an environment        |
 
+`secret:create` and `secret:update` read the value from STDIN when `--value` is not given, which keeps it out of your shell history and out of the process list:
+
+```sh
+op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
+```
+
 ### Deploy & ship
 
 | Command                 | Description                                    |

@@ -5,6 +5,7 @@ use App\Client\Resources\Secrets\GetSecretPublicKeyRequest;
 use App\Client\Resources\Secrets\ListSecretsRequest;
 use App\Client\Resources\Secrets\UpdateSecretRequest;
 use App\ConfigRepository;
+use App\Support\Stdin;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
@@ -13,6 +14,10 @@ beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
     $this->mockConfig->shouldReceive('apiTokens')->andReturn(collect(['test-api-token']));
     $this->app->instance(ConfigRepository::class, $this->mockConfig);
+
+    $this->mockStdin = Mockery::mock(Stdin::class);
+    $this->mockStdin->shouldReceive('read')->andReturn(null)->byDefault();
+    $this->app->instance(Stdin::class, $this->mockStdin);
 });
 
 afterEach(function () {
@@ -123,4 +128,32 @@ it('fails when no fields are given', function () {
         'secret' => 'secret-1',
         '--no-interaction' => true,
     ])->assertFailed();
+});
+
+it('reads a new value from STDIN when --value is not given', function () {
+    $sentBody = setupSecretUpdateMocks();
+
+    test()->mockStdin->shouldReceive('read')->andReturn('sk_test_piped');
+
+    $this->artisan('secret:update', [
+        'secret' => 'secret-1',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray(['key_pair_id' => 'keypair-1']);
+    expect(decryptSecretValue($sentBody()['value']))->toBe('sk_test_piped');
+});
+
+it('prefers --value over STDIN', function () {
+    $sentBody = setupSecretUpdateMocks();
+
+    test()->mockStdin->shouldReceive('read')->andReturn('sk_test_piped');
+
+    $this->artisan('secret:update', [
+        'secret' => 'secret-1',
+        '--value' => 'sk_test_option',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect(decryptSecretValue($sentBody()['value']))->toBe('sk_test_option');
 });
