@@ -39,6 +39,9 @@
         "saloonphp/saloon": "^4.0",
         "spatie/laravel-data": "^4.19"
     },
+    "suggest": {
+        "ext-sodium": "Required to create and update secrets"
+    },
     "autoload": {
         "psr-4": {
             "App\\": "app/",

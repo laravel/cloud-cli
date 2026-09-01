@@ -5,6 +5,7 @@ namespace App\Dto;
 use App\Dto\Transformers\MaskEnvironmentVariables;
 use App\Enums\EnvironmentStatus;
 use Carbon\CarbonImmutable;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Attributes\WithTransformer;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
@@ -49,6 +50,8 @@ class Environment extends Data
         public readonly ?string $databaseSchemaId = null,
         public readonly ?string $cacheId = null,
         public readonly ?string $websocketApplicationId = null,
+        #[DataCollectionOf(Secret::class)]
+        public readonly array $secrets = [],
     ) {
         //
     }
@@ -126,6 +129,16 @@ class Environment extends Data
 
         if (isset($relationships['websocketApplication']['data']['id'])) {
             $transformed['websocketApplicationId'] = $relationships['websocketApplication']['data']['id'];
+        }
+
+        if (isset($relationships['secrets']['data'])) {
+            $secretIds = array_column($relationships['secrets']['data'], 'id');
+
+            $transformed['secrets'] = collect($included)
+                ->filter(fn (array $item) => $item['type'] === 'secrets' && in_array($item['id'], $secretIds, true))
+                ->map(fn (array $item) => Secret::createFromResponse(['data' => $item]))
+                ->values()
+                ->all();
         }
 
         return self::from($transformed);

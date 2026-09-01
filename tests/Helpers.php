@@ -107,6 +107,52 @@ function setupApplicationListMocks(?array $applications = null, int $status = 20
     ]);
 }
 
+/**
+ * The key pair the command's encrypted values can be decrypted with, so the suite never
+ * needs a real organization key pair.
+ */
+function secretKeyPair(): string
+{
+    static $keyPair = null;
+
+    return $keyPair ??= sodium_crypto_box_keypair();
+}
+
+function secretPublicKeyResponse(): array
+{
+    return [
+        'data' => [
+            'id' => 'keypair-1',
+            'type' => 'organization-key-pairs',
+            'attributes' => [
+                'public_key' => base64_encode(sodium_crypto_box_publickey(secretKeyPair())),
+            ],
+        ],
+    ];
+}
+
+function decryptSecretValue(string $value): string
+{
+    return sodium_crypto_box_seal_open(
+        base64_decode($value, strict: true),
+        secretKeyPair(),
+    );
+}
+
+function secretResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'secret-1',
+        'type' => 'secrets',
+        'attributes' => array_merge([
+            'key' => 'STRIPE_KEY',
+            'notes' => null,
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+            'updated_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseSchemaResponse(array $overrides = []): array
 {
     return [
