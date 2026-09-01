@@ -95,7 +95,10 @@ class ApplicationCreate extends BaseCommand
                 ->nonInteractively(fn () => $this->getDefaultRegion()),
         );
 
-        $rootDirectory = $this->option('root-directory');
+        // Defined but never prompted, so a validation error can name the value we sent.
+        $this->form()->define('root_directory', fn ($resolver) => $resolver);
+
+        $rootDirectory = $this->form()->get('root_directory');
 
         return spin(
             fn () => $this->client->applications()->create(

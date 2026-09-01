@@ -255,7 +255,7 @@ class Ship extends BaseCommand
 
                 $values = collect($errors)
                     ->keys()
-                    ->mapWithKeys(fn ($field) => [$field => $data->{$field} ?? null])
+                    ->mapWithKeys(fn ($field) => [$field => $data->toRequestData()[$field] ?? null])
                     ->filter()
                     ->all();
 
@@ -314,8 +314,7 @@ class Ship extends BaseCommand
 
     protected function rootDirectoryOption(): ?string
     {
-        $rootDirectory = trim((string) $this->option('root-directory'));
-        $rootDirectory = trim($rootDirectory, '/');
+        $rootDirectory = $this->option('root-directory');
 
         return $rootDirectory === '' ? null : $rootDirectory;
     }

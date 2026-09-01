@@ -157,13 +157,6 @@ it('resolves the project path to the working directory without a root directory'
     expect((fn () => $this->projectPath())->call($command))->toBe(getcwd());
 });
 
-it('ignores surrounding slashes and whitespace in the root directory', function (string $given) {
-    $command = shipCommandWithRootDirectory($given, '/tmp/test-repo');
-
-    expect((fn () => $this->rootDirectoryOption())->call($command))->toBe('apps/api')
-        ->and((fn () => $this->projectPath())->call($command))->toBe('/tmp/test-repo/apps/api');
-})->with(['/apps/api', 'apps/api/', ' apps/api ']);
-
 it('reads composer.json from the root directory rather than the working directory', function () {
     $repository = temporaryMonorepo(['laravel/octane' => '^2.0']);
 
