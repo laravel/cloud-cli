@@ -183,6 +183,8 @@ Secrets are organization-wide encrypted values that can be attached to environme
 | `cloud environment-secret:list`   | List secrets attached to an environment |
 | `cloud environment-secret:attach` | Attach secrets to an environment        |
 
+`secret:create` and `secret:update` encrypt with `ext-sodium`, which ships with PHP but is a separate package on some distributions. No other command needs it.
+
 `secret:create` and `secret:update` read the value from STDIN when `--value` is not given, which keeps it out of your shell history and out of the process list:
 
 ```sh

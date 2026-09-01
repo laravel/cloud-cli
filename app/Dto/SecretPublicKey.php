@@ -31,6 +31,10 @@ class SecretPublicKey extends Data
      */
     public function encrypt(#[SensitiveParameter] string $value): string
     {
+        if (! function_exists('sodium_crypto_box_seal')) {
+            throw new RuntimeException('The sodium extension is required to encrypt secrets. Install or enable ext-sodium for your PHP installation.');
+        }
+
         $publicKey = base64_decode($this->publicKey, strict: true);
 
         if ($publicKey === false) {
