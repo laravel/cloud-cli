@@ -1,5 +1,6 @@
 <?php
 
+use App\Client\Requests\CreateApplicationRequestData;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
@@ -127,3 +128,21 @@ it('fails when the API rejects the root directory', function () {
         '--no-interaction' => true,
     ])->assertFailed();
 });
+
+it('strips a trailing slash from the root directory', function (?string $given, ?string $expected) {
+    $data = new CreateApplicationRequestData(
+        repository: 'user/my-app',
+        name: 'My App',
+        region: 'us-east-1',
+        rootDirectory: $given,
+    );
+
+    expect($data->rootDirectory)->toBe($expected);
+})->with([
+    ['backend', 'backend'],
+    ['backend/', 'backend'],
+    ['apps/api/', 'apps/api'],
+    ['/', null],
+    ['', null],
+    [null, null],
+]);

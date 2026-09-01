@@ -4,13 +4,18 @@ namespace App\Client\Requests;
 
 class CreateApplicationRequestData extends RequestData
 {
+    public readonly ?string $rootDirectory;
+
     public function __construct(
         public readonly string $repository,
         public readonly string $name,
         public readonly string $region,
-        public readonly ?string $rootDirectory = null,
+        ?string $rootDirectory = null,
     ) {
-        //
+        // The API rejects a trailing slash, which is what shell completion gives you.
+        $rootDirectory = rtrim((string) $rootDirectory, '/');
+
+        $this->rootDirectory = $rootDirectory === '' ? null : $rootDirectory;
     }
 
     public function toRequestData(): array
