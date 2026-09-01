@@ -314,14 +314,48 @@ class Ship extends BaseCommand
 
     protected function rootDirectoryOption(): ?string
     {
-        $rootDirectory = $this->option('root-directory');
+        $rootDirectory = trim((string) $this->option('root-directory'));
+        $rootDirectory = trim($rootDirectory, '/');
 
         return $rootDirectory === '' ? null : $rootDirectory;
     }
 
+    /**
+     * Where the application actually lives on disk.
+     *
+     * Shipping a monorepo means the command can be run from the repository root, so the
+     * project this command inspects is not necessarily the directory it was invoked from.
+     */
+    protected function projectPath(): string
+    {
+        $rootDirectory = $this->rootDirectoryOption();
+
+        if ($rootDirectory === null) {
+            return (string) getcwd();
+        }
+
+        $repositoryRoot = $this->git->getRoot() ?? (string) getcwd();
+
+        return $repositoryRoot.'/'.$rootDirectory;
+    }
+
+    /**
+     * Package detection is a convenience, so a project we cannot read should not stop the ship.
+     */
+    protected function composer(): ?Composer
+    {
+        $path = $this->projectPath();
+
+        if (! file_exists($path.'/composer.json')) {
+            return null;
+        }
+
+        return new Composer(app('files'), $path);
+    }
+
     protected function collectOptionsToEnable(Environment $environment): void
     {
-        $composer = new Composer(app('files'), getcwd());
+        $composer = $this->composer();
 
         $enableOptions = [
             'scheduler' => 'Laravel Scheduler',
@@ -336,7 +370,7 @@ class Ship extends BaseCommand
         ];
 
         foreach ($packages as $package => $options) {
-            if ($composer->hasPackage($package)) {
+            if ($composer?->hasPackage($package)) {
                 $enableOptions = array_merge($enableOptions, $options);
             }
         }
@@ -453,13 +487,13 @@ class Ship extends BaseCommand
 
     protected function applyOpinionatedOptions(Environment $environment): void
     {
-        $composer = new Composer(app('files'), getcwd());
+        $composer = $this->composer();
 
         $instanceParams = [
             'uses_scheduler' => true,
             'uses_sleep_mode' => false,
             // 'sleep_timeout' => 5,
-            'uses_octane' => $composer->hasPackage('laravel/octane'),
+            'uses_octane' => $composer?->hasPackage('laravel/octane') ?? false,
         ];
 
         $environmentParams = [];
@@ -470,7 +504,7 @@ class Ship extends BaseCommand
             $environmentParams['database_schema_id'] = $databaseSchemaId;
         }
 
-        if ($composer->hasPackage('laravel/reverb')) {
+        if ($composer?->hasPackage('laravel/reverb')) {
             $websocketAppId = $this->provisionWebsocketOpinionated();
 
             if ($websocketAppId !== null) {
@@ -791,7 +825,7 @@ class Ship extends BaseCommand
 
     protected function pushCustomEnvironmentVariables(Application $application): void
     {
-        $envPath = getcwd().'/.env';
+        $envPath = $this->projectPath().'/.env';
 
         if (! file_exists($envPath)) {
             return;
