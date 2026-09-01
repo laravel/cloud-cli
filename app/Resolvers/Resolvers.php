@@ -80,6 +80,11 @@ class Resolvers
         return $this->make(BucketKeyResolver::class);
     }
 
+    public function secret(): SecretResolver
+    {
+        return $this->make(SecretResolver::class);
+    }
+
     public function websocketCluster(): WebSocketClusterResolver
     {
         return $this->make(WebSocketClusterResolver::class);

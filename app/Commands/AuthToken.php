@@ -4,12 +4,12 @@ namespace App\Commands;
 
 use App\Client\Connector;
 use App\Cloud;
+use App\Concerns\AcceptsPipedInput;
 use App\ConfigRepository;
 use App\Contracts\NoAuthRequired;
 use App\Dto\ApiToken;
 use App\Exceptions\CommandExitException;
 use App\Support\SensitiveValues;
-use App\Support\Stdin;
 use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\info;
@@ -23,6 +23,8 @@ use function Laravel\Prompts\warning;
 
 class AuthToken extends BaseCommand implements NoAuthRequired
 {
+    use AcceptsPipedInput;
+
     protected $signature = 'auth:token
                             {--add : Add a new API token}
                             {--remove : Remove an API token}
@@ -201,7 +203,9 @@ class AuthToken extends BaseCommand implements NoAuthRequired
 
     protected function tokenFromInput(): ?string
     {
-        $token = $this->option('token') ?: app(Stdin::class)->read();
+        $this->fillOptionFromStdin('token');
+
+        $token = $this->option('token');
 
         if ($token === null || trim($token) === '') {
             return null;

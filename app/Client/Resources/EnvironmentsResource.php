@@ -3,12 +3,14 @@
 namespace App\Client\Resources;
 
 use App\Client\Requests\AddEnvironmentVariablesRequestData;
+use App\Client\Requests\AttachEnvironmentSecretsRequestData;
 use App\Client\Requests\CreateEnvironmentRequestData;
 use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
+use App\Client\Resources\Environments\AttachEnvironmentSecretsRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
@@ -78,6 +80,14 @@ class EnvironmentsResource extends Resource
     public function addVariables(AddEnvironmentVariablesRequestData $data): void
     {
         $this->send(new AddEnvironmentVariablesRequest($data));
+    }
+
+    public function attachSecrets(AttachEnvironmentSecretsRequestData $data): Environment
+    {
+        $request = new AttachEnvironmentSecretsRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
     }
 
     public function replaceVariables(ReplaceEnvironmentVariablesRequestData $data): void
