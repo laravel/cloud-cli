@@ -13,7 +13,7 @@ trait HandlesAvatars
 {
     protected function getAvatarCandidatesFromRepo(): Collection
     {
-        $root = app(Git::class)->getRoot();
+        $root = $this->avatarSearchRoot();
 
         $possiblePaths = collect([
             'favicon.png',
@@ -51,6 +51,16 @@ trait HandlesAvatars
         return $possiblePaths
             ->filter(fn ($path) => pathinfo($path, PATHINFO_EXTENSION) === 'png')
             ->values();
+    }
+
+    /**
+     * Where to look for an icon to use as the avatar.
+     *
+     * A command that knows the application lives in a subdirectory overrides this.
+     */
+    protected function avatarSearchRoot(): ?string
+    {
+        return app(Git::class)->getRoot();
     }
 
     protected function normalizeSvg(string $content): string

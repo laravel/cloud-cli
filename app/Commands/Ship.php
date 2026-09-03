@@ -353,6 +353,11 @@ class Ship extends BaseCommand
         return $repositoryRoot.'/'.$rootDirectory;
     }
 
+    protected function avatarSearchRoot(): ?string
+    {
+        return $this->projectPath();
+    }
+
     /**
      * Package detection is a convenience, so a project we cannot read should not stop the ship.
      */

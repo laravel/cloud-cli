@@ -110,7 +110,7 @@ function temporaryMonorepos(?string $add = null, bool $reset = false): array
     return $paths;
 }
 
-function temporaryMonorepo(?array $composerRequire = null): string
+function temporaryMonorepo(?array $composerRequire = null, array $favicons = []): string
 {
     $repository = sys_get_temp_dir().'/ship-monorepo-'.uniqid();
 
@@ -120,6 +120,11 @@ function temporaryMonorepo(?array $composerRequire = null): string
 
     if ($composerRequire !== null) {
         File::put($repository.'/backend/composer.json', json_encode(['require' => $composerRequire]));
+    }
+
+    foreach ($favicons as $path => $contents) {
+        File::ensureDirectoryExists($repository.'/'.dirname($path));
+        File::put($repository.'/'.$path, $contents);
     }
 
     return $repository;
@@ -254,4 +259,17 @@ it('refuses to ship the repository root twice', function () {
     $this->artisan('ship', ['--no-interaction' => true])->assertFailed();
 
     MockClient::global()->assertNotSent(CreateApplicationRequest::class);
+});
+
+it('finds the avatar in the root directory rather than the repository root', function () {
+    $repository = temporaryMonorepo(favicons: [
+        'public/favicon.png' => 'the wrong app',
+        'backend/public/favicon.png' => 'the app being shipped',
+    ]);
+
+    $command = shipCommandWithRootDirectory('backend', $repository);
+
+    $candidates = (fn () => $this->getAvatarCandidatesFromRepo())->call($command);
+
+    expect($candidates->all())->toBe([$repository.'/backend/public/favicon.png']);
 });
