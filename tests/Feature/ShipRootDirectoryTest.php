@@ -175,3 +175,83 @@ it('skips package detection instead of crashing when the project has no composer
 
     expect((fn () => $this->composer())->call($command))->toBeNull();
 });
+
+function listApplicationsResponseWith(?string $rootDirectory): array
+{
+    return [
+        'data' => [createApplicationResponse([
+            'id' => 'app-existing',
+            'attributes' => ['root_directory' => $rootDirectory],
+        ])],
+        'included' => [
+            ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+            ['id' => 'env-1', 'type' => 'environments', 'attributes' => ['name' => 'production', 'slug' => 'production', 'vanity_domain' => 'my-app.cloud.laravel.com', 'status' => 'running', 'php_major_version' => '8.3']],
+        ],
+        'links' => ['next' => null],
+    ];
+}
+
+it('creates a second application for a repository when it is rooted at another directory', function () {
+    setupShipCreateMocks();
+
+    MockClient::global()->addResponse(
+        MockResponse::make(listApplicationsResponseWith('backend'), 200),
+        ListApplicationsRequest::class,
+    );
+
+    runShipUntilItLeavesTheMockedFlow([
+        '--name' => 'My App',
+        '--region' => 'us-east-1',
+        '--root-directory' => 'frontend',
+    ]);
+
+    MockClient::global()->assertSent(function ($request) {
+        return $request instanceof CreateApplicationRequest
+            && $request->body()->all()['root_directory'] === 'frontend';
+    });
+});
+
+it('refuses to create a second application rooted at the same directory', function () {
+    setupShipCreateMocks();
+
+    MockClient::global()->addResponse(
+        MockResponse::make(listApplicationsResponseWith('backend'), 200),
+        ListApplicationsRequest::class,
+    );
+
+    $this->artisan('ship', [
+        '--root-directory' => 'backend/',
+        '--no-interaction' => true,
+    ])->assertFailed();
+
+    MockClient::global()->assertNotSent(CreateApplicationRequest::class);
+});
+
+it('ignores applications rooted in a subdirectory when shipping the repository root', function () {
+    setupShipCreateMocks();
+
+    MockClient::global()->addResponse(
+        MockResponse::make(listApplicationsResponseWith('backend'), 200),
+        ListApplicationsRequest::class,
+    );
+
+    runShipUntilItLeavesTheMockedFlow([
+        '--name' => 'My App',
+        '--region' => 'us-east-1',
+    ]);
+
+    MockClient::global()->assertSent(CreateApplicationRequest::class);
+});
+
+it('refuses to ship the repository root twice', function () {
+    setupShipCreateMocks();
+
+    MockClient::global()->addResponse(
+        MockResponse::make(listApplicationsResponseWith(null), 200),
+        ListApplicationsRequest::class,
+    );
+
+    $this->artisan('ship', ['--no-interaction' => true])->assertFailed();
+
+    MockClient::global()->assertNotSent(CreateApplicationRequest::class);
+});

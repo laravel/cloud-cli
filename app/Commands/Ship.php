@@ -90,18 +90,25 @@ class Ship extends BaseCommand
             'Checking for existing application...',
         );
 
+        $rootDirectory = $this->rootDirectoryOption();
+
+        // A repository can hold an application per root directory, so only apps rooted at the
+        // same directory are duplicates of the one we are about to create.
         $existingApps = $applications->collect()->filter(
-            fn (Application $app) => $app->repositoryFullName === $repository,
+            fn (Application $app) => $app->repositoryFullName === $repository
+                && $this->normalizeRootDirectory($app->rootDirectory) === $rootDirectory,
         );
+
+        $location = $rootDirectory === null ? 'this repository' : 'this repository with root directory `'.$rootDirectory.'`';
 
         if ($existingApps->isNotEmpty()) {
             if (! $this->isInteractive()) {
                 $this->outputErrorOrThrow(
-                    'Repository already has an application. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
+                    'An application already exists for '.$location.'. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
                 );
             }
 
-            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for this repository.');
+            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for '.$location.'.');
 
             $options = $existingApps
                 ->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name])
@@ -314,7 +321,15 @@ class Ship extends BaseCommand
 
     protected function rootDirectoryOption(): ?string
     {
-        $rootDirectory = $this->option('root-directory');
+        return $this->normalizeRootDirectory($this->option('root-directory'));
+    }
+
+    /**
+     * The API stores the directory without a trailing slash, which is what shell completion gives you.
+     */
+    protected function normalizeRootDirectory(?string $rootDirectory): ?string
+    {
+        $rootDirectory = rtrim((string) $rootDirectory, '/');
 
         return $rootDirectory === '' ? null : $rootDirectory;
     }
