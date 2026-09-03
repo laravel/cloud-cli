@@ -302,6 +302,23 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud command:get`  | Get command details              |
 | `cloud command:run`  | Run a command on an environment  |
 
+### Managed queues
+
+Managed queues are a special kind of instance. Pass the instance ID directly or let the CLI prompt for one.
+
+| Command                                 | Description                              |
+| --------------------------------------- | ---------------------------------------- |
+| `cloud managed-queue:create`            | Create a managed queue in an environment |
+| `cloud managed-queue:pause`             | Pause a managed queue                    |
+| `cloud managed-queue:resume`            | Resume a managed queue                   |
+| `cloud managed-queue:purge`             | Purge all messages from a managed queue  |
+| `cloud managed-queue:set-default`       | Set a managed queue as the default       |
+| `cloud managed-queue:failed-jobs`       | List failed jobs for a managed queue     |
+| `cloud managed-queue:retry-failed-job`  | Retry a failed job on a managed queue    |
+| `cloud managed-queue:delete-failed-job` | Delete a failed job from a managed queue |
+
+`managed-queue:create` accepts `--name`, `--size`, `--max-workers`, `--visibility-timeout`, `--polling-interval` and `--shutdown-timeout` so it can run non-interactively. `pause`, `purge` and `delete-failed-job` accept `--force` to skip the confirmation prompt.
+
 ### Usage
 
 | Command                          | Description                                                  |
@@ -319,7 +336,11 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud browser`                | Open the application in the browser      |
 | `cloud ip:addresses`           | Get Laravel Cloud IP addresses by region |
 | `cloud dedicated-cluster:list` | List dedicated clusters                  |
+| `cloud tinker`                 | Tinker in your Laravel Cloud environment |
+| `cloud skills:install`         | Install Laravel Cloud CLI agent skills   |
 | `cloud completions`            | Generate and install shell completions   |
+
+`cloud tinker` runs code against an environment, either interactively or via `--code=` for scripting (`--timeout=` caps how long to wait for output, default 60s). `cloud skills:install` installs the CLI's agent skills for supported coding agents; use `--global` or `--project` to choose the location and `--agent=` (repeatable) to pick specific agents.
 
 ## Configuration
 
