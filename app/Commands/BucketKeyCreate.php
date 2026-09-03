@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\CreateBucketKeyRequestData;
 use App\Dto\BucketKey;
 use App\Dto\ObjectStorageBucket;
+use App\Support\SensitiveValues;
 
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
@@ -35,6 +36,14 @@ class BucketKeyCreate extends BaseCommand
         $this->outputJsonIfWanted($key);
 
         success("Bucket key created: {$key->name}");
+
+        SensitiveValues::$reveal = (bool) $this->option('show-sensitive');
+
+        dataList([
+            'ID' => $key->id,
+            'Access Key ID' => $key->accessKeyId ?? '—',
+            'Secret Access Key' => SensitiveValues::mask($key->secretAccessKey) ?? '—',
+        ]);
     }
 
     protected function createBucketKey(ObjectStorageBucket $bucket)

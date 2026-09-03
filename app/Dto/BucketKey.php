@@ -35,7 +35,7 @@ class BucketKey extends Data
             'permission' => $attributes['permission'] ?? 'read_write',
             'createdAt' => $attributes['created_at'] ?? null,
             'accessKeyId' => $attributes['access_key_id'] ?? null,
-            'secretAccessKey' => $attributes['secret_access_key'] ?? null,
+            'secretAccessKey' => $attributes['access_key_secret'] ?? null,
         ]);
     }
 }
