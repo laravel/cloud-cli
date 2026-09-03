@@ -29,7 +29,7 @@ class DatabaseSnapshotGet extends BaseCommand
         $snapshot = $this->resolvers()->databaseSnapshot()->from($cluster, $this->argument('snapshot'));
 
         $snapshot = spin(
-            fn () => $this->client->databaseSnapshots()->get($cluster->id, $snapshot->id),
+            fn () => $this->client->databaseSnapshots()->get($snapshot->id),
             'Fetching snapshot...',
         );
 

@@ -28,7 +28,7 @@ class DatabaseSnapshotDelete extends BaseCommand
         $this->confirmDestructive("Delete snapshot '{$snapshot->name}'?");
 
         spin(
-            fn () => $this->client->databaseSnapshots()->delete($cluster->id, $snapshot->id),
+            fn () => $this->client->databaseSnapshots()->delete($snapshot->id),
             'Deleting snapshot...',
         );
 

@@ -10,7 +10,6 @@ class DeleteDatabaseSnapshotRequest extends Request
     protected Method $method = Method::DELETE;
 
     public function __construct(
-        protected string $clusterId,
         protected string $snapshotId,
     ) {
         //
@@ -18,6 +17,6 @@ class DeleteDatabaseSnapshotRequest extends Request
 
     public function resolveEndpoint(): string
     {
-        return "/databases/clusters/{$this->clusterId}/snapshots/{$this->snapshotId}";
+        return "/database-snapshots/{$this->snapshotId}";
     }
 }

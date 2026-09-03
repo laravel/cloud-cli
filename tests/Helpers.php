@@ -166,6 +166,19 @@ function databaseSchemaResponse(array $overrides = []): array
     ];
 }
 
+function databaseSnapshotResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'snap-1',
+        'type' => 'databaseSnapshots',
+        'attributes' => array_merge([
+            'name' => 'nightly',
+            'status' => 'available',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseClusterResponse(array $overrides = []): array
 {
     $schemas = $overrides['included'] ?? [databaseSchemaResponse()];
