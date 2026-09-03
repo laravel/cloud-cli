@@ -5,7 +5,7 @@ namespace App\Client\Resources;
 use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use App\Client\Requests\AttachEnvironmentSecretsRequestData;
 use App\Client\Requests\CreateEnvironmentRequestData;
-use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
+use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
@@ -13,10 +13,10 @@ use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\AttachEnvironmentSecretsRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
+use App\Client\Resources\Environments\DeleteEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
-use App\Client\Resources\Environments\ReplaceEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
@@ -90,9 +90,9 @@ class EnvironmentsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function replaceVariables(ReplaceEnvironmentVariablesRequestData $data): void
+    public function deleteVariables(DeleteEnvironmentVariablesRequestData $data): void
     {
-        $this->send(new ReplaceEnvironmentVariablesRequest($data));
+        $this->send(new DeleteEnvironmentVariablesRequest($data));
     }
 
     public function start(string $environmentId): void
