@@ -200,6 +200,24 @@ function databaseSchemaResponse(array $overrides = []): array
     ];
 }
 
+function websocketClusterResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'wss-1',
+        'type' => 'websocketServers',
+        'attributes' => array_merge([
+            'name' => 'my-reverb',
+            'type' => 'reverb',
+            'region' => 'us-east-1',
+            'status' => 'available',
+            'max_connections' => 500,
+            'connection_distribution_strategy' => 'evenly',
+            'hostname' => 'my-reverb.cloud.laravel.com',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseSnapshotResponse(array $overrides = []): array
 {
     return [
