@@ -1,6 +1,35 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.2...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.3...main)
+
+## [v0.5.3](https://github.com/laravel/cloud-cli/compare/v0.5.2...v0.5.3) - 2026-09-03
+
+### What's Changed
+
+* Package updates by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/199
+* Mask API tokens in auth:token --list by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/200
+* Replace `selectWithContext` with `select` by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/201
+* Dropped handrolled notification for Prompts by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/202
+* Swap handrolled dynamic spinner component for Prompts task component by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/203
+* Add Claude.md by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/204
+* Add commands for managing secrets by [@ryangjchandler](https://github.com/ryangjchandler) in https://github.com/laravel/cloud-cli/pull/209
+* fix database API compatibility by [@jewei](https://github.com/jewei) in https://github.com/laravel/cloud-cli/pull/205
+* Add --root-directory support to application:create and ship by [@WendellAdriel](https://github.com/WendellAdriel) in https://github.com/laravel/cloud-cli/pull/208
+* Fix bucket key secret never being returned by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/211
+* Document managed-queue, tinker and skills:install commands in README by [@usamamuneerchaudhary](https://github.com/usamamuneerchaudhary) in https://github.com/laravel/cloud-cli/pull/210
+* Fix database-snapshot:get and :delete hitting a 404 by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/212
+* Replace the dead env var replace action with delete by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/213
+* Add the missing stopped websocket server status by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/214
+* Prepare CLI to be released with Bosun by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/215
+
+### New Contributors
+
+* [@ryangjchandler](https://github.com/ryangjchandler) made their first contribution in https://github.com/laravel/cloud-cli/pull/209
+* [@jewei](https://github.com/jewei) made their first contribution in https://github.com/laravel/cloud-cli/pull/205
+* [@WendellAdriel](https://github.com/WendellAdriel) made their first contribution in https://github.com/laravel/cloud-cli/pull/208
+* [@usamamuneerchaudhary](https://github.com/usamamuneerchaudhary) made their first contribution in https://github.com/laravel/cloud-cli/pull/210
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.5.2...v0.5.3
 
 ## [v0.5.2](https://github.com/laravel/cloud-cli/compare/v0.5.1...v0.5.2) - 2026-08-18
 
