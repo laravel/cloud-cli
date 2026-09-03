@@ -1,0 +1,10 @@
+{
+    "build": ["bash scripts/build.sh \"$BOSUN_TAG\""],
+    "verify": [
+        "test -f builds/cloud",
+        "./builds/cloud --version | grep -qF \"$BOSUN_TAG\"",
+        "./builds/cloud list >/dev/null"
+    ],
+    "commit": ["builds/cloud"],
+    "assets": ["builds/cloud"]
+}
