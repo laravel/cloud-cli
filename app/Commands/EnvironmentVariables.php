@@ -3,11 +3,12 @@
 namespace App\Commands;
 
 use App\Client\Requests\AddEnvironmentVariablesRequestData;
-use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
+use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use App\Dto\Environment;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\password;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -17,12 +18,12 @@ class EnvironmentVariables extends BaseCommand
 {
     protected $signature = 'environment:variables
                             {environment? : The environment ID or name}
-                            {--action= : append, set, or replace}
-                            {--key= : Variable key}
+                            {--action= : append, set, or delete}
+                            {--key= : Variable key, or a comma-separated list when deleting}
                             {--value= : Variable value}
                             {--force : Force update without confirmation}';
 
-    protected $description = 'Replace all environment variables with content from a file';
+    protected $description = 'Add, update or delete environment variables';
 
     protected $aliases = ['env:variables', 'env:vars', 'environment:vars'];
 
@@ -36,9 +37,13 @@ class EnvironmentVariables extends BaseCommand
 
         $this->loopUntilValid(fn () => $this->updateVariables($environment));
 
-        $this->outputJsonIfWanted('Environment variables updated');
+        $message = $this->form()->get('action') === 'delete'
+            ? 'Environment variables deleted'
+            : 'Environment variables updated';
 
-        success('Environment variables updated');
+        $this->outputJsonIfWanted($message);
+
+        success($message);
     }
 
     protected function updateVariables(Environment $environment): void
@@ -50,62 +55,97 @@ class EnvironmentVariables extends BaseCommand
                 options: [
                     'append' => 'Append',
                     'set' => 'Set',
-                    'replace' => 'Replace',
+                    'delete' => 'Delete',
                 ],
                 default: $value ?? 'add',
                 info: fn ($action) => match ($action) {
                     'append' => 'Add without checking for duplicates',
                     'set' => 'Check for duplicates and update existing variables',
-                    'replace' => 'Replace all existing variable',
+                    'delete' => 'Remove existing variables by key',
                     default => '',
                 },
             )),
         );
 
-        if (! in_array($this->form()->get('action'), ['append', 'set', 'replace'])) {
-            $this->failAndExit('Invalid action, must be either `append`, `set` or `replace`');
+        if (! in_array($this->form()->get('action'), ['append', 'set', 'delete'])) {
+            $this->failAndExit('Invalid action, must be either `append`, `set` or `delete`');
         }
 
-        if ($this->form()->get('action') === 'replace' && ! $this->option('force')) {
-            if (! $this->isInteractive()) {
-                $this->failAndExit('Cancelled. Use --force to force update.');
-            }
+        if ($this->form()->get('action') === 'delete') {
+            $this->deleteVariables($environment);
 
-            if (! confirm(
-                label: 'I understand that this will *replace* all existing variables for this environment',
-                yes: 'Yes, continue',
-                no: 'No, cancel',
-            )) {
-                $this->failAndExit('Cancelled');
-            }
+            return;
         }
 
         $variables = $this->isInteractive()
             ? $this->collectVariables($environment)
             : $this->collectVariablesFromOptions();
 
-        if ($this->form()->get('action') === 'replace') {
-            spin(
-                fn () => $this->client->environments()->replaceVariables(
-                    new ReplaceEnvironmentVariablesRequestData(
-                        environmentId: $environment->id,
-                        variables: $variables,
-                    ),
+        spin(
+            fn () => $this->client->environments()->addVariables(
+                new AddEnvironmentVariablesRequestData(
+                    environmentId: $environment->id,
+                    variables: $variables,
+                    method: $this->form()->get('action'),
                 ),
-                'Replacing variables...',
-            );
-        } else {
-            spin(
-                fn () => $this->client->environments()->addVariables(
-                    new AddEnvironmentVariablesRequestData(
-                        environmentId: $environment->id,
-                        variables: $variables,
-                        method: $this->form()->get('action'),
-                    ),
-                ),
-                $this->form()->get('action') === 'append' ? 'Appending variables...' : 'Setting variables...',
-            );
+            ),
+            $this->form()->get('action') === 'append' ? 'Appending variables...' : 'Setting variables...',
+        );
+    }
+
+    protected function deleteVariables(Environment $environment): void
+    {
+        $keys = $this->isInteractive()
+            ? $this->collectKeys($environment)
+            : $this->collectKeysFromOptions();
+
+        if ($keys === []) {
+            $this->failAndExit('No variable keys given. Pass --key=NAME, or a comma-separated list.');
         }
+
+        $this->confirmDestructive(
+            'Delete '.implode(', ', $keys)." from {$environment->name}?",
+        );
+
+        spin(
+            fn () => $this->client->environments()->deleteVariables(
+                new DeleteEnvironmentVariablesRequestData(
+                    environmentId: $environment->id,
+                    keys: $keys,
+                ),
+            ),
+            'Deleting variables...',
+        );
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function collectKeysFromOptions(): array
+    {
+        return collect(explode(',', (string) $this->option('key')))
+            ->map(fn (string $key) => trim($key))
+            ->filter()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function collectKeys(Environment $environment): array
+    {
+        $existing = collect($environment->environmentVariables)->pluck('key')->filter();
+
+        if ($existing->isEmpty()) {
+            $this->failAndExit('No variables found for this environment.');
+        }
+
+        return multiselect(
+            label: 'Variables to delete',
+            options: $existing->values()->all(),
+            required: true,
+        );
     }
 
     protected function collectVariablesFromOptions(): array
