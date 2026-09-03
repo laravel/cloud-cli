@@ -36,6 +36,6 @@ class ApplicationGet extends BaseCommand
             'Organization' => [
                 [$application->organization->name, $application->organization->id],
             ],
-        ]));
+        ], fn ($value) => $value !== null));
     }
 }
