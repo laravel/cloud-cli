@@ -11,10 +11,6 @@ class MaskSensitiveValue implements Transformer
 {
     public function transform(DataProperty $property, mixed $value, TransformationContext $context): mixed
     {
-        if (SensitiveValues::$reveal || $value === null) {
-            return $value;
-        }
-
-        return SensitiveValues::MASK;
+        return SensitiveValues::mask($value);
     }
 }

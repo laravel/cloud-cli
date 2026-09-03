@@ -153,6 +153,40 @@ function secretResponse(array $overrides = []): array
     ];
 }
 
+function bucketKeyResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'flsk-1',
+        'type' => 'filesystemKeys',
+        'attributes' => array_merge([
+            'name' => 'my-key',
+            'permission' => 'read_write',
+            'access_key_id' => 'AKIAEXAMPLE123',
+            'access_key_secret' => 'super-secret-value',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function bucketResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'fls-1',
+        'type' => 'filesystems',
+        'attributes' => array_merge([
+            'name' => 'my-bucket',
+            'type' => 'cloudflare_r2',
+            'status' => 'available',
+            'visibility' => 'private',
+            'jurisdiction' => 'default',
+            'endpoint' => 'https://example.r2.cloudflarestorage.com',
+            'url' => null,
+            'allowed_origins' => null,
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseSchemaResponse(array $overrides = []): array
 {
     return [
