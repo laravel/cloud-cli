@@ -24,7 +24,8 @@ class ApplicationCreate extends BaseCommand
     protected $signature = 'application:create
                             {--name= : Application name}
                             {--repository= : Repository (owner/repo format)}
-                            {--region= : Application region}';
+                            {--region= : Application region}
+                            {--root-directory= : Repository subdirectory containing the app (monorepos)}';
 
     protected $description = 'Create a new application';
 
@@ -94,12 +95,18 @@ class ApplicationCreate extends BaseCommand
                 ->nonInteractively(fn () => $this->getDefaultRegion()),
         );
 
+        // Defined but never prompted, so a validation error can name the value we sent.
+        $this->form()->define('root_directory', fn ($resolver) => $resolver);
+
+        $rootDirectory = $this->form()->get('root_directory');
+
         return spin(
             fn () => $this->client->applications()->create(
                 new CreateApplicationRequestData(
                     repository: $this->form()->get('repository'),
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
+                    rootDirectory: $rootDirectory === '' ? null : $rootDirectory,
                 ),
             ),
             'Creating application...',

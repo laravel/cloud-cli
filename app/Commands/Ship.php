@@ -61,6 +61,7 @@ class Ship extends BaseCommand
                             {--database-preset= : Preset tier for the database (dev, prod, scale — case-insensitive). Default: dev}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
+                            {--root-directory= : Repository subdirectory containing the app (monorepos)}
 ';
 
     protected $description = 'Ship a new application to Laravel Cloud';
@@ -89,18 +90,25 @@ class Ship extends BaseCommand
             'Checking for existing application...',
         );
 
+        $rootDirectory = $this->rootDirectoryOption();
+
+        // A repository can hold an application per root directory, so only apps rooted at the
+        // same directory are duplicates of the one we are about to create.
         $existingApps = $applications->collect()->filter(
-            fn (Application $app) => $app->repositoryFullName === $repository,
+            fn (Application $app) => $app->repositoryFullName === $repository
+                && $this->normalizeRootDirectory($app->rootDirectory) === $rootDirectory,
         );
+
+        $location = $rootDirectory === null ? 'this repository' : 'this repository with root directory `'.$rootDirectory.'`';
 
         if ($existingApps->isNotEmpty()) {
             if (! $this->isInteractive()) {
                 $this->outputErrorOrThrow(
-                    'Repository already has an application. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
+                    'An application already exists for '.$location.'. Use deploy <application-id> to deploy. Existing: '.$existingApps->pluck('id')->join(', '),
                 );
             }
 
-            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for this repository.');
+            info('Found '.$existingApps->count().' existing '.str('application')->plural($existingApps->count()).' for '.$location.'.');
 
             $options = $existingApps
                 ->mapWithKeys(fn (Application $app) => [$app->id => 'Deploy '.$app->name])
@@ -237,6 +245,7 @@ class Ship extends BaseCommand
             repository: $repository,
             name: $name,
             region: $region,
+            rootDirectory: $this->rootDirectoryOption(),
         );
 
         try {
@@ -253,7 +262,7 @@ class Ship extends BaseCommand
 
                 $values = collect($errors)
                     ->keys()
-                    ->mapWithKeys(fn ($field) => [$field => $data->{$field} ?? null])
+                    ->mapWithKeys(fn ($field) => [$field => $data->toRequestData()[$field] ?? null])
                     ->filter()
                     ->all();
 
@@ -304,14 +313,68 @@ class Ship extends BaseCommand
                     repository: $repository,
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
+                    rootDirectory: $this->rootDirectoryOption(),
                 ),
             ),
         );
     }
 
+    protected function rootDirectoryOption(): ?string
+    {
+        return $this->normalizeRootDirectory($this->option('root-directory'));
+    }
+
+    /**
+     * The API stores the directory without a trailing slash, which is what shell completion gives you.
+     */
+    protected function normalizeRootDirectory(?string $rootDirectory): ?string
+    {
+        $rootDirectory = rtrim((string) $rootDirectory, '/');
+
+        return $rootDirectory === '' ? null : $rootDirectory;
+    }
+
+    /**
+     * Where the application actually lives on disk.
+     *
+     * Shipping a monorepo means the command can be run from the repository root, so the
+     * project this command inspects is not necessarily the directory it was invoked from.
+     */
+    protected function projectPath(): string
+    {
+        $rootDirectory = $this->rootDirectoryOption();
+
+        if ($rootDirectory === null) {
+            return (string) getcwd();
+        }
+
+        $repositoryRoot = $this->git->getRoot() ?? (string) getcwd();
+
+        return $repositoryRoot.'/'.$rootDirectory;
+    }
+
+    protected function avatarSearchRoot(): ?string
+    {
+        return $this->projectPath();
+    }
+
+    /**
+     * Package detection is a convenience, so a project we cannot read should not stop the ship.
+     */
+    protected function composer(): ?Composer
+    {
+        $path = $this->projectPath();
+
+        if (! file_exists($path.'/composer.json')) {
+            return null;
+        }
+
+        return new Composer(app('files'), $path);
+    }
+
     protected function collectOptionsToEnable(Environment $environment): void
     {
-        $composer = new Composer(app('files'), getcwd());
+        $composer = $this->composer();
 
         $enableOptions = [
             'scheduler' => 'Laravel Scheduler',
@@ -326,7 +389,7 @@ class Ship extends BaseCommand
         ];
 
         foreach ($packages as $package => $options) {
-            if ($composer->hasPackage($package)) {
+            if ($composer?->hasPackage($package)) {
                 $enableOptions = array_merge($enableOptions, $options);
             }
         }
@@ -443,13 +506,13 @@ class Ship extends BaseCommand
 
     protected function applyOpinionatedOptions(Environment $environment): void
     {
-        $composer = new Composer(app('files'), getcwd());
+        $composer = $this->composer();
 
         $instanceParams = [
             'uses_scheduler' => true,
             'uses_sleep_mode' => false,
             // 'sleep_timeout' => 5,
-            'uses_octane' => $composer->hasPackage('laravel/octane'),
+            'uses_octane' => $composer?->hasPackage('laravel/octane') ?? false,
         ];
 
         $environmentParams = [];
@@ -460,7 +523,7 @@ class Ship extends BaseCommand
             $environmentParams['database_schema_id'] = $databaseSchemaId;
         }
 
-        if ($composer->hasPackage('laravel/reverb')) {
+        if ($composer?->hasPackage('laravel/reverb')) {
             $websocketAppId = $this->provisionWebsocketOpinionated();
 
             if ($websocketAppId !== null) {
@@ -781,7 +844,7 @@ class Ship extends BaseCommand
 
     protected function pushCustomEnvironmentVariables(Application $application): void
     {
-        $envPath = getcwd().'/.env';
+        $envPath = $this->projectPath().'/.env';
 
         if (! file_exists($envPath)) {
             return;
