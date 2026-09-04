@@ -29,6 +29,7 @@ use App\Exceptions\CommandExitException;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
@@ -229,14 +230,28 @@ class Ship extends BaseCommand
         }
     }
 
-    protected function waitForUrlToBeReady(Environment $environment): bool
+    protected function waitForUrlToBeReady(Environment $environment, int $timeoutSeconds = 120): bool
     {
-        do {
-            $response = Http::get($environment->url);
-            Sleep::for(CarbonInterval::seconds(2));
-        } while (! $response->successful() && ! $response->serverError());
+        $deadline = now()->addSeconds($timeoutSeconds);
 
-        return $response->successful();
+        do {
+            try {
+                $response = Http::timeout(5)->get($environment->url);
+
+                // A 404 means the domain isn't routing to the app yet. Any other status is a
+                // real answer from a running app, including a 401 or 403 from one that keeps
+                // its root path behind auth.
+                if (! $response->notFound()) {
+                    return ! $response->serverError();
+                }
+            } catch (ConnectionException) {
+                // The domain isn't resolving yet.
+            }
+
+            Sleep::for(CarbonInterval::seconds(2));
+        } while (now()->lessThan($deadline));
+
+        return false;
     }
 
     protected function createApplicationNonInteractively(string $repository, string $defaultRegion): Application
