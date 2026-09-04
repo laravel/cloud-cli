@@ -1,6 +1,17 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.5.3...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.0...main)
+
+## [v0.6.0](https://github.com/laravel/cloud-cli/compare/v0.5.3...v0.6.0) - 2026-09-04
+
+### What's Changed
+
+* Support GitLab as a source provider by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/217
+* Support Bitbucket as a source provider by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/218
+* Bound the site-readiness poll in ship and survive connection failures by [@usamamuneerchaudhary](https://github.com/usamamuneerchaudhary) in https://github.com/laravel/cloud-cli/pull/216
+* Drop several fields that are ultimately unused by the API by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/219
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.5.3...v0.6.0
 
 ## [v0.5.3](https://github.com/laravel/cloud-cli/compare/v0.5.2...v0.5.3) - 2026-09-03
 
