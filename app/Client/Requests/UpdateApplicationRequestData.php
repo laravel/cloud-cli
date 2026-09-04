@@ -2,6 +2,8 @@
 
 namespace App\Client\Requests;
 
+use App\Enums\SourceProvider;
+
 class UpdateApplicationRequestData extends RequestData
 {
     public function __construct(
@@ -11,6 +13,7 @@ class UpdateApplicationRequestData extends RequestData
         public readonly ?string $defaultEnvironmentId = null,
         public readonly ?string $repository = null,
         public readonly ?string $slackChannel = null,
+        public readonly ?SourceProvider $sourceProvider = null,
     ) {
         //
     }
@@ -23,6 +26,7 @@ class UpdateApplicationRequestData extends RequestData
             'default_environment_id' => $this->defaultEnvironmentId,
             'repository' => $this->repository,
             'slack_channel' => $this->slackChannel,
+            'source_control_provider_type' => $this->sourceProvider?->value,
         ]);
     }
 }

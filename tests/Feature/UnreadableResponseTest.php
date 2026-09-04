@@ -12,7 +12,8 @@ beforeEach(function () {
     $this->mockGit = Mockery::mock(Git::class);
     $this->mockGit->shouldReceive('isRepo')->andReturn(true)->byDefault();
     $this->mockGit->shouldReceive('getRoot')->andReturn('/tmp/test-repo')->byDefault();
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true)->byDefault();
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true)->byDefault();
+    $this->mockGit->shouldReceive('remoteHost')->andReturn('github.com')->byDefault();
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('laravel/cloud-cli')->byDefault();
     $this->app->instance(Git::class, $this->mockGit);
 

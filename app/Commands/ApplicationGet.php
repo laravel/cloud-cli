@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\Application;
+use App\SourceProviders\SourceProviderManager;
 
 use function Laravel\Prompts\intro;
 
@@ -26,11 +27,15 @@ class ApplicationGet extends BaseCommand
 
         $this->outputJsonIfWanted($application);
 
+        $repository = $application->repositoryFullName;
+
         dataList(array_filter([
             'ID' => $application->id,
             'Name' => $application->name,
             'Region' => $application->region,
-            'Repository' => 'https://github.com/'.$application->repositoryFullName,
+            'Repository' => $repository === null
+                ? null
+                : app(SourceProviderManager::class)->forRepository($repository)->repositoryUrl($repository),
             'Root Directory' => $application->rootDirectory,
             'Environments' => collect($application->environments)->map(fn ($env) => [$env->name, $env->id])->toArray(),
             'Organization' => [

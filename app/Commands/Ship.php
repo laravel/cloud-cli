@@ -13,6 +13,7 @@ use App\Concerns\CreatesWebSocketApplication;
 use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\HandlesAvatars;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Concerns\ResolvesSourceProvider;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Dto\Application;
 use App\Dto\Database;
@@ -54,6 +55,7 @@ class Ship extends BaseCommand
     use CreatesWebSocketCluster;
     use HandlesAvatars;
     use RequiresRemoteGitRepo;
+    use ResolvesSourceProvider;
     use UpdatesBuildDeployCommands;
 
     protected $signature = 'ship
@@ -62,6 +64,7 @@ class Ship extends BaseCommand
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
                             {--root-directory= : Repository subdirectory containing the app (monorepos)}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted). Default: detected from the origin remote}
 ';
 
     protected $description = 'Ship a new application to Laravel Cloud';
@@ -246,6 +249,7 @@ class Ship extends BaseCommand
             name: $name,
             region: $region,
             rootDirectory: $this->rootDirectoryOption(),
+            sourceProvider: $this->resolveSourceProvider(),
         );
 
         try {
@@ -314,6 +318,7 @@ class Ship extends BaseCommand
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
                     rootDirectory: $this->rootDirectoryOption(),
+                    sourceProvider: $this->resolveSourceProvider(),
                 ),
             ),
         );
