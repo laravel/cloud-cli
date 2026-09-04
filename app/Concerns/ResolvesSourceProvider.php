@@ -52,7 +52,7 @@ trait ResolvesSourceProvider
 
         $provider = SourceProvider::tryFrom($value);
 
-        if ($provider === null || ! $provider->supported()) {
+        if ($provider === null) {
             $this->failAndExit(
                 'Unknown source provider ['.$value.']. Use one of: '
                 .implode(', ', array_keys(SourceProvider::options())),

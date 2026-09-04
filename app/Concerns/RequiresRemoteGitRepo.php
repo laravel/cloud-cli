@@ -33,7 +33,7 @@ trait RequiresRemoteGitRepo
 
         if ($creators === []) {
             warning('This directory has no Git remote. A Git repository is required to deploy to Laravel Cloud.');
-            warning('Install and sign in to the GitHub CLI (gh) or the GitLab CLI (glab) to create one from here.');
+            warning('Create one and add it as a remote, or sign in to the GitHub CLI (gh) or GitLab CLI (glab) to create it from here.');
 
             throw new CommandExitException(1);
         }

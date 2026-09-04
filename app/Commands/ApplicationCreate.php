@@ -26,7 +26,7 @@ class ApplicationCreate extends BaseCommand
     protected $signature = 'application:create
                             {--name= : Application name}
                             {--repository= : Repository (owner/repo format)}
-                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted). Default: detected from the origin remote}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted, bitbucket). Default: detected from the origin remote}
                             {--region= : Application region}
                             {--root-directory= : Repository subdirectory containing the app (monorepos)}';
 

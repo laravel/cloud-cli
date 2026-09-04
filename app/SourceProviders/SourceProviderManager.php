@@ -23,9 +23,7 @@ class SourceProviderManager
                     'Could not work out which GitLab instance this repository lives on.',
                 ),
             ),
-            SourceProvider::BITBUCKET => throw new UnsupportedSourceProviderException(
-                $provider->label().' is not supported by the CLI yet.',
-            ),
+            SourceProvider::BITBUCKET => new BitbucketProvider,
         };
     }
 
