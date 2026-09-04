@@ -45,6 +45,8 @@ use function Laravel\Prompts\spin;
 use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
+use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Http\Client\RequestException as HttpRequestException;
 
 class Ship extends BaseCommand
 {
@@ -226,14 +228,26 @@ class Ship extends BaseCommand
         }
     }
 
-    protected function waitForUrlToBeReady(Environment $environment): bool
+    protected function waitForUrlToBeReady(Environment $environment, int $maxAttempts = 60): bool
     {
-        do {
-            $response = Http::get($environment->url);
-            Sleep::for(CarbonInterval::seconds(2));
-        } while (! $response->successful() && ! $response->serverError());
+        try {
+            return retry(
+                $maxAttempts,
+                function () use ($environment) {
+                    $response = Http::timeout(10)->get($environment->url);
 
-        return $response->successful();
+                    // 4xx = not ready yet, so retry.
+                    $response->throwIf($response->clientError());
+
+                    // 2xx = ready, 5xx = deployed but broken; either way we're done polling.
+                    return $response->successful();
+                },
+                sleepMilliseconds: 2000,
+                when: fn (Throwable $e) => $e instanceof ConnectionException || $e instanceof HttpRequestException,
+            );
+        } catch (ConnectionException|HttpRequestException) {
+            return false;
+        }
     }
 
     protected function createApplicationNonInteractively(string $repository, string $defaultRegion): Application
