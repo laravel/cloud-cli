@@ -71,6 +71,7 @@ it('sends the provider the origin remote points at', function (string $host, str
 })->with([
     'GitHub' => ['github.com', 'github'],
     'GitLab' => ['gitlab.com', 'gitlab'],
+    'Bitbucket' => ['bitbucket.org', 'bitbucket'],
 ]);
 
 it('falls back to GitHub when the remote host is not one it knows', function () {
@@ -89,8 +90,8 @@ it('prefers an explicit --source-provider over the remote', function () {
     expect(sentSourceProvider())->toBe('gitlab_self_hosted');
 });
 
-it('rejects a provider it has no driver for', function (string $provider) {
+it('rejects a provider the API does not accept', function () {
     $this->mockGit->shouldReceive('remoteHost')->andReturn('github.com');
 
-    createApplicationWith(['--source-provider' => $provider])->assertFailed();
-})->with(['bitbucket', 'not-a-provider']);
+    createApplicationWith(['--source-provider' => 'not-a-provider'])->assertFailed();
+});

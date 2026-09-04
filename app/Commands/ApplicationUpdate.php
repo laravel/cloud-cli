@@ -29,7 +29,7 @@ class ApplicationUpdate extends BaseCommand
                             {--slug= : Application slug}
                             {--slack-channel= : Slack channel for notifications}
                             {--repository= : Repository URL}
-                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted)}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted, bitbucket)}
                             {--avatar= : Avatar URL or full path to a file}
                             {--default-environment= : Default environment ID or name}
                             {--force : Force update without confirmation}';

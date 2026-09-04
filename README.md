@@ -7,7 +7,7 @@ A Laravel Zero CLI for deploying and managing applications on [Laravel Cloud](ht
 - **PHP 8.3+**
 - **Composer**
 - **Git** — for repository detection and `repo:config`
-- **GitHub CLI (`gh`) or GitLab CLI (`glab`)** — optional, and only to create a repository from a directory that has no remote yet. Install and sign in to the one matching your provider.
+- **GitHub CLI (`gh`) or GitLab CLI (`glab`)** — optional, and only to create a repository from a directory that has no remote yet. Bitbucket has no CLI, so create the repository yourself and add it as a remote.
 
 ## Installation
 

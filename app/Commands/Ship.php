@@ -64,7 +64,7 @@ class Ship extends BaseCommand
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
                             {--root-directory= : Repository subdirectory containing the app (monorepos)}
-                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted). Default: detected from the origin remote}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted, bitbucket). Default: detected from the origin remote}
 ';
 
     protected $description = 'Ship a new application to Laravel Cloud';
