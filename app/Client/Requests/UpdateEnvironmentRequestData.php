@@ -37,8 +37,6 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?array $responseHeadersHsts = null,
         /** @var array<int, array{id: string, disk: string, is_default_disk: bool}>|null */
         public readonly ?array $filesystemKeys = null,
-        public readonly ?string $firewallRateLimitLevel = null,
-        public readonly ?bool $firewallUnderAttackMode = null,
     ) {
         //
     }
@@ -72,8 +70,6 @@ class UpdateEnvironmentRequestData extends RequestData
             'response_headers_robots_tag' => $this->responseHeadersRobotsTag,
             'response_headers_hsts' => $this->responseHeadersHsts,
             'filesystem_keys' => $this->filesystemKeys,
-            'firewall_rate_limit_level' => $this->firewallRateLimitLevel,
-            'firewall_under_attack_mode' => $this->firewallUnderAttackMode,
         ]);
     }
 }
