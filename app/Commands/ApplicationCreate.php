@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\CreateApplicationRequestData;
 use App\Concerns\DeterminesDefaultRegion;
 use App\Concerns\RequiresRemoteGitRepo;
+use App\Concerns\ResolvesSourceProvider;
 use App\Dto\Application;
 use App\Dto\Region;
 use App\Git;
@@ -20,10 +21,12 @@ class ApplicationCreate extends BaseCommand
 
     use DeterminesDefaultRegion;
     use RequiresRemoteGitRepo;
+    use ResolvesSourceProvider;
 
     protected $signature = 'application:create
                             {--name= : Application name}
                             {--repository= : Repository (owner/repo format)}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted). Default: detected from the origin remote}
                             {--region= : Application region}
                             {--root-directory= : Repository subdirectory containing the app (monorepos)}';
 
@@ -68,11 +71,13 @@ class ApplicationCreate extends BaseCommand
                     fn (?string $value) => text(
                         label: 'Repository',
                         required: true,
-                        default: $value ?? ($git->hasGitHubRemote() ? $git->remoteRepo() : ''),
+                        default: $value ?? ($git->hasRemote() ? $git->remoteRepo() : ''),
                     ),
                 )
-                ->nonInteractively(fn () => $git->hasGitHubRemote() ? $git->remoteRepo() : null),
+                ->nonInteractively(fn () => $git->hasRemote() ? $git->remoteRepo() : null),
         );
+
+        $sourceProvider = $this->resolveSourceProvider();
 
         $regions = spin(
             fn () => $this->client->meta()->regions(),
@@ -107,6 +112,7 @@ class ApplicationCreate extends BaseCommand
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
                     rootDirectory: $rootDirectory === '' ? null : $rootDirectory,
+                    sourceProvider: $sourceProvider,
                 ),
             ),
             'Creating application...',

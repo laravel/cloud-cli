@@ -2,6 +2,8 @@
 
 namespace App\Client\Requests;
 
+use App\Enums\SourceProvider;
+
 class CreateApplicationRequestData extends RequestData
 {
     public readonly ?string $rootDirectory;
@@ -11,6 +13,7 @@ class CreateApplicationRequestData extends RequestData
         public readonly string $name,
         public readonly string $region,
         ?string $rootDirectory = null,
+        public readonly ?SourceProvider $sourceProvider = null,
     ) {
         // The API rejects a trailing slash, which is what shell completion gives you.
         $rootDirectory = rtrim((string) $rootDirectory, '/');
@@ -25,6 +28,7 @@ class CreateApplicationRequestData extends RequestData
             'name' => $this->name,
             'region' => $this->region,
             'root_directory' => $this->rootDirectory,
+            'source_control_provider_type' => $this->sourceProvider?->value,
         ]);
     }
 }

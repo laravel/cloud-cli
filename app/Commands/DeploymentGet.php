@@ -3,7 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\Deployment;
-use App\Git;
+use App\SourceProviders\SourceProviderManager;
 
 use function Laravel\Prompts\intro;
 
@@ -27,11 +27,14 @@ class DeploymentGet extends BaseCommand
 
         $this->outputJsonIfWanted($deployment);
 
+        $repository = $environment->application->repositoryFullName;
+        $provider = app(SourceProviderManager::class)->forRepository($repository);
+
         dataList([
             'ID' => $deployment->id,
             'Status' => $deployment->status->label(),
-            'Branch' => Git::branchUrl($environment->application->repositoryFullName, $deployment->branchName),
-            'Commit' => Git::commitUrl($environment->application->repositoryFullName, $deployment->commitHash),
+            'Branch' => $provider->branchUrl($repository, $deployment->branchName),
+            'Commit' => $provider->commitUrl($repository, $deployment->commitHash),
             'Message' => $deployment->commitMessage,
             'Author' => $deployment->commitAuthor ?? '—',
             'Started At' => $deployment->startedAt?->toIso8601String() ?? '—',

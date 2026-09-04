@@ -3,7 +3,6 @@
 namespace App;
 
 use Illuminate\Contracts\Process\ProcessResult;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 
@@ -25,15 +24,9 @@ class Git
         return trim($result->output());
     }
 
-    public function hasGitHubRemote(): bool
+    public function hasRemote(): bool
     {
-        $result = $this->run(['git', 'remote', '-v']);
-
-        if (! $result->successful()) {
-            return false;
-        }
-
-        return Str::contains($result->output(), 'github.com');
+        return $this->remoteUrl() !== null;
     }
 
     public function initRepo(): bool
@@ -46,47 +39,6 @@ class Git
         return $this->run(['git', 'remote', 'add', $name, $url])->successful();
     }
 
-    public function ghInstalled(): bool
-    {
-        return $this->run(['which', 'gh'])->successful();
-    }
-
-    public function ghAuthenticated(): bool
-    {
-        return $this->run(['gh', 'auth', 'status'])->successful();
-    }
-
-    public function getGitHubOrgs(): Collection
-    {
-        $result = $this->run(['gh', 'api', 'user/orgs', '--jq', '.[].login']);
-
-        if (! $result->successful()) {
-            return collect();
-        }
-
-        return collect(array_filter(explode("\n", trim($result->output()))));
-    }
-
-    public function getGitHubUsername(): ?string
-    {
-        $result = $this->run(['gh', 'api', 'user', '--jq', '.login']);
-
-        if (! $result->successful()) {
-            return null;
-        }
-
-        return trim($result->output());
-    }
-
-    public function createGitHubRepo(string $name, string $org, bool $private): ProcessResult
-    {
-        $visibility = $private ? '--private' : '--public';
-
-        $repoName = $org.'/'.$name;
-
-        return $this->run(['gh', 'repo', 'create', $repoName, $visibility, '--source', '.', '--remote', 'origin']);
-    }
-
     public function currentDirectoryName(): string
     {
         return basename(getcwd());
@@ -94,13 +46,38 @@ class Git
 
     public function remoteRepo(): string
     {
-        $url = str($this->run(['git', 'remote', 'get-url', 'origin'])->output())->trim();
+        $url = $this->remoteUrl();
 
-        $repo = $url->contains('://')
-            ? $url->after('://')->after('/')
-            : $url->after(':');
+        if ($url === null) {
+            return '';
+        }
 
-        return $repo->beforeLast('.git')->toString();
+        $path = Str::of($url)->contains('://')
+            ? Str::of($url)->after('://')->after('/')
+            : Str::of($url)->after(':');
+
+        return $path->beforeLast('.git')->toString();
+    }
+
+    /**
+     * The host the origin remote points at, which is how we tell one provider from another.
+     */
+    public function remoteHost(): ?string
+    {
+        $url = $this->remoteUrl();
+
+        if ($url === null) {
+            return null;
+        }
+
+        $host = Str::of($url)->contains('://')
+            ? Str::of($url)->after('://')->after('@')->before('/')
+            : Str::of($url)->before(':')->afterLast('@');
+
+        // Ports are not part of the host we match on.
+        $host = $host->before(':')->lower()->toString();
+
+        return $host === '' ? null : $host;
     }
 
     public function addAll(): bool
@@ -146,14 +123,17 @@ class Git
         return $this->getDefaultBranch();
     }
 
-    public static function commitUrl(string $repositoryFullName, string $commitHash): string
+    protected function remoteUrl(): ?string
     {
-        return sprintf('https://github.com/%s/commit/%s', $repositoryFullName, $commitHash);
-    }
+        $result = $this->run(['git', 'remote', 'get-url', 'origin']);
 
-    public static function branchUrl(string $repositoryFullName, string $branchName): string
-    {
-        return sprintf('https://github.com/%s/tree/%s', $repositoryFullName, $branchName);
+        if (! $result->successful()) {
+            return null;
+        }
+
+        $url = trim($result->output());
+
+        return $url === '' ? null : $url;
     }
 
     protected function run(array $command): ProcessResult

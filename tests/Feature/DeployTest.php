@@ -83,7 +83,7 @@ function setupSuccessfulDeployMocks(): void
 it('deploys an application successfully when one app and one environment exist', function () {
     Prompt::fake();
 
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
 
     setupSuccessfulDeployMocks();
@@ -95,7 +95,7 @@ it('deploys an application successfully when one app and one environment exist',
 it('deploys using explicit application and environment arguments', function () {
     Prompt::fake();
 
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
 
     setupSuccessfulDeployMocks();
@@ -109,7 +109,7 @@ it('deploys using explicit application and environment arguments', function () {
 it('selects application when given by name argument with multiple apps', function () {
     Prompt::fake();
 
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
 
     MockClient::global([
@@ -213,7 +213,7 @@ it('selects application when given by name argument with multiple apps', functio
 it('selects environment by name when multiple environments exist', function () {
     Prompt::fake();
 
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
 
     MockClient::global([
@@ -306,7 +306,7 @@ it('selects environment by name when multiple environments exist', function () {
 it('deploys to specific application by ID', function () {
     Prompt::fake();
 
-    $this->mockGit->shouldReceive('hasGitHubRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
     $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
 
     setupSuccessfulDeployMocks();

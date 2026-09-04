@@ -6,8 +6,8 @@ A Laravel Zero CLI for deploying and managing applications on [Laravel Cloud](ht
 
 - **PHP 8.3+**
 - **Composer**
-- **GitHub CLI (`gh`)** — installed and authenticated (used for repo linking and GitHub API)
 - **Git** — for repository detection and `repo:config`
+- **GitHub CLI (`gh`) or GitLab CLI (`glab`)** — optional, and only to create a repository from a directory that has no remote yet. Install and sign in to the one matching your provider.
 
 ## Installation
 

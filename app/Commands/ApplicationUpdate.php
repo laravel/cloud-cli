@@ -5,6 +5,7 @@ namespace App\Commands;
 use App\Client\Requests\UpdateApplicationAvatarRequestData;
 use App\Client\Requests\UpdateApplicationRequestData;
 use App\Concerns\HandlesAvatars;
+use App\Concerns\ResolvesSourceProvider;
 use App\Dto\Application;
 use App\Exceptions\CommandExitException;
 use App\Git;
@@ -20,6 +21,7 @@ class ApplicationUpdate extends BaseCommand
     protected ?string $jsonDataClass = Application::class;
 
     use HandlesAvatars;
+    use ResolvesSourceProvider;
 
     protected $signature = 'application:update
                             {application? : The application ID or name}
@@ -27,6 +29,7 @@ class ApplicationUpdate extends BaseCommand
                             {--slug= : Application slug}
                             {--slack-channel= : Slack channel for notifications}
                             {--repository= : Repository URL}
+                            {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted)}
                             {--avatar= : Avatar URL or full path to a file}
                             {--default-environment= : Default environment ID or name}
                             {--force : Force update without confirmation}';
@@ -74,6 +77,7 @@ class ApplicationUpdate extends BaseCommand
                     defaultEnvironmentId: $this->form()->get('default_environment_id'),
                     repository: $this->form()->get('repository'),
                     slackChannel: $this->form()->get('slack_channel'),
+                    sourceProvider: $this->sourceProviderFrom($this->form()->get('source_provider')),
                 ),
             ),
             'Updating application...',
@@ -136,6 +140,9 @@ class ApplicationUpdate extends BaseCommand
                 default: $value ?? $application->repositoryFullName ?? '',
             ))->setPreviousValue($application->repositoryFullName),
         );
+
+        // Not inferred from the local remote: the repository being set may not be this one.
+        $this->defineSourceProviderField();
 
         $this->form()->define(
             'avatar',
