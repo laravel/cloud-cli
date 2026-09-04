@@ -7,7 +7,6 @@ class UpdateInstanceRequestData extends RequestData
     public function __construct(
         public readonly string $instanceId,
         public readonly ?string $name = null,
-        public readonly ?string $type = null,
         public readonly ?string $size = null,
         public readonly ?string $scalingType = null,
         public readonly ?int $minReplicas = null,
@@ -30,7 +29,6 @@ class UpdateInstanceRequestData extends RequestData
     {
         return $this->filter([
             'name' => $this->name,
-            'type' => $this->type,
             'size' => $this->size,
             'scaling_type' => $this->scalingType,
             'min_replicas' => $this->minReplicas,
