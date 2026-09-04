@@ -2,27 +2,27 @@
 
 namespace App\Client\Resources\Environments;
 
-use App\Client\Requests\ReplaceEnvironmentVariablesRequestData;
+use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use Saloon\Contracts\Body\HasBody;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Traits\Body\HasJsonBody;
 
-class ReplaceEnvironmentVariablesRequest extends Request implements HasBody
+class DeleteEnvironmentVariablesRequest extends Request implements HasBody
 {
     use HasJsonBody;
 
-    protected Method $method = Method::PUT;
+    protected Method $method = Method::POST;
 
     public function __construct(
-        protected ReplaceEnvironmentVariablesRequestData $data,
+        protected DeleteEnvironmentVariablesRequestData $data,
     ) {
         //
     }
 
     public function resolveEndpoint(): string
     {
-        return "/environments/{$this->data->environmentId}/variables";
+        return "/environments/{$this->data->environmentId}/variables/delete";
     }
 
     protected function defaultBody(): array

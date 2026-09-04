@@ -167,7 +167,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:create`    | Create an environment                                  |
 | `cloud environment:update`    | Update an environment                                  |
 | `cloud environment:delete`    | Delete an environment                                  |
-| `cloud environment:variables` | Manage environment variables (append, set, or replace) |
+| `cloud environment:variables` | Manage environment variables (append, set, or delete) |
 | `cloud environment:logs`      | View environment logs                                  |
 
 ### Secrets

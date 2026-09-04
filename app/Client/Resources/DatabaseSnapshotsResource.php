@@ -19,10 +19,9 @@ class DatabaseSnapshotsResource extends Resource
         return $this->paginate($request);
     }
 
-    public function get(string $clusterId, string $snapshotId): DatabaseSnapshot
+    public function get(string $snapshotId): DatabaseSnapshot
     {
         $request = new GetDatabaseSnapshotRequest(
-            clusterId: $clusterId,
             snapshotId: $snapshotId,
         );
         $response = $this->send($request);
@@ -38,10 +37,9 @@ class DatabaseSnapshotsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function delete(string $clusterId, string $snapshotId): void
+    public function delete(string $snapshotId): void
     {
         $this->send(new DeleteDatabaseSnapshotRequest(
-            clusterId: $clusterId,
             snapshotId: $snapshotId,
         ));
     }

@@ -40,7 +40,7 @@ $data = $response->json();
 - `DeleteEnvironmentRequest` - Delete an environment
 - `ListEnvironmentLogsRequest` - List environment logs
 - `AddEnvironmentVariablesRequest` - Add environment variables
-- `ReplaceEnvironmentVariablesRequest` - Replace all environment variables
+- `DeleteEnvironmentVariablesRequest` - Delete environment variables by key
 - `StartEnvironmentRequest` - Start an environment
 - `StopEnvironmentRequest` - Stop an environment
 

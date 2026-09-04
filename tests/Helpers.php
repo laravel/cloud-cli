@@ -153,6 +153,40 @@ function secretResponse(array $overrides = []): array
     ];
 }
 
+function bucketKeyResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'flsk-1',
+        'type' => 'filesystemKeys',
+        'attributes' => array_merge([
+            'name' => 'my-key',
+            'permission' => 'read_write',
+            'access_key_id' => 'AKIAEXAMPLE123',
+            'access_key_secret' => 'super-secret-value',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function bucketResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'fls-1',
+        'type' => 'filesystems',
+        'attributes' => array_merge([
+            'name' => 'my-bucket',
+            'type' => 'cloudflare_r2',
+            'status' => 'available',
+            'visibility' => 'private',
+            'jurisdiction' => 'default',
+            'endpoint' => 'https://example.r2.cloudflarestorage.com',
+            'url' => null,
+            'allowed_origins' => null,
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
 function databaseSchemaResponse(array $overrides = []): array
 {
     return [
@@ -162,6 +196,37 @@ function databaseSchemaResponse(array $overrides = []): array
             'name' => 'my_schema',
             'status' => 'available',
             'created_at' => '2024-01-15T12:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function websocketClusterResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'wss-1',
+        'type' => 'websocketServers',
+        'attributes' => array_merge([
+            'name' => 'my-reverb',
+            'type' => 'reverb',
+            'region' => 'us-east-1',
+            'status' => 'available',
+            'max_connections' => 500,
+            'connection_distribution_strategy' => 'evenly',
+            'hostname' => 'my-reverb.cloud.laravel.com',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function databaseSnapshotResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'snap-1',
+        'type' => 'databaseSnapshots',
+        'attributes' => array_merge([
+            'name' => 'nightly',
+            'status' => 'available',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
         ], $overrides['attributes'] ?? []),
     ];
 }
