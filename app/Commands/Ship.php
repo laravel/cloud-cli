@@ -28,6 +28,7 @@ use App\Exceptions\CommandExitException;
 use App\Git;
 use Carbon\CarbonInterval;
 use Dotenv\Dotenv;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Sleep;
@@ -45,8 +46,6 @@ use function Laravel\Prompts\spin;
 use function Laravel\Prompts\task;
 use function Laravel\Prompts\text;
 use function Laravel\Prompts\warning;
-use Illuminate\Http\Client\ConnectionException;
-use Illuminate\Http\Client\RequestException as HttpRequestException;
 
 class Ship extends BaseCommand
 {
@@ -228,26 +227,28 @@ class Ship extends BaseCommand
         }
     }
 
-    protected function waitForUrlToBeReady(Environment $environment, int $maxAttempts = 60): bool
+    protected function waitForUrlToBeReady(Environment $environment, int $timeoutSeconds = 120): bool
     {
-        try {
-            return retry(
-                $maxAttempts,
-                function () use ($environment) {
-                    $response = Http::timeout(10)->get($environment->url);
+        $deadline = now()->addSeconds($timeoutSeconds);
 
-                    // 4xx = not ready yet, so retry.
-                    $response->throwIf($response->clientError());
+        do {
+            try {
+                $response = Http::timeout(5)->get($environment->url);
 
-                    // 2xx = ready, 5xx = deployed but broken; either way we're done polling.
-                    return $response->successful();
-                },
-                sleepMilliseconds: 2000,
-                when: fn (Throwable $e) => $e instanceof ConnectionException || $e instanceof HttpRequestException,
-            );
-        } catch (ConnectionException|HttpRequestException) {
-            return false;
-        }
+                // A 404 means the domain isn't routing to the app yet. Any other status is a
+                // real answer from a running app, including a 401 or 403 from one that keeps
+                // its root path behind auth.
+                if (! $response->notFound()) {
+                    return ! $response->serverError();
+                }
+            } catch (ConnectionException) {
+                // The domain isn't resolving yet.
+            }
+
+            Sleep::for(CarbonInterval::seconds(2));
+        } while (now()->lessThan($deadline));
+
+        return false;
     }
 
     protected function createApplicationNonInteractively(string $repository, string $defaultRegion): Application
