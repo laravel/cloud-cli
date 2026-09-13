@@ -17,7 +17,8 @@ class DatabaseClusterCreate extends BaseCommand
 
     protected $signature = 'database-cluster:create
                             {--name= : Database cluster name}
-                            {--type= : Database type}
+                            {--type= : Database type (laravel_mysql, neon_serverless_postgres)}
+                            {--engine-version= : Database engine version (e.g. 18, 8.4). Default: newest available}
                             {--region= : Database region}';
 
     protected $description = 'Create a new database cluster';
