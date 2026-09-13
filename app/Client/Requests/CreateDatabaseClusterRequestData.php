@@ -9,6 +9,7 @@ class CreateDatabaseClusterRequestData extends RequestData
         public readonly string $name,
         public readonly string $region,
         public readonly array $config,
+        public readonly ?string $version = null,
         public readonly ?int $clusterId = null,
     ) {
         //
@@ -18,6 +19,7 @@ class CreateDatabaseClusterRequestData extends RequestData
     {
         return $this->filter([
             'type' => $this->type,
+            'version' => $this->version,
             'name' => $this->name,
             'region' => $this->region,
             'config' => $this->config,

@@ -59,6 +59,27 @@ trait CreatesDatabaseCluster
 
         $selectedType = $types->firstWhere('type', $this->form()->get('type'));
 
+        // Newest first so the default lands on the version most users want.
+        $versionOptions = collect($selectedType->versions)
+            ->sort('version_compare')
+            ->reverse()
+            ->values();
+
+        $this->form()->prompt(
+            'version',
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn (?string $value) => select(
+                        label: 'Version',
+                        options: $versionOptions->mapWithKeys(fn (string $version) => [$version => $selectedType->label.' '.$version])->toArray(),
+                        default: $value ?? $defaults['version'] ?? $versionOptions->first(),
+                        required: true,
+                    ),
+                )
+                ->nonInteractively(fn () => $defaults['version'] ?? $versionOptions->first()),
+            'engine-version',
+        );
+
         $regions = spin(
             fn () => $this->client->meta()->regions(),
             'Fetching regions...',
@@ -97,6 +118,8 @@ trait CreatesDatabaseCluster
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
                     config: $config,
+                    // Numeric keys come back from the prompt as integers.
+                    version: (string) $this->form()->get('version'),
                 ),
             ),
             'Creating database cluster...',
@@ -105,7 +128,6 @@ trait CreatesDatabaseCluster
 
     protected function databaseClusterConfigFromPreset(DatabaseType $type): ?array
     {
-
         $clusterPreset = DatabaseClusterPreset::from($type->type);
         $presets = $clusterPreset->presets();
         $presets['Custom'] = [];
@@ -213,7 +235,7 @@ trait CreatesDatabaseCluster
             ])->toArray();
     }
 
-    protected function createDatabaseClusterWithOptions(string $type, string $preset, string $name, string $region): DatabaseCluster
+    protected function createDatabaseClusterWithOptions(string $type, string $version, string $preset, string $name, string $region): DatabaseCluster
     {
         $enum = DatabaseClusterPreset::tryFrom($type);
 
@@ -240,6 +262,7 @@ trait CreatesDatabaseCluster
                     name: $name,
                     region: $region,
                     config: $config,
+                    version: $version,
                 ),
             ),
             'Creating database cluster...',
