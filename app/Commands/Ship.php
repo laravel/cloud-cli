@@ -60,7 +60,7 @@ class Ship extends BaseCommand
     use UpdatesBuildDeployCommands;
 
     protected $signature = 'ship
-                            {--database= : Database type or alias (postgres, postgres18, postgres17, mysql, or a full type like neon_serverless_postgres_18). Default: postgres18}
+                            {--database= : Database type or alias (postgres, postgres18, postgres17, mysql, or a full type like neon_serverless_postgres). Unversioned aliases use the newest available version. Default: postgres}
                             {--database-preset= : Preset tier for the database (dev, prod, scale — case-insensitive). Default: dev}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
@@ -591,30 +591,43 @@ class Ship extends BaseCommand
         }
     }
 
-    protected function resolveDatabaseType(): ?string
+    /**
+     * Resolve the `--database` option into a type and, when the option names one, a version.
+     *
+     * A null version means "the newest the API offers for that type", so `postgres`
+     * keeps tracking new releases while `postgres17` stays pinned.
+     *
+     * @return array{0: string, 1: string|null}|null
+     */
+    protected function resolveDatabaseType(): ?array
     {
-        $aliases = [
-            'postgres' => DatabaseClusterPreset::NeonServerlessPostgres18->value,
-            'postgres18' => DatabaseClusterPreset::NeonServerlessPostgres18->value,
-            'postgres17' => DatabaseClusterPreset::NeonServerlessPostgres17->value,
-            'mysql' => DatabaseClusterPreset::LaravelMysql8->value,
-        ];
+        $input = strtolower((string) $this->option('database'));
 
-        $input = $this->option('database');
-
-        if ($input === null || $input === '') {
-            return DatabaseClusterPreset::NeonServerlessPostgres18->value;
+        if ($input === '') {
+            return [DatabaseClusterPreset::NeonServerlessPostgres->value, null];
         }
 
-        if (isset($aliases[strtolower($input)])) {
-            return $aliases[strtolower($input)];
+        if ($input === 'postgres') {
+            return [DatabaseClusterPreset::NeonServerlessPostgres->value, null];
+        }
+
+        if ($input === 'mysql') {
+            return [DatabaseClusterPreset::LaravelMysql->value, null];
+        }
+
+        if (preg_match('/^postgres(\d+)$/', $input, $matches)) {
+            return [DatabaseClusterPreset::NeonServerlessPostgres->value, $matches[1]];
         }
 
         if (DatabaseClusterPreset::tryFrom($input) !== null) {
-            return $input;
+            return [$input, null];
         }
 
-        $validValues = implode(', ', [...array_keys($aliases), ...array_map(fn (DatabaseClusterPreset $e) => $e->value, DatabaseClusterPreset::cases())]);
+        if (($legacy = DatabaseClusterPreset::fromLegacyType($input)) !== null) {
+            return [$legacy[0]->value, $legacy[1]];
+        }
+
+        $validValues = implode(', ', ['postgres', 'postgres<version> (e.g. postgres18)', 'mysql', ...array_map(fn (DatabaseClusterPreset $e) => $e->value, DatabaseClusterPreset::cases())]);
 
         $this->outputErrorOrThrow('Invalid --database value "'.$input.'". Must be one of: '.$validValues);
 
@@ -645,18 +658,23 @@ class Ship extends BaseCommand
         $types = $this->client->databaseClusters()->types();
         $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
-        $resolvedType = $this->resolveDatabaseType();
+        [$resolvedType, $resolvedVersion] = $this->resolveDatabaseType();
 
         $type = $types->firstWhere('type', $resolvedType);
 
         if ($type === null) {
-            if ($resolvedType === DatabaseClusterPreset::NeonServerlessPostgres18->value) {
-                $type = $types->firstWhere('type', DatabaseClusterPreset::NeonServerlessPostgres17->value);
-            }
+            $this->outputErrorOrThrow('Database type "'.$resolvedType.'" is not available from the API.');
+        }
 
-            if ($type === null) {
-                $this->outputErrorOrThrow('Database type "'.$resolvedType.'" is not available from the API.');
-            }
+        $version = $resolvedVersion ?? $type->latestVersion();
+
+        if ($version === null || ! in_array($version, $type->versions, true)) {
+            $this->outputErrorOrThrow(sprintf(
+                'Version "%s" is not available for database type "%s". Available versions: %s',
+                $version ?? 'unknown',
+                $type->type,
+                implode(', ', $type->versions) ?: 'none',
+            ));
         }
 
         $preset = $this->resolveDatabasePreset($type->type);
@@ -669,7 +687,7 @@ class Ship extends BaseCommand
         $databaseName = $this->appName ? str($this->appName)->snake()->replace('-', '_')->toString() : 'main';
 
         if (! $cluster) {
-            $cluster = $this->createDatabaseClusterWithOptions($type->type, $preset, $name, $region);
+            $cluster = $this->createDatabaseClusterWithOptions($type->type, $version, $preset, $name, $region);
             $cluster = $this->client->databaseClusters()->include('databases')->get($cluster->id);
         }
 

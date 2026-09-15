@@ -372,3 +372,47 @@ function usageResponse(array $overrides = []): array
 
     return array_replace_recursive($base, $overrides);
 }
+
+/**
+ * The shape GET /databases/types serves: a versionless type with the creatable
+ * versions listed alongside it. The CLI must not expect a version in the type.
+ */
+function versionlessDatabaseTypesResponse(): array
+{
+    return [
+        'data' => [
+            [
+                'type' => 'laravel_mysql',
+                'label' => 'Laravel MySQL',
+                'versions' => ['8.4'],
+                'regions' => ['us-east-1'],
+                'config_schema' => [
+                    ['name' => 'size', 'type' => 'string', 'required' => true, 'example' => 'db-flex.m-1vcpu-512mb'],
+                    ['name' => 'storage', 'type' => 'integer', 'required' => true, 'example' => '5'],
+                    ['name' => 'retention_days', 'type' => 'integer', 'required' => true, 'example' => '1'],
+                    ['name' => 'uses_scheduled_snapshots', 'type' => 'boolean', 'required' => true, 'example' => 'false'],
+                    ['name' => 'is_public', 'type' => 'boolean', 'required' => true, 'example' => 'false'],
+                ],
+            ],
+            [
+                'type' => 'aws_rds_postgres',
+                'label' => 'AWS RDS Postgres',
+                'versions' => ['18'],
+                'regions' => ['us-east-1'],
+                'config_schema' => [],
+            ],
+            [
+                'type' => 'neon_serverless_postgres',
+                'label' => 'Laravel Serverless Postgres',
+                'versions' => ['16', '17', '18'],
+                'regions' => ['us-east-1'],
+                'config_schema' => [
+                    ['name' => 'cu_min', 'type' => 'number', 'required' => true, 'example' => '0.25'],
+                    ['name' => 'cu_max', 'type' => 'number', 'required' => true, 'example' => '0.25'],
+                    ['name' => 'suspend_seconds', 'type' => 'integer', 'required' => true, 'example' => '300'],
+                    ['name' => 'retention_days', 'type' => 'integer', 'required' => true, 'example' => '0'],
+                ],
+            ],
+        ],
+    ];
+}

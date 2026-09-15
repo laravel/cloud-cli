@@ -219,10 +219,11 @@ use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 
 $connector = new Connector('your-api-token');
 $response = $connector->send(new CreateDatabaseClusterRequest(new CreateDatabaseClusterRequestData(
-    type: 'neon_serverless_postgres_18',
+    type: 'neon_serverless_postgres',
+    version: '18',
     name: 'my-database',
     region: 'us-east-1',
-    clusterConfig: [
+    config: [
         'cu_min' => 0.25,
         'cu_max' => 2,
         'suspend_seconds' => 300,
