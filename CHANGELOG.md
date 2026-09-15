@@ -1,6 +1,19 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.0...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.1...main)
+
+## [v0.6.1](https://github.com/laravel/cloud-cli/compare/v0.6.0...v0.6.1) - 2026-09-15
+
+### What's Changed
+
+* Expand and rename Laravel Cloud deployment skill by [@pushpak1300](https://github.com/pushpak1300) in https://github.com/laravel/cloud-cli/pull/220
+* Follow the API's move to versionless database types by [@andrevalentin](https://github.com/andrevalentin) in https://github.com/laravel/cloud-cli/pull/222
+
+### New Contributors
+
+* [@andrevalentin](https://github.com/andrevalentin) made their first contribution in https://github.com/laravel/cloud-cli/pull/222
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.6.0...v0.6.1
 
 ## [v0.6.0](https://github.com/laravel/cloud-cli/compare/v0.5.3...v0.6.0) - 2026-09-04
 
