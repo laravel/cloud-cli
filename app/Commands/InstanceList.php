@@ -6,7 +6,6 @@ use App\Dto\EnvironmentInstance;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class InstanceList extends BaseCommand
@@ -28,12 +27,10 @@ class InstanceList extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        $instances = spin(
+        $items = $this->fetchList(
             fn () => $this->client->instances()->list($environment->id),
             'Fetching instances...',
         );
-
-        $items = $instances->collect();
 
         $this->outputJsonIfWanted($items);
 

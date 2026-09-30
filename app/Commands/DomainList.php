@@ -6,7 +6,6 @@ use App\Dto\Domain;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DomainList extends BaseCommand
@@ -27,12 +26,10 @@ class DomainList extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        $domains = spin(
+        $items = $this->fetchList(
             fn () => $this->client->domains()->list($environment->id),
             'Fetching domains...',
         );
-
-        $items = $domains->collect();
 
         $this->outputJsonIfWanted($items);
 

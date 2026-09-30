@@ -28,6 +28,7 @@ use App\Cloud;
 use App\Exceptions\UnreadableResponseException;
 use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\LazyCollection;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
 use Saloon\Enums\PipeOrder;
@@ -45,6 +46,8 @@ use SensitiveParameter;
 class Connector extends SaloonConnector implements HasPagination
 {
     use AlwaysThrowOnErrors;
+
+    public const MAX_LIST_RESULTS = 2000;
 
     public function resolveCacheDriver(): Driver
     {
@@ -100,7 +103,7 @@ class Connector extends SaloonConnector implements HasPagination
 
     public function resolveBaseUrl(): string
     {
-        return Cloud::baseUrl().'/api';
+        return Cloud::baseUrl() . '/api';
     }
 
     protected function defaultAuth(): TokenAuthenticator
@@ -245,7 +248,16 @@ class Connector extends SaloonConnector implements HasPagination
 
             protected function isLastPage(Response $response): bool
             {
-                return is_null($response->json('links.next'));
+                return is_null($response->json('links.next'))
+                    || $this->totalResults >= Connector::MAX_LIST_RESULTS;
+            }
+
+            public function collect(bool $throughItems = true): LazyCollection
+            {
+                $collection = parent::collect($throughItems);
+
+                // The last page fetched can run past the cap.
+                return $throughItems ? $collection->take(Connector::MAX_LIST_RESULTS) : $collection;
             }
 
             protected function getPageItems(Response $response, Request $request): array

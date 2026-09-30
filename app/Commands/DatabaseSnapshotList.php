@@ -6,7 +6,6 @@ use App\Dto\DatabaseSnapshot;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DatabaseSnapshotList extends BaseCommand
@@ -30,12 +29,10 @@ class DatabaseSnapshotList extends BaseCommand
 
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
-        $snapshots = spin(
-            fn () => $this->client->databaseSnapshots()->list($cluster->id)->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->databaseSnapshots()->list($cluster->id),
             'Fetching snapshots...',
         );
-
-        $items = collect($snapshots);
 
         $this->outputJsonIfWanted($items->toArray());
 

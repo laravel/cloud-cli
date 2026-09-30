@@ -6,7 +6,6 @@ use App\Dto\BackgroundProcess;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class BackgroundProcessList extends BaseCommand
@@ -29,12 +28,10 @@ class BackgroundProcessList extends BaseCommand
 
         $instance = $this->resolvers()->instance()->from($this->argument('instance'));
 
-        $processes = spin(
+        $items = $this->fetchList(
             fn () => $this->client->backgroundProcesses()->list($instance->id),
             'Fetching background processes...',
         );
-
-        $items = $processes->collect();
 
         $this->outputJsonIfWanted($items);
 

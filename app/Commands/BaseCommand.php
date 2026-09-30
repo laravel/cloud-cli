@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Client\Connector;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
@@ -24,6 +25,7 @@ use LaravelZero\Framework\Commands\Command;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
+use Saloon\PaginationPlugin\Paginator;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
 use Symfony\Component\Console\Input\ArrayInput;
@@ -33,6 +35,8 @@ use Symfony\Component\Console\Output\OutputInterface;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
+use function Laravel\Prompts\spin;
+use function Laravel\Prompts\warning;
 
 abstract class BaseCommand extends Command
 {
@@ -118,6 +122,29 @@ abstract class BaseCommand extends Command
     protected function resolvers(): Resolvers
     {
         return $this->resolvers ??= app(Resolvers::class, ['client' => $this->client, 'isInteractive' => $this->isInteractive()]);
+    }
+
+    /**
+     * @param  Closure(): Paginator  $paginator
+     */
+    protected function fetchList(Closure $paginator, string $message): Collection
+    {
+        $items = spin(fn () => $paginator()->collect()->collect(), $message);
+
+        if ($items->count() >= Connector::MAX_LIST_RESULTS) {
+            $this->outputWarning('Showing the first '.number_format(Connector::MAX_LIST_RESULTS).' results.');
+        }
+
+        return $items;
+    }
+
+    protected function outputWarning(string $message): void
+    {
+        if ($this->wantsJson()) {
+            fwrite(STDERR, json_encode(['warning' => true, 'message' => $message]).PHP_EOL);
+        } else {
+            warning($message);
+        }
     }
 
     protected function runningAsSubcommand(): bool

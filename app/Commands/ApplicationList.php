@@ -6,7 +6,6 @@ use App\Dto\Application;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class ApplicationList extends BaseCommand
@@ -29,10 +28,10 @@ class ApplicationList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $applications = spin(
+        $applications = $this->fetchList(
             fn () => $this->client->applications()->include('organization', 'environments')->list(),
             'Fetching applications...',
-        )->collect();
+        );
 
         $this->outputJsonIfWanted($applications);
 

@@ -8,7 +8,6 @@ use Illuminate\Support\Str;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class ManagedQueueFailedJobList extends BaseCommand
@@ -31,8 +30,8 @@ class ManagedQueueFailedJobList extends BaseCommand
 
         $instance = $this->resolvers()->instance()->ofType(InstanceType::MANAGED_QUEUE)->from($this->argument('instance'));
 
-        $items = spin(
-            fn () => $this->client->instances()->failedJobs($instance->id)->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->instances()->failedJobs($instance->id),
             'Fetching failed jobs...',
         );
 

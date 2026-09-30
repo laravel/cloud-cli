@@ -6,7 +6,6 @@ use App\Dto\WebsocketCluster;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class WebsocketClusterList extends BaseCommand
@@ -29,12 +28,10 @@ class WebsocketClusterList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $clusters = spin(
+        $items = $this->fetchList(
             fn () => $this->client->websocketClusters()->list(),
             'Fetching WebSocket clusters...',
         );
-
-        $items = $clusters->collect();
 
         $this->outputJsonIfWanted($items->toArray());
 

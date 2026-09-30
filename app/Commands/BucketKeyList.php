@@ -6,7 +6,6 @@ use App\Dto\BucketKey;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class BucketKeyList extends BaseCommand
@@ -28,12 +27,10 @@ class BucketKeyList extends BaseCommand
 
         $bucket = $this->resolvers()->objectStorageBucket()->from($this->argument('bucket'));
 
-        $keys = spin(
-            fn () => $this->client->bucketKeys()->list($bucket->id)->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->bucketKeys()->list($bucket->id),
             'Fetching keys...',
         );
-
-        $items = collect($keys);
 
         $this->outputJsonIfWanted($items->toArray());
 

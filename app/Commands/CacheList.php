@@ -6,7 +6,6 @@ use App\Dto\Cache;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class CacheList extends BaseCommand
@@ -27,12 +26,10 @@ class CacheList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $caches = spin(
-            fn () => $this->client->caches()->list()->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->caches()->list(),
             'Fetching caches...',
         );
-
-        $items = collect($caches);
 
         $this->outputJsonIfWanted($items);
 

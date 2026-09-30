@@ -6,7 +6,6 @@ use App\Dto\Database;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DatabaseList extends BaseCommand
@@ -30,8 +29,8 @@ class DatabaseList extends BaseCommand
 
         $cluster = $this->resolvers()->databaseCluster()->from($this->argument('cluster'));
 
-        $databases = spin(
-            fn () => $this->client->databases()->list($cluster->id)->collect(),
+        $databases = $this->fetchList(
+            fn () => $this->client->databases()->list($cluster->id),
             'Fetching databases...',
         );
 

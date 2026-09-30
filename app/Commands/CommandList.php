@@ -26,7 +26,10 @@ class CommandList extends BaseCommand
         intro('Commands');
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
-        $commands = $this->client->commands()->list($environment->id)->collect();
+        $commands = $this->fetchList(
+            fn () => $this->client->commands()->list($environment->id),
+            'Fetching commands...',
+        );
 
         $this->outputJsonIfWanted($commands);
 

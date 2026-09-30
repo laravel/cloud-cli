@@ -6,7 +6,6 @@ use App\Dto\WebsocketApplication;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class WebsocketApplicationList extends BaseCommand
@@ -30,12 +29,10 @@ class WebsocketApplicationList extends BaseCommand
 
         $cluster = $this->resolvers()->websocketCluster()->from($this->argument('cluster'));
 
-        $apps = spin(
-            fn () => $this->client->websocketApplications()->list($cluster->id)->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->websocketApplications()->list($cluster->id),
             'Fetching WebSocket applications...',
         );
-
-        $items = collect($apps);
 
         $this->outputJsonIfWanted($items->toArray());
 

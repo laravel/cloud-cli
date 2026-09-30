@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Dto\DedicatedCluster;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DedicatedClusterList extends BaseCommand
@@ -26,12 +25,10 @@ class DedicatedClusterList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $clusters = spin(
-            fn () => $this->client->dedicatedClusters()->list()->collect(),
+        $items = $this->fetchList(
+            fn () => $this->client->dedicatedClusters()->list(),
             'Fetching dedicated clusters...',
         );
-
-        $items = $clusters->collect();
 
         $this->outputJsonIfWanted($items->toArray());
 

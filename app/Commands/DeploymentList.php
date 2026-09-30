@@ -6,7 +6,6 @@ use App\Dto\Deployment;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DeploymentList extends BaseCommand
@@ -27,12 +26,10 @@ class DeploymentList extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        $deployments = spin(
+        $items = $this->fetchList(
             fn () => $this->client->deployments()->list($environment->id),
             'Fetching deployments...',
         );
-
-        $items = $deployments->collect();
 
         $this->outputJsonIfWanted($items);
 

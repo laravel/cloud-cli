@@ -6,7 +6,6 @@ use App\Dto\Environment;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class EnvironmentList extends BaseCommand
@@ -32,12 +31,10 @@ class EnvironmentList extends BaseCommand
 
         answered('Application', $application->name);
 
-        $environments = spin(
+        $envItems = $this->fetchList(
             fn () => $this->client->environments()->list($application->id),
             'Fetching environments...',
         );
-
-        $envItems = $environments->collect();
 
         $this->outputJsonIfWanted($envItems);
 

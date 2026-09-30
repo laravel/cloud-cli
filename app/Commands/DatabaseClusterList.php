@@ -6,7 +6,6 @@ use App\Dto\DatabaseCluster;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
@@ -27,12 +26,10 @@ class DatabaseClusterList extends BaseCommand
 
         intro('Database Clusters');
 
-        $databases = spin(
+        $items = $this->fetchList(
             fn () => $this->client->databaseClusters()->include('databases')->list(),
             'Fetching databases...',
         );
-
-        $items = $databases->collect();
 
         $this->outputJsonIfWanted($items);
 

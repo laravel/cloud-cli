@@ -5,7 +5,6 @@ namespace App\Commands;
 use App\Dto\Secret;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class SecretList extends BaseCommand
@@ -26,8 +25,8 @@ class SecretList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $items = spin(
-            fn () => collect($this->client->secrets()->list()->collect()),
+        $items = $this->fetchList(
+            fn () => $this->client->secrets()->list(),
             'Fetching secrets...',
         );
 

@@ -6,7 +6,6 @@ use App\Dto\ObjectStorageBucket;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class BucketList extends BaseCommand
@@ -30,12 +29,12 @@ class BucketList extends BaseCommand
 
         answered('Organization', $this->client->meta()->organization()->name);
 
-        $buckets = spin(
+        $buckets = $this->fetchList(
             fn () => $this->client->objectStorageBuckets()->list(
                 $this->option('type'),
                 $this->option('status'),
                 $this->option('visibility'),
-            )->collect(),
+            ),
             'Fetching buckets...',
         );
 
