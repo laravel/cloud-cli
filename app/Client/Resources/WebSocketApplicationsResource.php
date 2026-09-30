@@ -6,10 +6,12 @@ use App\Client\Requests\CreateWebSocketApplicationRequestData;
 use App\Client\Requests\UpdateWebSocketApplicationRequestData;
 use App\Client\Resources\WebSocketApplications\CreateWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\DeleteWebSocketApplicationRequest;
+use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationMetricsRequest;
 use App\Client\Resources\WebSocketApplications\GetWebSocketApplicationRequest;
 use App\Client\Resources\WebSocketApplications\ListWebSocketApplicationsRequest;
 use App\Client\Resources\WebSocketApplications\UpdateWebSocketApplicationRequest;
 use App\Dto\WebsocketApplication;
+use App\Dto\WebsocketMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
 class WebSocketApplicationsResource extends Resource
@@ -26,6 +28,14 @@ class WebSocketApplicationsResource extends Resource
         $request = new GetWebSocketApplicationRequest(
             applicationId: $applicationId,
         );
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function metrics(string $applicationId, ?string $period = null): WebsocketMetrics
+    {
+        $request = new GetWebSocketApplicationMetricsRequest($applicationId, $period);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

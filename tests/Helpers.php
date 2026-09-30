@@ -416,3 +416,160 @@ function versionlessDatabaseTypesResponse(): array
         ],
     ];
 }
+
+function cacheResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'cache-1',
+        'type' => 'caches',
+        'attributes' => array_merge([
+            'name' => 'my-cache',
+            'type' => 'laravel_valkey',
+            'status' => 'available',
+            'region' => 'us-east-1',
+            'size' => '250mb',
+            'auto_upgrade_enabled' => false,
+            'is_public' => false,
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function websocketApplicationResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'wsa-1',
+        'type' => 'websocketApplications',
+        'attributes' => array_merge([
+            'name' => 'my-ws-app',
+            'app_id' => '123456',
+            'allowed_origins' => [],
+            'ping_interval' => 60,
+            'activity_timeout' => 30,
+            'max_message_size' => 10000,
+            'max_connections' => 100,
+            'key' => 'key',
+            'secret' => 'secret',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+    ];
+}
+
+function metricsResponse(array $data, array $overrides = []): array
+{
+    return array_replace_recursive([
+        'data' => $data,
+        'meta' => [
+            'period' => '24h',
+            'available_periods' => ['6h', '24h', '3d', '7d', '30d'],
+        ],
+    ], $overrides);
+}
+
+function databaseClusterMetricsResponse(array $overrides = []): array
+{
+    return metricsResponse([
+        'cpu_usage' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 0.004],
+                ['x' => '2026-08-14T12:02:00.000000Z', 'y' => 0.008],
+            ],
+            'average' => 0.006,
+            'max' => 0.008,
+        ],
+        'compute_hours' => ['data' => [], 'total' => 0],
+        'memory_usage' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 269451264],
+                ['x' => '2026-08-14T12:02:00.000000Z', 'y' => 270655488],
+            ],
+            'current' => 270655488,
+            'min' => 265416704,
+            'max' => 275480576,
+        ],
+        'writes' => ['data' => [], 'total' => 0],
+        'storage_usage' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 6291456],
+                ['x' => '2026-08-14T12:02:00.000000Z', 'y' => 6291456],
+            ],
+            'current' => 6291456,
+        ],
+        'replica_lag' => [],
+    ], $overrides);
+}
+
+function cacheMetricsResponse(array $overrides = []): array
+{
+    return metricsResponse([
+        'hits_and_misses' => [
+            'labels' => ['Hits', 'Misses'],
+            'average' => [40, 2],
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => [30, 1]],
+                ['x' => '2026-08-14T12:05:00.000000Z', 'y' => [50, 3]],
+            ],
+        ],
+        'throughput' => [
+            'labels' => ['Reads', 'Writes'],
+            'average' => [12, 4],
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => [10, 3]],
+                ['x' => '2026-08-14T12:05:00.000000Z', 'y' => [14, 5]],
+            ],
+        ],
+        'size' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 1048576],
+                ['x' => '2026-08-14T12:05:00.000000Z', 'y' => 2097152],
+            ],
+            'total' => 2097152,
+        ],
+        'bandwidth_usage' => ['data' => [], 'total' => 0],
+    ], $overrides);
+}
+
+function environmentMetricsResponse(array $overrides = []): array
+{
+    $labelled = fn (array $labels, array $first, array $second) => [
+        'labels' => $labels,
+        'average' => array_map(fn ($a, $b) => ($a + $b) / 2, $first, $second),
+        'min' => min([...$first, ...$second]),
+        'max' => max([...$first, ...$second]),
+        'data' => [
+            ['x' => '2026-08-14T12:00:00.000000Z', 'y' => $first],
+            ['x' => '2026-08-14T12:05:00.000000Z', 'y' => $second],
+        ],
+    ];
+
+    return metricsResponse([
+        'cpu_usage' => $labelled(['App', 'Worker'], [20, 5], [30, 15]),
+        'memory_usage' => $labelled(['App', 'Worker'], [40, 10], [50, 20]),
+        'http_response_count' => [...$labelled(['2xx', '5xx'], [100, 0], [120, 2]), 'total' => 222],
+        'replica_count' => $labelled(['App'], [1], [2]),
+        'web_workers_count' => ['error' => true],
+    ], $overrides);
+}
+
+function websocketMetricsResponse(array $overrides = []): array
+{
+    return metricsResponse([
+        'connection_count' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 10],
+                ['x' => '2026-08-14T12:05:00.000000Z', 'y' => 30],
+            ],
+            'current' => 30,
+            'max' => 30,
+            'average' => 20,
+        ],
+        'message_rate' => [
+            'data' => [
+                ['x' => '2026-08-14T12:00:00.000000Z', 'y' => 1.5],
+                ['x' => '2026-08-14T12:05:00.000000Z', 'y' => 2.5],
+            ],
+            'average' => 2,
+            'max' => 2.5,
+        ],
+    ], $overrides);
+}

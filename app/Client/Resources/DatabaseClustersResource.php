@@ -6,11 +6,13 @@ use App\Client\Requests\CreateDatabaseClusterRequestData;
 use App\Client\Requests\UpdateDatabaseClusterRequestData;
 use App\Client\Resources\DatabaseClusters\CreateDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\DeleteDatabaseClusterRequest;
+use App\Client\Resources\DatabaseClusters\GetDatabaseClusterMetricsRequest;
 use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
 use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
 use App\Dto\DatabaseCluster;
+use App\Dto\DatabaseClusterMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
 class DatabaseClustersResource extends Resource
@@ -25,6 +27,14 @@ class DatabaseClustersResource extends Resource
     public function get(string $clusterId): DatabaseCluster
     {
         $request = new GetDatabaseClusterRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function metrics(string $clusterId, ?string $period = null): DatabaseClusterMetrics
+    {
+        $request = new GetDatabaseClusterMetricsRequest($clusterId, $period);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

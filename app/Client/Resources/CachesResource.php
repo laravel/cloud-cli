@@ -6,11 +6,13 @@ use App\Client\Requests\CreateCacheRequestData;
 use App\Client\Requests\UpdateCacheRequestData;
 use App\Client\Resources\Caches\CreateCacheRequest;
 use App\Client\Resources\Caches\DeleteCacheRequest;
+use App\Client\Resources\Caches\GetCacheMetricsRequest;
 use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
 use App\Dto\Cache;
+use App\Dto\CacheMetrics;
 use App\Dto\CacheType;
 use Saloon\PaginationPlugin\Paginator;
 
@@ -26,6 +28,14 @@ class CachesResource extends Resource
     public function get(string $cacheId): Cache
     {
         $request = new GetCacheRequest($cacheId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function metrics(string $cacheId, ?string $period = null): CacheMetrics
+    {
+        $request = new GetCacheMetricsRequest($cacheId, $period);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

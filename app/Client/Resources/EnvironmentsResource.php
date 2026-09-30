@@ -14,6 +14,7 @@ use App\Client\Resources\Environments\AttachEnvironmentSecretsRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentVariablesRequest;
+use App\Client\Resources\Environments\GetEnvironmentMetricsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
@@ -21,6 +22,7 @@ use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Dto\Environment;
+use App\Dto\EnvironmentMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
 class EnvironmentsResource extends Resource
@@ -35,6 +37,14 @@ class EnvironmentsResource extends Resource
     public function get(string $environmentId): Environment
     {
         $request = new GetEnvironmentRequest($environmentId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function metrics(string $environmentId, ?string $period = null): EnvironmentMetrics
+    {
+        $request = new GetEnvironmentMetricsRequest($environmentId, $period);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

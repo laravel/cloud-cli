@@ -38,6 +38,7 @@ $data = $response->json();
 - `CreateEnvironmentRequest` - Create a new environment
 - `UpdateEnvironmentRequest` - Update an environment
 - `DeleteEnvironmentRequest` - Delete an environment
+- `GetEnvironmentMetricsRequest` - Get metrics for an environment
 - `ListEnvironmentLogsRequest` - List environment logs
 - `AddEnvironmentVariablesRequest` - Add environment variables
 - `DeleteEnvironmentVariablesRequest` - Delete environment variables by key
@@ -80,6 +81,7 @@ $data = $response->json();
 #### Database Clusters
 - `ListDatabaseClustersRequest` - List all database clusters
 - `GetDatabaseClusterRequest` - Get a specific database cluster
+- `GetDatabaseClusterMetricsRequest` - Get metrics for a database cluster
 - `CreateDatabaseClusterRequest` - Create a new database cluster
 - `UpdateDatabaseClusterRequest` - Update a database cluster
 - `DeleteDatabaseClusterRequest` - Delete a database cluster
@@ -117,6 +119,7 @@ $data = $response->json();
 #### Caches
 - `ListCachesRequest` - List all caches
 - `GetCacheRequest` - Get a specific cache
+- `GetCacheMetricsRequest` - Get metrics for a cache
 - `CreateCacheRequest` - Create a new cache
 - `UpdateCacheRequest` - Update a cache
 - `DeleteCacheRequest` - Delete a cache
@@ -125,6 +128,7 @@ $data = $response->json();
 #### WebSocket Clusters
 - `ListWebSocketClustersRequest` - List all WebSocket clusters
 - `GetWebSocketClusterRequest` - Get a specific cluster
+- `GetWebSocketClusterMetricsRequest` - Get metrics for a cluster
 - `CreateWebSocketClusterRequest` - Create a new cluster
 - `UpdateWebSocketClusterRequest` - Update a cluster
 - `DeleteWebSocketClusterRequest` - Delete a cluster
@@ -132,6 +136,7 @@ $data = $response->json();
 #### WebSocket Applications
 - `ListWebSocketApplicationsRequest` - List applications for a cluster
 - `GetWebSocketApplicationRequest` - Get a specific application
+- `GetWebSocketApplicationMetricsRequest` - Get metrics for an application
 - `CreateWebSocketApplicationRequest` - Create a new application
 - `UpdateWebSocketApplicationRequest` - Update an application
 - `DeleteWebSocketApplicationRequest` - Delete an application

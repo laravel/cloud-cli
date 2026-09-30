@@ -160,15 +160,16 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 
 ### Environments
 
-| Command                       | Description                                            |
-| ----------------------------- | ------------------------------------------------------ |
-| `cloud environment:list`      | List environments                                      |
-| `cloud environment:get`       | Get environment details                                |
-| `cloud environment:create`    | Create an environment                                  |
-| `cloud environment:update`    | Update an environment                                  |
-| `cloud environment:delete`    | Delete an environment                                  |
+| Command                       | Description                                           |
+| ----------------------------- | ----------------------------------------------------- |
+| `cloud environment:list`      | List environments                                     |
+| `cloud environment:get`       | Get environment details                               |
+| `cloud environment:create`    | Create an environment                                 |
+| `cloud environment:update`    | Update an environment                                 |
+| `cloud environment:delete`    | Delete an environment                                 |
 | `cloud environment:variables` | Manage environment variables (append, set, or delete) |
-| `cloud environment:logs`      | View environment logs                                  |
+| `cloud environment:logs`      | View environment logs                                 |
+| `cloud environment:metrics`   | View environment compute and HTTP metrics             |
 
 ### Secrets
 
@@ -221,6 +222,7 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud database-cluster:create`  | Create a database cluster              |
 | `cloud database-cluster:update`  | Update a database cluster              |
 | `cloud database-cluster:delete`  | Delete a database cluster              |
+| `cloud database-cluster:metrics` | View cluster metrics                   |
 | `cloud database:list`            | List databases (schemas) in a cluster  |
 | `cloud database:get`             | Get database details                   |
 | `cloud database:create`          | Create a database                      |
@@ -234,14 +236,15 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 
 ### Cache
 
-| Command              | Description                |
-| -------------------- | -------------------------- |
-| `cloud cache:list`   | List caches                |
-| `cloud cache:get`    | Get cache details          |
-| `cloud cache:create` | Create a cache             |
-| `cloud cache:update` | Update a cache             |
-| `cloud cache:delete` | Delete a cache             |
-| `cloud cache:types`  | List available cache types |
+| Command               | Description                |
+| --------------------- | -------------------------- |
+| `cloud cache:list`    | List caches                |
+| `cloud cache:get`     | Get cache details          |
+| `cloud cache:create`  | Create a cache             |
+| `cloud cache:update`  | Update a cache             |
+| `cloud cache:delete`  | Delete a cache             |
+| `cloud cache:types`   | List available cache types |
+| `cloud cache:metrics` | View cache metrics         |
 
 ### Object storage (buckets)
 
@@ -271,18 +274,20 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 
 ### WebSockets
 
-| Command                              | Description                    |
-| ------------------------------------ | ------------------------------ |
-| `cloud websocket-cluster:list`       | List WebSocket clusters        |
-| `cloud websocket-cluster:get`        | Get cluster details            |
-| `cloud websocket-cluster:create`     | Create a WebSocket cluster     |
-| `cloud websocket-cluster:update`     | Update a WebSocket cluster     |
-| `cloud websocket-cluster:delete`     | Delete a WebSocket cluster     |
-| `cloud websocket-application:list`   | List WebSocket applications    |
-| `cloud websocket-application:get`    | Get application details        |
-| `cloud websocket-application:create` | Create a WebSocket application |
-| `cloud websocket-application:update` | Update a WebSocket application |
-| `cloud websocket-application:delete` | Delete a WebSocket application |
+| Command                               | Description                    |
+| ------------------------------------- | ------------------------------ |
+| `cloud websocket-cluster:list`        | List WebSocket clusters        |
+| `cloud websocket-cluster:get`         | Get cluster details            |
+| `cloud websocket-cluster:create`      | Create a WebSocket cluster     |
+| `cloud websocket-cluster:update`      | Update a WebSocket cluster     |
+| `cloud websocket-cluster:delete`      | Delete a WebSocket cluster     |
+| `cloud websocket-cluster:metrics`     | View cluster metrics           |
+| `cloud websocket-application:list`    | List WebSocket applications    |
+| `cloud websocket-application:get`     | Get application details        |
+| `cloud websocket-application:create`  | Create a WebSocket application |
+| `cloud websocket-application:update`  | Update a WebSocket application |
+| `cloud websocket-application:delete`  | Delete a WebSocket application |
+| `cloud websocket-application:metrics` | View application metrics       |
 
 ### Background processes
 

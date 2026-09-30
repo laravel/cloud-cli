@@ -6,10 +6,12 @@ use App\Client\Requests\CreateWebSocketClusterRequestData;
 use App\Client\Requests\UpdateWebSocketClusterRequestData;
 use App\Client\Resources\WebSocketClusters\CreateWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\DeleteWebSocketClusterRequest;
+use App\Client\Resources\WebSocketClusters\GetWebSocketClusterMetricsRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\ListWebSocketClustersRequest;
 use App\Client\Resources\WebSocketClusters\UpdateWebSocketClusterRequest;
 use App\Dto\WebsocketCluster;
+use App\Dto\WebsocketMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
 class WebSocketClustersResource extends Resource
@@ -24,6 +26,14 @@ class WebSocketClustersResource extends Resource
     public function get(string $clusterId): WebsocketCluster
     {
         $request = new GetWebSocketClusterRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function metrics(string $clusterId, ?string $period = null): WebsocketMetrics
+    {
+        $request = new GetWebSocketClusterMetricsRequest($clusterId, $period);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
