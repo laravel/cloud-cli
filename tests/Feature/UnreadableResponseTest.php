@@ -1,5 +1,6 @@
 <?php
 
+use App\Client\Connector;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
@@ -54,4 +55,23 @@ it('still reports a failed response as a request error rather than an unreadable
         '--region' => 'us-east-2',
         '--no-interaction' => true,
     ])->assertFailed();
+});
+
+it('reports where the API redirected to instead of following the redirect', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        ListRegionsRequest::class => MockResponse::make(regionsResponse(), 200),
+        CreateApplicationRequest::class => MockResponse::make('', 302, ['Location' => 'https://cloud.laravel.com/login']),
+    ]);
+
+    $this->artisan('application:create', [
+        '--name' => 'my-app',
+        '--repository' => 'laravel/cloud-cli',
+        '--region' => 'us-east-2',
+        '--no-interaction' => true,
+    ])->assertFailed();
+});
+
+it('does not follow redirects from the API', function () {
+    expect((new Connector('token'))->config()->get('allow_redirects'))->toBeFalse();
 });

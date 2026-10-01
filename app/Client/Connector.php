@@ -80,6 +80,10 @@ class Connector extends SaloonConnector implements HasPagination
                     return;
                 }
 
+                if ($response->redirect()) {
+                    throw UnreadableResponseException::for($response);
+                }
+
                 $body = trim($response->body());
 
                 if ($body === '' || json_validate($body)) {
@@ -104,6 +108,15 @@ class Connector extends SaloonConnector implements HasPagination
     public function resolveBaseUrl(): string
     {
         return Cloud::baseUrl().'/api';
+    }
+
+    /**
+     * Following a redirect turns a POST into a GET and lands on a web page, which hides
+     * both the failed write and where the API wanted to send us.
+     */
+    protected function defaultConfig(): array
+    {
+        return ['allow_redirects' => false];
     }
 
     protected function defaultAuth(): TokenAuthenticator
