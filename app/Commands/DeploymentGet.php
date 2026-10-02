@@ -3,8 +3,10 @@
 namespace App\Commands;
 
 use App\Dto\Deployment;
+use App\Enums\DeploymentStatus;
 use App\SourceProviders\SourceProviderManager;
 
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 
 class DeploymentGet extends BaseCommand
@@ -42,5 +44,9 @@ class DeploymentGet extends BaseCommand
             'Duration' => $deployment->finishedAt ? $deployment->totalTime()->format('%I:%S') : '—',
             'Failure Reason' => $deployment->failureReason,
         ]);
+
+        if ($deployment->failed() || $deployment->status === DeploymentStatus::FAILED) {
+            info("Run `cloud deployment:logs {$deployment->id}` to see the build and deploy logs.");
+        }
     }
 }

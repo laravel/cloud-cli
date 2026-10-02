@@ -22,6 +22,7 @@ use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Dto\Environment;
+use App\Dto\EnvironmentLogPage;
 use App\Dto\EnvironmentMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
@@ -73,6 +74,11 @@ class EnvironmentsResource extends Resource
 
     public function logs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): array
     {
+        return $this->logsPage($environmentId, $from, $to, $cursor, $type, $query)->logs;
+    }
+
+    public function logsPage(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): EnvironmentLogPage
+    {
         $request = new ListEnvironmentLogsRequest(
             environmentId: $environmentId,
             from: $from,
@@ -84,7 +90,7 @@ class EnvironmentsResource extends Resource
 
         $response = $this->send($request);
 
-        return $request->createDtoFromResponse($response);
+        return $request->createPageFromResponse($response);
     }
 
     public function addVariables(AddEnvironmentVariablesRequestData $data): void

@@ -31,6 +31,7 @@ class AppServiceProvider extends ServiceProvider
             'ConfirmPromptRenderer',
             'DataListRenderer',
             'DataTableRenderer',
+            'DeploymentLogsPromptRenderer',
             'EnvironmentLogsPromptRenderer',
             'MonitorCommandRenderer',
             'MonitorDeploymentsRenderer',
