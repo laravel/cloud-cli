@@ -48,6 +48,7 @@ $data = $response->json();
 #### Deployments
 - `ListDeploymentsRequest` - List deployments for an environment
 - `GetDeploymentRequest` - Get a specific deployment
+- `GetDeploymentLogsRequest` - Get the build and deploy logs for a deployment
 - `InitiateDeploymentRequest` - Initiate a new deployment
 
 #### Domains
