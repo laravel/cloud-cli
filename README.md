@@ -168,8 +168,10 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:update`    | Update an environment                                 |
 | `cloud environment:delete`    | Delete an environment                                 |
 | `cloud environment:variables` | Manage environment variables (append, set, or delete) |
-| `cloud environment:logs`      | View environment logs                                 |
+| `cloud environment:logs`      | View environment logs (`--limit` to page past 100)    |
 | `cloud environment:metrics`   | View environment compute and HTTP metrics             |
+
+`environment:update` sets the branch, the build, deploy and start commands (`--build-command`, `--deploy-command`, `--start-command`), and the attached database, cache and WebSocket application. `environment:get` shows the current commands.
 
 ### Secrets
 
@@ -201,6 +203,7 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud deploy:monitor`  | Monitor deployments                            |
 | `cloud deployment:list` | List deployments                               |
 | `cloud deployment:get`  | Get deployment details                         |
+| `cloud deployment:logs` | View a deployment's build and deploy logs      |
 
 ### Instances
 

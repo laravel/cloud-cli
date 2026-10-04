@@ -22,6 +22,7 @@ Use the [Laravel Cloud documentation](https://cloud.laravel.com/docs/llms.txt) f
 - Run optimization and cache-building commands during the build, not during deployment. A typical deploy command is `php artisan migrate --force`.
 - Build and deploy commands have a 15-minute timeout. Deploy commands run immediately before the release becomes live, and filesystem changes made by deploy commands are not persisted.
 - Do not add `php artisan queue:restart`, `php artisan horizon:terminate`, `php artisan optimize:clear`, or `php artisan storage:link` to deploy commands. Cloud handles worker restarts and process management; deploy filesystem changes are not persistent.
+- Change commands with `cloud environment:update {environment} --build-command=... --deploy-command=... --start-command=... --force -n`. The start command (max 255 characters) overrides how the application process starts; omit an option to leave that command unchanged.
 - After changing environment settings, attached resources, or linked secrets, redeploy the environment for the changes to take effect.
 
 ## Configuration and Resources
@@ -124,7 +125,7 @@ For multi-step operations, see [reference/checklists.md](reference/checklists.md
 4. Fix the issue and rerun the command.
 5. If the same error occurs after one fix, stop and ask the user rather than repeating the operation.
 
-Always run `cloud deploy:monitor -n` after every deploy. If it fails, inspect the deployment status and logs and show the user what went wrong before attempting a fix.
+Always run `cloud deploy:monitor -n` after every deploy. If it fails, run `cloud deployment:logs <deployment-id> --json -n` to read the build and deploy step output, and show the user what went wrong before attempting a fix.
 
 ### Subagent Delegation
 
@@ -133,6 +134,7 @@ Delegate high-output operations to subagents using the Task tool to keep the mai
 Delegate these to a subagent:
 - `cloud deploy:monitor -n` — deployment logs can be very long
 - `cloud deployment:get --json -n` — full deployment details
+- `cloud deployment:logs --json -n` — build and deploy step output can be very long; narrow it with `--fields` (e.g. `--fields=build.steps.step,build.steps.status`)
 - `cloud <resource>:list --json -n` — listing many resources produces large JSON
 - `cloud <resource>:metrics --json -n` — every data point is included; narrow it with `--fields` (e.g. `--fields=period,cpuUsage.average`)
 - `cloud command:run` — when output may be long
