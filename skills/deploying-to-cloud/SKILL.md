@@ -22,6 +22,7 @@ Use the [Laravel Cloud documentation](https://cloud.laravel.com/docs/llms.txt) f
 - Run optimization and cache-building commands during the build, not during deployment. A typical deploy command is `php artisan migrate --force`.
 - Build and deploy commands have a 15-minute timeout. Deploy commands run immediately before the release becomes live, and filesystem changes made by deploy commands are not persisted.
 - Do not add `php artisan queue:restart`, `php artisan horizon:terminate`, `php artisan optimize:clear`, or `php artisan storage:link` to deploy commands. Cloud handles worker restarts and process management; deploy filesystem changes are not persistent.
+- Change commands with `cloud environment:update {environment} --build-command=... --deploy-command=... --start-command=... --force -n`. The start command (max 255 characters) overrides how the application process starts; omit an option to leave that command unchanged.
 - After changing environment settings, attached resources, or linked secrets, redeploy the environment for the changes to take effect.
 
 ## Configuration and Resources

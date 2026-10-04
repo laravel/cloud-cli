@@ -171,6 +171,8 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:logs`      | View environment logs (`--limit` to page past 100)    |
 | `cloud environment:metrics`   | View environment compute and HTTP metrics             |
 
+`environment:update` sets the branch, the build, deploy and start commands (`--build-command`, `--deploy-command`, `--start-command`), and the attached database, cache and WebSocket application. `environment:get` shows the current commands.
+
 ### Secrets
 
 Secrets are organization-wide encrypted values that can be attached to environments. Values are encrypted locally with the organization's public key before they are sent, so plaintext never leaves your machine.

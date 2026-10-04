@@ -26,6 +26,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--branch= : Git branch}
                             {--build-command= : Build command}
                             {--deploy-command= : Deploy command}
+                            {--start-command= : Start command}
                             {--database-id= : Database ID to attach (empty string to detach)}
                             {--cache-id= : Cache ID to attach (empty string to detach)}
                             {--websocket-application-id= : WebSocket application ID to attach (empty string to detach)}
@@ -72,6 +73,7 @@ class EnvironmentUpdate extends BaseCommand
                     branch: $this->form()->get('branch'),
                     buildCommand: $this->form()->get('build_command'),
                     deployCommand: $this->form()->get('deploy_command'),
+                    startCommand: $this->form()->get('start_command'),
                     databaseSchemaId: $this->form()->get('database_id'),
                     cacheId: $this->form()->get('cache_id'),
                     websocketApplicationId: $this->form()->get('websocket_application_id'),
@@ -116,6 +118,17 @@ class EnvironmentUpdate extends BaseCommand
             ),
             'deploy-command',
         )->setPreviousValue($environment->deployCommand ?? '');
+
+        $this->form()->define(
+            'start_command',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => text(
+                    label: 'Start command',
+                    default: $value ?? $environment->startCommand ?? '',
+                ),
+            ),
+            'start-command',
+        )->setPreviousValue($environment->startCommand ?? '');
 
         $this->form()->define(
             'database_id',

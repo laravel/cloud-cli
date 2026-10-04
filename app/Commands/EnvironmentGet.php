@@ -35,6 +35,9 @@ class EnvironmentGet extends BaseCommand
             'Web URL' => $environment->url,
             'Dashboard URL' => $application->url($environment),
             'PHP Version' => $environment->phpMajorVersion,
+            'Build Command' => $environment->buildCommand,
+            'Deploy Command' => $environment->deployCommand,
+            'Start Command' => $environment->startCommand,
             'Instances' => count($environment->instances ?? []),
         ]);
     }
