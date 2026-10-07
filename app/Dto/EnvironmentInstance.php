@@ -3,6 +3,8 @@
 namespace App\Dto;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Collection;
+use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Attributes\WithCast;
 use Spatie\LaravelData\Casts\DateTimeInterfaceCast;
 use Spatie\LaravelData\Data;
@@ -31,6 +33,8 @@ class EnvironmentInstance extends Data
         public readonly ?CarbonImmutable $updatedAt = null,
         public readonly ?Environment $environment = null,
         public readonly array $backgroundProcessIds = [],
+        #[DataCollectionOf(InstanceProbe::class)]
+        public readonly ?Collection $probes = null,
     ) {
         //
     }
@@ -58,6 +62,7 @@ class EnvironmentInstance extends Data
             'isDefault' => isset($attributes['is_default']) ? filter_var($attributes['is_default'], FILTER_VALIDATE_BOOLEAN) : null,
             'visibilityTimeout' => isset($attributes['visibility_timeout']) ? (int) $attributes['visibility_timeout'] : null,
             'pollingInterval' => isset($attributes['polling_interval']) ? (int) $attributes['polling_interval'] : null,
+            'probes' => $attributes['probes'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
             'updatedAt' => $attributes['updated_at'] ?? null,
             'environment' => ($relationships['environment']['data'] ?? null) ? Environment::createFromResponse(['data' => collect($included)->firstWhere('type', 'environments')]) : null,
