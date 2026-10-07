@@ -1,6 +1,18 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.3...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.4...main)
+
+## [v0.6.4](https://github.com/laravel/cloud-cli/compare/v0.6.3...v0.6.4) - 2026-10-07
+
+### What's Changed
+
+* Stop following API redirects so ship reports where Cloud sent us by [@Frostist](https://github.com/Frostist) in https://github.com/laravel/cloud-cli/pull/227
+* Add deployment logs command by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/229
+* Commands for Resend integration by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/230
+* Docs and skills update by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/231
+* Environment purge edge cache command by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/232
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.6.3...v0.6.4
 
 ## [v0.6.3](https://github.com/laravel/cloud-cli/compare/v0.6.2...v0.6.3) - 2026-09-30
 
