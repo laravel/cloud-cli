@@ -8,6 +8,7 @@ use App\Middleware\RequiresAuthToken;
 use App\Middleware\SuppressOutputIfJson;
 use App\Prompts\Answered;
 use App\Prompts\Renderer as PromptRenderer;
+use App\Prompts\SuffixedTextPrompt;
 use App\Prompts\TextPromptRenderer;
 use Illuminate\Console\Events\CommandFinished;
 use Illuminate\Console\Events\CommandStarting;
@@ -65,6 +66,7 @@ class AppServiceProvider extends ServiceProvider
             });
 
         $renderers->offsetSet(Answered::class, TextPromptRenderer::class);
+        $renderers->offsetSet(SuffixedTextPrompt::class, TextPromptRenderer::class);
 
         Prompt::addTheme('cloud', $renderers->toArray());
         Prompt::theme('cloud');

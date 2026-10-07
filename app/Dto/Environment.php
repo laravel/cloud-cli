@@ -52,6 +52,7 @@ class Environment extends Data
         public readonly ?string $websocketApplicationId = null,
         #[DataCollectionOf(Secret::class)]
         public readonly array $secrets = [],
+        public readonly ?EnvironmentResend $resend = null,
     ) {
         //
     }
@@ -87,6 +88,7 @@ class Environment extends Data
             'networkSettings' => $attributes['network_settings'] ?? [],
             'createdAt' => $attributes['created_at'] ?? null,
             'updatedAt' => $attributes['updated_at'] ?? null,
+            'resend' => isset($attributes['resend']) ? EnvironmentResend::createFromResponse($attributes['resend']) : null,
         ];
 
         if (isset($relationships['instances']['data'])) {

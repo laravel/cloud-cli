@@ -36,6 +36,7 @@ class EnvironmentGet extends BaseCommand
             'Dashboard URL' => $application->url($environment),
             'PHP Version' => $environment->phpMajorVersion,
             'Instances' => count($environment->instances ?? []),
+            'Resend' => $environment->resend?->sender() ?? '—',
         ]);
     }
 }
