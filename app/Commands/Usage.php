@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Dto\Usage as UsageDto;
+use App\Dto\UsageApplication;
 use App\Dto\UsageBucket;
 use App\Dto\UsageCache;
 use App\Dto\UsageDatabase;
@@ -130,8 +131,8 @@ class Usage extends BaseCommand
             headers: ['Name', 'Cost'],
             rows: collect($usage->applications)
                 ->sortBy([
-                    fn ($a, $b) => $a->totalCostCents <=> $b->totalCostCents,
-                    fn ($a, $b) => $applicationNames->get($a->identifier) <=> $applicationNames->get($b->identifier),
+                    fn (UsageApplication $a, UsageApplication $b) => $a->totalCostCents <=> $b->totalCostCents,
+                    fn (UsageApplication $a, UsageApplication $b) => $applicationNames->get($a->identifier) <=> $applicationNames->get($b->identifier),
                 ])
                 ->values()
                 ->map(fn ($app, $i) => [
