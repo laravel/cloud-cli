@@ -15,13 +15,14 @@ class TextPromptRenderer extends Renderer
      */
     public function __invoke(TextPrompt|Answered $prompt): string
     {
-        $maxWidth = $prompt->terminal()->cols() - 6;
+        $suffix = $prompt instanceof SuffixedTextPrompt ? $prompt->suffix : '';
+        $maxWidth = $prompt->terminal()->cols() - 6 - mb_strwidth($suffix);
 
         return match ($prompt->state) {
             'submit' => $this
                 ->box(
                     $this->dim($this->truncate($prompt->label, $prompt->terminal()->cols() - 6)),
-                    $this->truncate($prompt->value(), $maxWidth),
+                    $this->truncate($prompt->value(), $maxWidth).$suffix,
                     symbol: TimelineSymbol::SUCCESS,
                     info: $prompt instanceof Answered && $prompt->info ? $prompt->info : '',
                 ),
@@ -29,7 +30,7 @@ class TextPromptRenderer extends Renderer
             'cancel' => $this
                 ->box(
                     $this->truncate($prompt->label, $prompt->terminal()->cols() - 6),
-                    $this->strikethrough($this->dim($this->truncate($prompt->value() ?: $prompt->placeholder, $maxWidth))),
+                    $this->strikethrough($this->dim($this->truncate($prompt->value() ?: $prompt->placeholder, $maxWidth).$suffix)),
                     color: 'red',
                     symbol: TimelineSymbol::FAILURE,
                 )
@@ -38,7 +39,7 @@ class TextPromptRenderer extends Renderer
             'error' => $this
                 ->box(
                     $this->truncate($prompt->label, $prompt->terminal()->cols() - 6),
-                    $prompt->valueWithCursor($maxWidth),
+                    $prompt->valueWithCursor($maxWidth).$this->dim($suffix),
                     color: 'yellow',
                     symbol: TimelineSymbol::WARNING,
                 )
@@ -47,7 +48,7 @@ class TextPromptRenderer extends Renderer
             default => $this
                 ->box(
                     $this->cyan($this->truncate($prompt->label, $prompt->terminal()->cols() - 6)),
-                    $prompt->valueWithCursor($maxWidth),
+                    $prompt->valueWithCursor($maxWidth).$this->dim($suffix),
                 )
                 ->when(
                     $prompt->hint,

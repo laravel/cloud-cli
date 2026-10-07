@@ -2,6 +2,7 @@
 
 namespace App\Dto;
 
+use App\Cloud;
 use Spatie\LaravelData\Data;
 
 class Organization extends Data
@@ -24,5 +25,10 @@ class Organization extends Data
             'name' => $attributes['name'] ?? '',
             'slug' => $attributes['slug'] ?? '',
         ]);
+    }
+
+    public function integrationsUrl(): string
+    {
+        return Cloud::baseUrl()."/org/{$this->slug}/settings/integrations";
     }
 }

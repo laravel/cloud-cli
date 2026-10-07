@@ -20,6 +20,7 @@ use App\Client\Resources\EnvironmentsResource;
 use App\Client\Resources\InstancesResource;
 use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
+use App\Client\Resources\ResendResource;
 use App\Client\Resources\SecretsResource;
 use App\Client\Resources\UsageResource;
 use App\Client\Resources\WebSocketApplicationsResource;
@@ -231,6 +232,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function secrets(): SecretsResource
     {
         return new SecretsResource($this);
+    }
+
+    public function resend(): ResendResource
+    {
+        return new ResendResource($this);
     }
 
     public function meta(): MetaResource
