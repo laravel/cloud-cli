@@ -4,7 +4,9 @@ use App\Client\Connector;
 use App\Client\Resources\Applications\CreateApplicationRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
+use App\Cloud;
 use App\ConfigRepository;
+use App\Exceptions\UnreadableResponseException;
 use App\Git;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -70,6 +72,16 @@ it('reports where the API redirected to instead of following the redirect', func
         '--region' => 'us-east-2',
         '--no-interaction' => true,
     ])->assertFailed();
+});
+
+it('names the redirect target in the error', function () {
+    $connector = new Connector('token');
+    $connector->withMockClient(new MockClient([
+        GetOrganizationRequest::class => MockResponse::make('', 302, ['Location' => 'https://cloud.laravel.com/login']),
+    ]));
+
+    expect(fn () => $connector->send(new GetOrganizationRequest))
+        ->toThrow(UnreadableResponseException::class, 'redirected GET '.Cloud::baseUrl().'/api/meta/organization to https://cloud.laravel.com/login (HTTP 302)');
 });
 
 it('does not follow redirects from the API', function () {
