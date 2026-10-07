@@ -28,6 +28,7 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $renderers = collect([
+            'CalloutRenderer',
             'ConfirmPromptRenderer',
             'DataListRenderer',
             'DataTableRenderer',
