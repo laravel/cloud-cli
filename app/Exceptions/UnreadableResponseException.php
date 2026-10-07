@@ -13,7 +13,7 @@ class UnreadableResponseException extends Exception
 
         if ($response->redirect()) {
             return new self(sprintf(
-                'Laravel Cloud redirected %s %s to %s instead of answering (HTTP %d). Check that your API token is valid and that your organization can access this repository in the Laravel Cloud dashboard.',
+                'Laravel Cloud redirected %s %s to %s (HTTP %d) instead of answering. This usually means the API rejected the request; check your API token and that your organization has access to the resource in the Laravel Cloud dashboard.',
                 $request->getMethod()->value,
                 $request->getUrl(),
                 $response->header('Location') ?? 'an unknown location',
