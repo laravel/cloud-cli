@@ -160,16 +160,19 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 
 ### Environments
 
-| Command                       | Description                                           |
-| ----------------------------- | ----------------------------------------------------- |
-| `cloud environment:list`      | List environments                                     |
-| `cloud environment:get`       | Get environment details                               |
-| `cloud environment:create`    | Create an environment                                 |
-| `cloud environment:update`    | Update an environment                                 |
-| `cloud environment:delete`    | Delete an environment                                 |
-| `cloud environment:variables` | Manage environment variables (append, set, or delete) |
-| `cloud environment:logs`      | View environment logs                                 |
-| `cloud environment:metrics`   | View environment compute and HTTP metrics             |
+| Command                              | Description                                                  |
+| ------------------------------------ | ------------------------------------------------------------ |
+| `cloud environment:list`             | List environments                                            |
+| `cloud environment:get`              | Get environment details                                      |
+| `cloud environment:create`           | Create an environment                                        |
+| `cloud environment:update`           | Update an environment                                        |
+| `cloud environment:delete`           | Delete an environment                                        |
+| `cloud environment:variables`        | Manage environment variables (append, set, or delete)        |
+| `cloud environment:logs`             | View environment logs                                        |
+| `cloud environment:metrics`          | View environment compute and HTTP metrics                    |
+| `cloud environment:purge-edge-cache` | Purge the edge cache (everything, or a path, prefix, or tag) |
+
+`environment:purge-edge-cache` purges everything cached at the edge for the environment unless you pass one of `--path`, `--prefix`, or `--tag`. Paths and prefixes start with `/`; purging by tag needs a dedicated edge network. Cloud queues the purge, and repeating the same purge right away has no effect.
 
 ### Secrets
 
