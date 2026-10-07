@@ -201,6 +201,9 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud deploy:monitor`  | Monitor deployments                            |
 | `cloud deployment:list` | List deployments                               |
 | `cloud deployment:get`  | Get deployment details                         |
+| `cloud deployment:logs` | View a deployment's build and deploy logs      |
+
+`deployment:logs` shows each build and deploy step with its status, duration, and output, so a failed deploy shows the step that broke and why. Logs are kept for a year.
 
 ### Instances
 
@@ -271,6 +274,22 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud domain:update` | Update a domain    |
 | `cloud domain:delete` | Delete a domain    |
 | `cloud domain:verify` | Verify domain DNS  |
+
+### Email (Resend)
+
+| Command                | Description                                          |
+| ---------------------- | ---------------------------------------------------- |
+| `cloud resend:domains` | List Resend sending domains                          |
+| `cloud resend:attach`  | Attach Resend to an environment so it can send email |
+| `cloud resend:update`  | Change the sender address or name for an environment |
+| `cloud resend:detach`  | Detach Resend from an environment                    |
+| `cloud resend:keys`    | List the sending keys an environment can reuse       |
+
+Connect your Resend account and verify a sending domain in the dashboard first, under your organization's integration settings; the API can't do either. The sender address must use a verified domain.
+
+`resend:attach` creates a new sending key, or reuses another environment's with `--reuse-key-id` (find IDs with `resend:keys`). Cloud then sets `RESEND_API_KEY`, `MAIL_MAILER`, `MAIL_FROM_ADDRESS`, and `MAIL_FROM_NAME`, and removes any copies of them from the environment's own variables. Laravel needs the `resend/resend-php` package to send through Resend; when the current directory is a Composer project without it, `resend:attach` offers to install it.
+
+Without an environment argument, `resend:attach` offers only environments without Resend, and `resend:update` and `resend:detach` only those with it. `resend:detach` deletes the sending key unless another environment uses it, and needs `--force` when run non-interactively.
 
 ### WebSockets
 
