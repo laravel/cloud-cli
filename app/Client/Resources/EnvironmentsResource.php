@@ -6,6 +6,7 @@ use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use App\Client\Requests\AttachEnvironmentSecretsRequestData;
 use App\Client\Requests\CreateEnvironmentRequestData;
 use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
+use App\Client\Requests\PurgeEdgeCacheRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
@@ -18,6 +19,7 @@ use App\Client\Resources\Environments\GetEnvironmentMetricsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Environments\ListEnvironmentsRequest;
+use App\Client\Resources\Environments\PurgeEdgeCacheRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
@@ -95,6 +97,14 @@ class EnvironmentsResource extends Resource
     public function attachSecrets(AttachEnvironmentSecretsRequestData $data): Environment
     {
         $request = new AttachEnvironmentSecretsRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function purgeEdgeCache(PurgeEdgeCacheRequestData $data): Environment
+    {
+        $request = new PurgeEdgeCacheRequest($data);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
