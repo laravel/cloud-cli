@@ -144,3 +144,242 @@ it('displays custom health checks and platform defaults in the terminal', functi
     Prompt::assertOutputContains('0');
     Prompt::assertOutputContains('Platform default');
 });
+
+it('builds typed health checks from the three probe options', function () {
+    $mock = setupInstanceHealthCheckMocks();
+    $probes = [
+        'startup' => ['path' => '/up', 'port' => 3000, 'delay' => 0, 'interval' => 1, 'timeout' => 5, 'tries' => 60],
+        'readiness' => ['port' => 8080],
+        'liveness' => ['timeout' => 10],
+    ];
+
+    $exitCode = Artisan::call('instance:update', [
+        'instance' => 'inst-1',
+        '--startup' => ['path=/up', 'port=3000', 'delay=0', 'interval=1', 'timeout=5', 'tries=60'],
+        '--readiness' => ['port=8080'],
+        '--liveness' => ['timeout=10'],
+        '--no-interaction' => true,
+    ]);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === ['probes' => $probes]);
+    expect(json_decode(Artisan::output(), true)['probes']['startup'])->toBe($probes['startup']);
+});
+
+it('preserves other probes and settings when editing one health check', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => [
+        'startup' => ['path' => '/up', 'delay' => 0, 'tries' => 15],
+        'readiness' => ['path' => '/ready'],
+    ]]);
+
+    $exitCode = Artisan::call('instance:update', [
+        'instance' => 'inst-1', '--startup' => ['tries=30'], '--no-interaction' => true,
+    ]);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === ['probes' => [
+        'startup' => ['path' => '/up', 'delay' => 0, 'tries' => 30],
+        'readiness' => ['path' => '/ready'],
+    ]]);
+});
+
+it('keeps equals signs in health check paths', function () {
+    $mock = setupInstanceHealthCheckMocks();
+
+    $this->artisan('instance:update', [
+        'instance' => 'inst-1', '--startup' => ['path=/up?check=ready'], '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === [
+        'probes' => ['startup' => ['path' => '/up?check=ready']],
+    ]);
+});
+
+it('preserves custom health checks when updating other settings', function () {
+    $probes = ['startup' => ['path' => '/up']];
+    $mock = setupInstanceHealthCheckMocks(['probes' => $probes]);
+
+    $exitCode = Artisan::call('instance:update', ['instance' => 'inst-1', '--size' => 'standard-2', '--no-interaction' => true]);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === ['size' => 'standard-2']);
+    expect(json_decode(Artisan::output(), true)['probes']['startup']['path'])->toBe('/up');
+});
+
+it('resets one probe without clearing another', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => [
+        'startup' => ['path' => '/up'], 'readiness' => ['port' => 8080],
+    ]]);
+
+    $this->artisan('instance:update', [
+        'instance' => 'inst-1', '--startup' => ['default'], '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === [
+        'probes' => ['readiness' => ['port' => 8080]],
+    ]);
+});
+
+it('clears all overrides when resetting the last configured probe', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => ['startup' => ['path' => '/up']]]);
+
+    $exitCode = Artisan::call('instance:update', [
+        'instance' => 'inst-1', '--startup' => ['default'], '--no-interaction' => true,
+    ]);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && json_encode($request->body()->all()) === '{"probes":{}}');
+    expect(json_decode(Artisan::output(), true)['probes'])->toBeNull();
+});
+
+it('resets an individual setting to its platform default', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => ['startup' => ['path' => '/up', 'port' => 3000]]]);
+
+    $this->artisan('instance:update', [
+        'instance' => 'inst-1', '--startup' => ['path='], '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === [
+        'probes' => ['startup' => ['port' => 3000]],
+    ]);
+});
+
+it('rejects invalid health check settings without sending an update', function (array $input) {
+    $mock = setupInstanceHealthCheckMocks();
+
+    $this->artisan('instance:update', [
+        'instance' => 'inst-1', '--startup' => $input, '--no-interaction' => true,
+    ])->assertFailed();
+
+    $mock->assertNotSent(UpdateInstanceRequest::class);
+})->with([
+    'missing setting name' => [['/up']],
+    'unknown setting' => [['unknown=5']],
+    'invalid port' => [['port=invalid']],
+    'fractional interval' => [['interval=1.5']],
+    'empty option' => [['']],
+    'conflicting reset' => [['default', 'path=/up']],
+]);
+
+it('propagates API validation failures for health checks', function () {
+    $mock = setupInstanceHealthCheckMocks(updateStatus: 422);
+
+    expect(fn () => Artisan::call('instance:update', ['instance' => 'inst-1', '--startup' => ['tries=1000'], '--no-interaction' => true]))
+        ->toThrow(UnprocessableEntityException::class, 'The startup check exceeds its time budget.');
+
+    $mock->assertSent(UpdateInstanceRequest::class);
+});
+
+it('offers health checks through the existing interactive update form', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => [
+        'startup' => ['path' => '/up'],
+        'liveness' => ['timeout' => 10],
+    ]]);
+    $command = Mockery::mock(InstanceUpdate::class)->makePartial()->shouldAllowMockingProtectedMethods();
+    $command->__construct();
+    $command->shouldReceive('isInteractive')->andReturn(true);
+    $command->shouldReceive('configurePrompts')->andReturnNull();
+    $command->setLaravel($this->app);
+    Prompt::fake([
+        Key::END[0], Key::SPACE, Key::ENTER,
+        Key::DOWN, Key::SPACE, Key::ENTER,
+        '/ready', Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER,
+    ]);
+    Renderer::$suppressOutput = false;
+
+    $exitCode = $command->run(new ArrayInput(['instance' => 'inst-1']), new BufferedOutput);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === ['probes' => [
+        'startup' => ['path' => '/up'],
+        'liveness' => ['timeout' => 10],
+        'readiness' => ['path' => '/ready'],
+    ]]);
+});
+
+it('skips all health checks without sending an empty update', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => ['startup' => ['path' => '/up']]]);
+    $command = Mockery::mock(InstanceUpdate::class)->makePartial()->shouldAllowMockingProtectedMethods();
+    $command->__construct();
+    $command->shouldReceive('isInteractive')->andReturn(true);
+    $command->shouldReceive('configurePrompts')->andReturnNull();
+    $command->setLaravel($this->app);
+    Prompt::fake([Key::END[0], Key::SPACE, Key::ENTER, Key::ENTER]);
+    Renderer::$suppressOutput = false;
+
+    $exitCode = $command->run(new ArrayInput(['instance' => 'inst-1']), new BufferedOutput);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertNotSent(UpdateInstanceRequest::class);
+    Prompt::assertOutputContains('No changes selected.');
+});
+
+it('updates other settings while skipping health checks', function () {
+    $mock = setupInstanceHealthCheckMocks(['probes' => ['startup' => ['path' => '/up']]]);
+    $command = Mockery::mock(InstanceUpdate::class)->makePartial()->shouldAllowMockingProtectedMethods();
+    $command->__construct();
+    $command->shouldReceive('isInteractive')->andReturn(true);
+    $command->shouldReceive('configurePrompts')->andReturnNull();
+    $command->setLaravel($this->app);
+    Prompt::fake([
+        Key::END[0], Key::SPACE, Key::HOME[0], Key::DOWN, Key::SPACE, Key::ENTER,
+        Key::ENTER,
+        Key::BACKSPACE, '2', Key::ENTER,
+    ]);
+    Renderer::$suppressOutput = false;
+
+    $exitCode = $command->run(new ArrayInput(['instance' => 'inst-1']), new BufferedOutput);
+
+    expect($exitCode)->toBe(0);
+    $mock->assertSent(fn ($request) => $request instanceof UpdateInstanceRequest && $request->body()->all() === ['min_replicas' => 2]);
+});
+
+it('allows correcting health checks after an API validation error', function (string $field, array $retryKeys) {
+    $response = healthChecksInstanceResponse();
+    $submitted = [];
+    $mock = MockClient::global([
+        GetInstanceRequest::class => fn () => MockResponse::make($response),
+        UpdateInstanceRequest::class => function (PendingRequest $request) use (&$response, &$submitted, $field) {
+            $probes = $request->body()->all()['probes'];
+            $submitted[] = $probes;
+
+            if (count($submitted) === 1) {
+                return MockResponse::make([
+                    'message' => 'Invalid health checks.',
+                    'errors' => [$field => ['The startup check exceeds its time budget.']],
+                ], 422);
+            }
+
+            $response['data']['attributes']['probes'] = $probes;
+
+            return MockResponse::make($response);
+        },
+    ]);
+    $command = Mockery::mock(InstanceUpdate::class)->makePartial()->shouldAllowMockingProtectedMethods();
+    $command->__construct();
+    $command->shouldReceive('isInteractive')->andReturn(true);
+    $command->shouldReceive('configurePrompts')->andReturnNull();
+    $command->setLaravel($this->app);
+    Prompt::fake([
+        Key::END[0], Key::SPACE, Key::ENTER,
+        Key::SPACE, Key::ENTER,
+        Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, '1000', Key::ENTER,
+        ...$retryKeys,
+        str_repeat(Key::BACKSPACE, 4), '15', Key::ENTER,
+    ]);
+    Renderer::$suppressOutput = false;
+
+    $exitCode = $command->run(new ArrayInput(['instance' => 'inst-1']), new BufferedOutput);
+
+    expect($exitCode)->toBe(0);
+    expect($submitted)->toBe([
+        ['startup' => ['tries' => 1000]],
+        ['startup' => ['tries' => 15]],
+    ]);
+    Prompt::assertOutputContains('The startup check exceeds its time budget.');
+    Prompt::assertOutputContains('Instance updated');
+    $mock->assertSentCount(2, UpdateInstanceRequest::class);
+})->with([
+    'individual setting' => ['probes.startup.tries', []],
+    'probe time budget' => ['probes.startup', array_fill(0, 5, Key::ENTER)],
+]);

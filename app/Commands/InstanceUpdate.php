@@ -4,7 +4,10 @@ namespace App\Commands;
 
 use App\Client\Requests\UpdateInstanceRequestData;
 use App\Dto\EnvironmentInstance;
+use App\Dto\InstanceProbe;
+use App\Enums\InstanceProbeType;
 use App\Exceptions\CommandExitException;
+use Illuminate\Support\Collection;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -12,6 +15,7 @@ use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\number;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
+use function Laravel\Prompts\text;
 
 class InstanceUpdate extends BaseCommand
 {
@@ -32,6 +36,9 @@ class InstanceUpdate extends BaseCommand
                             {--scale-to-zero-timeout= : Scale to zero timeout}
                             {--hibernation= : Deprecated alias for --scale-to-zero}
                             {--hibernation-timeout= : Deprecated alias for --scale-to-zero-timeout}
+                            {--startup=* : Startup check settings as key=value (path, port, delay, interval, timeout, tries). Repeat for each setting. Use default to reset}
+                            {--readiness=* : Readiness check settings as key=value. Repeat for each setting. Use default to reset}
+                            {--liveness=* : Liveness check settings as key=value. Repeat for each setting. Use default to reset}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update an instance';
@@ -102,6 +109,7 @@ class InstanceUpdate extends BaseCommand
                     usesInertiaSsr: $this->form()->get('uses_inertia_ssr'),
                     usesSleepMode: $this->form()->get('uses_sleep_mode'),
                     sleepTimeout: $this->form()->get('sleep_timeout'),
+                    probes: $this->probes($instance),
                 ),
             ),
             'Updating instance...',
@@ -251,15 +259,148 @@ class InstanceUpdate extends BaseCommand
             ),
             'scale-to-zero-timeout',
         )->setLabel('Scale to zero timeout');
+
+        $this->defineProbeFields($instance);
+    }
+
+    protected function defineProbeFields(EnvironmentInstance $instance): void
+    {
+        $options = $this->options();
+        $settings = (new InstanceProbe)->toArray();
+
+        foreach (InstanceProbeType::cases() as $probeType) {
+            $probe = $probeType->value;
+            $input = $options[$probe];
+            $options[$probe] = null;
+
+            if ($input === ['default']) {
+                foreach ($settings as $setting => $value) {
+                    $options[$probe.'-'.$setting] = '';
+                }
+            } else {
+                foreach ($input as $pair) {
+                    $parts = explode('=', $pair, 2);
+
+                    if (count($parts) !== 2 || ! array_key_exists($parts[0], $settings)) {
+                        $this->failAndExit('Use --'.$probe.'=key=value with path, port, delay, interval, timeout, or tries. Use default on its own to reset.');
+                    }
+
+                    [$setting, $value] = $parts;
+
+                    if ($setting !== 'path' && $value !== '' && filter_var($value, FILTER_VALIDATE_INT) === false) {
+                        $this->failAndExit(ucfirst($probe).' '.$setting.' must be an integer. Leave the value empty to use the platform default.');
+                    }
+
+                    $options[$probe.'-'.$setting] = $value;
+                }
+            }
+        }
+
+        $this->form()->options($options);
+
+        $this->form()->define(
+            'probes',
+            fn ($resolver) => $resolver->fromInput(fn () => $this->promptHealthChecks()),
+        )->setLabel('Health checks');
+
+        foreach (InstanceProbeType::cases() as $probeType) {
+            $probe = $probeType->value;
+            $this->form()->define(
+                'probes.'.$probe,
+                fn ($resolver) => $resolver->fromInput(fn () => $this->promptProbe($probeType)),
+                $probe,
+            )->setLabel($probeType->label().' health check');
+
+            foreach ($settings as $setting => $value) {
+                $current = $instance->probes[$probe]->{$setting} ?? null;
+                $label = $probeType->label().' '.$setting;
+
+                if (in_array($setting, ['delay', 'interval', 'timeout'])) {
+                    $label .= ' (seconds)';
+                }
+
+                $this->form()->define(
+                    'probes.'.$probe.'.'.$setting,
+                    fn ($resolver) => $resolver->fromInput(
+                        fn ($value) => $setting === 'path'
+                            ? text(label: $label, default: (string) ($value ?? $current ?? ''), hint: 'Leave blank to use the platform default.')
+                            : number(label: $label, default: (string) ($value ?? $current ?? ''), hint: 'Leave blank to use the platform default.'),
+                    ),
+                    $probe.'-'.$setting,
+                )->setLabel($label)->setPreviousValue($current === null ? '' : (string) $current);
+            }
+        }
+    }
+
+    protected function promptHealthChecks(): string
+    {
+        $selection = multiselect(
+            label: 'Which health checks do you want to update?',
+            options: collect(InstanceProbeType::cases())->mapWithKeys(fn (InstanceProbeType $probe) => [$probe->value => $probe->label()])->all(),
+            hint: 'Leave probes unselected to keep their settings. Select none to skip health checks.',
+        );
+
+        foreach ($selection as $probe) {
+            $this->form()->prompt('probes.'.$probe);
+        }
+
+        return $selection === [] ? 'Skipped' : 'Updated';
+    }
+
+    protected function promptProbe(InstanceProbeType $probeType): string
+    {
+        $probe = $probeType->value;
+        $error = $this->errors?->all()['probes.'.$probe] ?? null;
+
+        foreach ((new InstanceProbe)->toArray() as $setting => $value) {
+            $key = 'probes.'.$probe.'.'.$setting;
+
+            if ($error !== null) {
+                $this->errors->add($key, $error);
+            }
+
+            $this->form()->prompt($key);
+        }
+
+        return 'Updated';
+    }
+
+    /** @return Collection<string, InstanceProbe>|null */
+    protected function probes(EnvironmentInstance $instance): ?Collection
+    {
+        $probes = new Collection($instance->probes ?? []);
+        $filled = $this->form()->filled();
+        $changed = false;
+
+        foreach (InstanceProbeType::cases() as $probeType) {
+            $probe = $probeType->value;
+            $settings = ($probes[$probe] ?? new InstanceProbe)->toArray();
+
+            foreach ($settings as $setting => $value) {
+                $key = 'probes.'.$probe.'.'.$setting;
+
+                if (array_key_exists($key, $filled)) {
+                    $value = $this->form()->get($key);
+                    $settings[$setting] = $value === '' ? null : $value;
+                    $changed = true;
+                }
+            }
+
+            $probes[$probe] = InstanceProbe::from($settings);
+        }
+
+        return $changed ? $probes : null;
     }
 
     protected function collectDataAndUpdate(EnvironmentInstance $instance): EnvironmentInstance
     {
         $selection = multiselect(
             label: 'What do you want to update?',
-            options: collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
-                $field->key => $field->label(),
-            ])->toArray(),
+            options: collect($this->form()->defined())
+                ->reject(fn ($field) => str_starts_with($field->key, 'probes.'))
+                ->mapWithKeys(fn ($field, $key) => [
+                    $field->key => $field->label(),
+                ])->toArray(),
         );
 
         if (empty($selection)) {
@@ -270,6 +411,12 @@ class InstanceUpdate extends BaseCommand
 
         foreach ($selection as $optionName) {
             $this->form()->prompt($optionName);
+        }
+
+        if ($selection === ['probes'] && $this->probes($instance) === null) {
+            $this->outputWarning('No changes selected.');
+
+            throw new CommandExitException(self::SUCCESS);
         }
 
         return $this->updateInstance($instance);

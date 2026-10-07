@@ -2,8 +2,12 @@
 
 namespace App\Client\Requests;
 
+use App\Dto\InstanceProbe;
+use Illuminate\Support\Collection;
+
 class UpdateInstanceRequestData extends RequestData
 {
+    /** @param Collection<string, InstanceProbe>|null $probes */
     public function __construct(
         public readonly string $instanceId,
         public readonly ?string $name = null,
@@ -21,12 +25,17 @@ class UpdateInstanceRequestData extends RequestData
         public readonly ?int $visibilityTimeout = null,
         public readonly ?int $pollingInterval = null,
         public readonly ?int $shutdownTimeout = null,
+        public readonly ?Collection $probes = null,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
+        $probes = $this->probes?->map(fn (InstanceProbe $probe) => $probe->toRequestData())
+            ->filter(fn (array $probe) => $probe !== [])
+            ->all();
+
         return $this->filter([
             'name' => $this->name,
             'size' => $this->size,
@@ -43,6 +52,7 @@ class UpdateInstanceRequestData extends RequestData
             'visibility_timeout' => $this->visibilityTimeout,
             'polling_interval' => $this->pollingInterval,
             'shutdown_timeout' => $this->shutdownTimeout,
+            'probes' => $probes === [] ? (object) [] : $probes,
         ]);
     }
 }
