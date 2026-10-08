@@ -5,8 +5,8 @@ namespace App\Commands;
 use App\Client\Requests\CreateObjectStorageBucketRequestData;
 use App\Concerns\DeterminesDefaultRegion;
 use App\Dto\ObjectStorageBucket;
+use App\Enums\FilesystemJurisdiction;
 
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -22,7 +22,7 @@ class BucketCreate extends BaseCommand
                             {--name= : Bucket name}
                             {--region= : Region}
                             {--visibility= : Visibility (private or public)}
-                            {--jurisdiction= : Jurisdiction (eu or default)}
+                            {--jurisdiction= : Jurisdiction (default, eu, or us)}
                             {--key-name= : Key name (required for S3 compatible buckets)}
                             {--key-permission= : Key permission (read_only or read_write)}
                             {--allowed-origins= : Allowed origins (comma-separated list)}';
@@ -71,10 +71,14 @@ class BucketCreate extends BaseCommand
         $this->form()->prompt(
             'jurisdiction',
             fn ($resolver) => $resolver
-                ->fromInput(fn ($value) => confirm(
-                    'Do you want to store data in the EU?',
-                    default: $value ?? false,
-                ) ? 'eu' : 'default')
+                ->fromInput(fn ($value) => select(
+                    label: 'Jurisdiction',
+                    options: collect(FilesystemJurisdiction::cases())
+                        ->mapWithKeys(fn (FilesystemJurisdiction $jurisdiction) => [$jurisdiction->value => $jurisdiction->label()])
+                        ->all(),
+                    default: $value ?? FilesystemJurisdiction::DEFAULT->value,
+                    hint: 'Where the bucket stores its data.',
+                ))
                 ->nonInteractively(fn () => 'default'),
         );
 
@@ -108,13 +112,16 @@ class BucketCreate extends BaseCommand
 
         $this->form()->prompt(
             'allowed_origins',
-            fn ($resolver) => $resolver->fromInput(
-                fn ($value) => text(
-                    label: 'Allowed origins',
-                    default: $value ?? '',
-                    hint: 'Comma-separated list of origins',
-                ),
-            ),
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => text(
+                        label: 'Allowed origins',
+                        default: $value ?? '',
+                        hint: 'Comma-separated list of origins',
+                    ),
+                )
+                // Optional, so leaving it out headless means no origins rather than an error.
+                ->nonInteractively(fn () => ''),
         );
 
         $allowedOrigins = $this->form()->get('allowed_origins');
