@@ -177,3 +177,36 @@ it('fails with a readable message on an invalid scaling type', function () {
 
     expect($sentBody())->toBeNull();
 });
+
+it('leaves out replicas when the scaling type is auto, even if given', function () {
+    $sentBody = setupInstanceCreateMocks();
+
+    $this->artisan('instance:create', [
+        'environment' => 'env-1',
+        '--name' => 'analytics',
+        '--size' => 'standard-1',
+        '--scaling-type' => 'auto',
+        '--min-replicas' => '2',
+        '--max-replicas' => '4',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->not->toHaveKey('min_replicas')
+        ->and($sentBody())->not->toHaveKey('max_replicas');
+});
+
+it('still sends replicas when the scaling type is custom', function () {
+    $sentBody = setupInstanceCreateMocks();
+
+    $this->artisan('instance:create', [
+        'environment' => 'env-1',
+        '--name' => 'analytics',
+        '--size' => 'standard-1',
+        '--scaling-type' => 'custom',
+        '--min-replicas' => '2',
+        '--max-replicas' => '4',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray(['min_replicas' => 2, 'max_replicas' => 4]);
+});

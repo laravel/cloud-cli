@@ -13,8 +13,9 @@ class CreateInstanceRequestData extends RequestData
         public readonly InstanceType $type,
         public readonly string $size,
         public readonly InstanceScalingType $scalingType,
-        public readonly int $minReplicas,
-        public readonly int $maxReplicas,
+        // Auto scaling takes its replica bounds from the plan, so Cloud rejects these alongside it.
+        public readonly ?int $minReplicas = null,
+        public readonly ?int $maxReplicas = null,
         public readonly ?bool $usesScheduler = null,
         public readonly ?int $scalingCpuThresholdPercentage = null,
         public readonly ?int $scalingMemoryThresholdPercentage = null,

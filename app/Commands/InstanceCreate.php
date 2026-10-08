@@ -12,6 +12,7 @@ use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\number;
 use function Laravel\Prompts\search;
+use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
 
@@ -22,9 +23,8 @@ class InstanceCreate extends BaseCommand
     protected $signature = 'instance:create
                             {environment? : The environment ID}
                             {--name= : Instance name}
-                            {--type=service : Instance type (app|worker)}
                             {--size= : Instance size}
-                            {--scaling-type= : Autoscaling type (none|custom)}
+                            {--scaling-type= : Autoscaling type (none|custom|auto)}
                             {--min-replicas= : Minimum replicas}
                             {--max-replicas= : Maximum replicas}
                             {--scaling-cpu-threshold-percentage= : CPU threshold for custom scaling}
@@ -85,7 +85,15 @@ class InstanceCreate extends BaseCommand
             'scaling_type',
             fn ($resolver) => $resolver
                 ->fromInput(
-                    fn ($value) => $value ?? (confirm('Enable autoscaling?', default: true) ? InstanceScalingType::CUSTOM : InstanceScalingType::NONE),
+                    fn ($value) => $value ?? select(
+                        label: 'Autoscaling',
+                        options: [
+                            InstanceScalingType::NONE->value => 'None: a fixed number of replicas',
+                            InstanceScalingType::CUSTOM->value => 'Custom: scale between replica limits you set',
+                            InstanceScalingType::AUTO->value => 'Auto: scale within your plan\'s limits',
+                        ],
+                        default: InstanceScalingType::CUSTOM->value,
+                    ),
                 )
                 ->nonInteractively(fn () => InstanceScalingType::NONE),
         );
@@ -94,33 +102,9 @@ class InstanceCreate extends BaseCommand
 
         $isCustom = $scalingType === InstanceScalingType::CUSTOM;
 
-        $this->form()->prompt(
-            'min_replicas',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => $isCustom ? number(
-                        label: 'Minimum replicas',
-                        default: $value ?? '1',
-                        min: 1,
-                        max: 10,
-                    ) : 1,
-                )
-                ->nonInteractively(fn () => 1),
-        );
-
-        $this->form()->prompt(
-            'max_replicas',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => $isCustom ? number(
-                        label: 'Maximum replicas',
-                        default: $value ?? $this->form()->get('min_replicas'),
-                        min: $this->form()->integer('min_replicas'),
-                        max: 10,
-                    ) : $this->form()->integer('min_replicas'),
-                )
-                ->nonInteractively(fn () => $this->form()->integer('min_replicas')),
-        );
+        if ($scalingType !== InstanceScalingType::AUTO) {
+            $this->promptForReplicas($isCustom);
+        }
 
         if ($isCustom) {
             $this->form()->prompt(
@@ -168,14 +152,45 @@ class InstanceCreate extends BaseCommand
                     type: InstanceType::SERVICE,
                     size: $this->form()->get('size'),
                     scalingType: $scalingType,
-                    minReplicas: $this->form()->integer('min_replicas'),
-                    maxReplicas: $this->form()->integer('max_replicas'),
+                    minReplicas: $scalingType === InstanceScalingType::AUTO ? null : $this->form()->integer('min_replicas'),
+                    maxReplicas: $scalingType === InstanceScalingType::AUTO ? null : $this->form()->integer('max_replicas'),
                     usesScheduler: $this->form()->boolean('uses_scheduler'),
                     scalingCpuThresholdPercentage: $this->form()->integer('scaling_cpu_threshold_percentage'),
                     scalingMemoryThresholdPercentage: $this->form()->integer('scaling_memory_threshold_percentage'),
                 ),
             ),
             'Creating instance...',
+        );
+    }
+
+    protected function promptForReplicas(bool $isCustom): void
+    {
+        $this->form()->prompt(
+            'min_replicas',
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => $isCustom ? number(
+                        label: 'Minimum replicas',
+                        default: $value ?? '1',
+                        min: 1,
+                        max: 10,
+                    ) : 1,
+                )
+                ->nonInteractively(fn () => 1),
+        );
+
+        $this->form()->prompt(
+            'max_replicas',
+            fn ($resolver) => $resolver
+                ->fromInput(
+                    fn ($value) => $isCustom ? number(
+                        label: 'Maximum replicas',
+                        default: $value ?? $this->form()->get('min_replicas'),
+                        min: $this->form()->integer('min_replicas'),
+                        max: 10,
+                    ) : $this->form()->integer('min_replicas'),
+                )
+                ->nonInteractively(fn () => $this->form()->integer('min_replicas')),
         );
     }
 
