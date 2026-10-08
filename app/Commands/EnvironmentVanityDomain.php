@@ -2,23 +2,30 @@
 
 namespace App\Commands;
 
+use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Client\Requests\UpdateVanityDomainRequestData;
+use App\Concerns\WatchesDeployments;
 use App\Dto\Environment;
 use App\Prompts\SuffixedTextPrompt;
 use Illuminate\Support\Str;
 use Saloon\Exceptions\Request\Statuses\TooManyRequestsException;
 
+use function Laravel\Prompts\confirm;
+use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class EnvironmentVanityDomain extends BaseCommand
 {
+    use WatchesDeployments;
+
     protected ?string $jsonDataClass = Environment::class;
 
     protected $signature = 'environment:vanity-domain
                             {environment? : The environment ID or name}
                             {--name= : The new subdomain, e.g. my-app for my-app.laravel.cloud}
+                            {--deploy : Deploy the environment after the change so the new domain takes effect}
                             {--force : Skip confirmation}';
 
     protected $description = "Change an environment's Laravel Cloud domain (once every 30 minutes)";
@@ -51,7 +58,7 @@ class EnvironmentVanityDomain extends BaseCommand
             warning("{$environment->vanityDomain} stops working, and the domain can't be changed again for 30 minutes.");
         }
 
-        $this->confirmDestructive("Change {$environment->vanityDomain} to {$newDomain}?");
+        $this->confirmDestructive("Change to {$newDomain}?");
 
         $updatedEnvironment = $this->loopUntilValid(function () use ($environment, $currentName, $zone) {
             $this->promptForName($currentName, $zone);
@@ -59,9 +66,46 @@ class EnvironmentVanityDomain extends BaseCommand
             return $this->updateVanityDomain($environment);
         });
 
-        $this->outputJsonIfWanted($updatedEnvironment);
+        $this->writeJsonIfWanted($updatedEnvironment);
 
-        success("{$updatedEnvironment->name} is now at {$updatedEnvironment->url}");
+        success("{$updatedEnvironment->name} will be at {$updatedEnvironment->url} after its next deploy.");
+
+        return $this->offerToDeploy($updatedEnvironment);
+    }
+
+    /**
+     * The new domain only takes effect once the environment is deployed again.
+     */
+    protected function offerToDeploy(Environment $environment): int
+    {
+        if (! $this->option('deploy')) {
+            if (! $this->isInteractive()) {
+                $this->outputWarning("Deploy {$environment->name} for the new domain to take effect, or pass --deploy.");
+
+                return self::SUCCESS;
+            }
+
+            if (! confirm("Deploy {$environment->name} now?")) {
+                return self::SUCCESS;
+            }
+        }
+
+        $deployment = spin(
+            fn () => $this->client->deployments()->initiate(new InitiateDeploymentRequestData($environment->id)),
+            'Starting deployment...',
+        );
+
+        $deployment = $this->watchDeployment($deployment);
+
+        if ($deployment->failed()) {
+            error("Deployment failed: {$deployment->failureReason}. See `cloud deployment:logs {$deployment->id}`.");
+
+            return self::FAILURE;
+        }
+
+        success("Deployed. {$environment->name} is now at {$environment->url}");
+
+        return self::SUCCESS;
     }
 
     /**

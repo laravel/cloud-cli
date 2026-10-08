@@ -175,7 +175,7 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 
 `environment:purge-edge-cache` purges everything cached at the edge for the environment unless you pass one of `--path`, `--prefix`, or `--tag`. Paths and prefixes start with `/`; purging by tag needs a dedicated edge network. Cloud queues the purge, and repeating the same purge right away has no effect.
 
-`environment:vanity-domain` takes only the first part of the domain: `--name=my-app` gives `my-app.laravel.cloud`. The old domain stops working right away, and the domain can be changed only once every 30 minutes, so the command asks for confirmation (or `--force`).
+`environment:vanity-domain` takes only the first part of the domain: `--name=my-app` gives `my-app.laravel.cloud`. The new domain takes effect on the next deploy, and the domain can be changed only once every 30 minutes, so the command asks for confirmation (or `--force`). Afterward it offers to deploy the environment; pass `--deploy` to do that without asking.
 
 ### Secrets
 

@@ -5,25 +5,22 @@ namespace App\Commands;
 use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
-use App\Dto\Deployment;
+use App\Concerns\WatchesDeployments;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
-use Carbon\CarbonInterval;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Sleep;
-use Laravel\Prompts\Support\Logger;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\outro;
-use function Laravel\Prompts\task;
 use function Laravel\Prompts\warning;
 
 class Deploy extends BaseCommand
 {
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
+    use WatchesDeployments;
 
     protected $signature = 'deploy
                             {application? : The application ID or name}
@@ -89,12 +86,7 @@ class Deploy extends BaseCommand
             return self::SUCCESS;
         }
 
-        task(
-            label: $this->getDeploymentMessage($deployment),
-            callback: fn (Logger $log) => $this->updateDeploymentStatus($deployment, $log),
-        );
-
-        $deployment = $this->client->deployments()->get($deployment->id);
+        $deployment = $this->watchDeployment($deployment);
 
         if ($deployment->failed()) {
             $this->writeJsonIfWanted([
@@ -140,44 +132,5 @@ class Deploy extends BaseCommand
         ]);
 
         outro($environment->url);
-    }
-
-    protected function updateDeploymentStatus(Deployment $deployment, Logger $log): void
-    {
-        $checkApi = true;
-        $count = 0;
-        $checkInterval = 3;
-        $updateInterval = 900;
-        $lastMessage = '';
-        $deploymentStatus = $this->client->deployments()->get($deployment->id);
-
-        do {
-            if ($checkApi) {
-                $deploymentStatus = $this->client->deployments()->get($deployment->id);
-            }
-
-            $newMessage = $this->getDeploymentMessage($deploymentStatus);
-
-            if (! $this->isInteractive() && $lastMessage !== $deploymentStatus->status->monitorLabel()) {
-                $this->line(json_encode([
-                    'status' => $deploymentStatus->status->value,
-                    'message' => $deploymentStatus->status->monitorLabel(),
-                    'timestamp' => CarbonImmutable::now()->timestamp,
-                ]));
-            }
-
-            $log->label($newMessage);
-
-            $lastMessage = $deploymentStatus->status->monitorLabel();
-
-            Sleep::for(CarbonInterval::milliseconds($updateInterval));
-            $count++;
-            $checkApi = $count % $checkInterval === 0;
-        } while ($deploymentStatus->isInProgress());
-    }
-
-    protected function getDeploymentMessage(Deployment $deployment): string
-    {
-        return $this->dim($deployment->timeElapsed()->format('%I:%S')).' '.$deployment->status->monitorLabel();
     }
 }
