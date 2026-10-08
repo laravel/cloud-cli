@@ -47,12 +47,37 @@ class EnvironmentResolver extends Resolver
         return $environment;
     }
 
-    public function fromBranch()
+    public function fromBranch(): ?Environment
     {
-        $envs = $this->client->environments()->include(...($this->includes ?? []))->list($this->application()->id)->collect();
-        $localbranch = app(Git::class)->currentBranch();
+        // The branch name only comes back when it's included.
+        $includes = array_values(array_unique([...($this->includes ?? []), 'branch']));
 
-        return $envs->firstWhere('branch', $localbranch);
+        $envs = $this->client->environments()->include(...$includes)->list($this->application()->id)->collect();
+        $localBranch = app(Git::class)->currentBranch();
+
+        $matches = $envs->where('branch', $localBranch)->values();
+
+        if ($matches->count() <= 1) {
+            return $matches->first();
+        }
+
+        $options = $matches->mapWithKeys(fn (Environment $env) => [$env->id => $env->name])->toArray();
+
+        if (! $this->ensureInteractive("More than one environment deploys the {$localBranch} branch. Provide an environment ID or name.", ['options' => $options])) {
+            return null;
+        }
+
+        $selectedEnv = select(
+            label: 'Environment',
+            options: $options,
+            info: fn ($id) => $id,
+            hint: "More than one environment deploys the {$localBranch} branch.",
+        );
+
+        // No need to display the resolved environment name, it will be displayed from the select above
+        $this->displayResolved = false;
+
+        return $matches->firstWhere('id', $selectedEnv);
     }
 
     public function fromIdentifier(string $identifier): ?Environment
