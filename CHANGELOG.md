@@ -1,6 +1,19 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.4...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.6.5...main)
+
+## [v0.6.5](https://github.com/laravel/cloud-cli/compare/v0.6.4...v0.6.5) - 2026-10-08
+
+### What's Changed
+
+* Better environment resolution by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/233
+* `cloud environment:vanity-domain` by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/234
+* Fixes for several boolean flags by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/235
+* Bucket jurisdiction fix by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/236
+* Websocket bug fixes by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/237
+* Create instance scaling type and type fixes by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/238
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.6.4...v0.6.5
 
 ## [v0.6.4](https://github.com/laravel/cloud-cli/compare/v0.6.3...v0.6.4) - 2026-10-07
 
