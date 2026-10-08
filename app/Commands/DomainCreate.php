@@ -101,7 +101,7 @@ class DomainCreate extends BaseCommand
                     environmentId: $environmentId,
                     name: $this->form()->get('name'),
                     wwwRedirect: $this->form()->get('www_redirect'),
-                    wildcardEnabled: $this->form()->get('wildcard_enabled'),
+                    wildcardEnabled: $this->form()->boolean('wildcard_enabled'),
                     verificationMethod: $this->form()->get('verification_method'),
                 ),
             ),
