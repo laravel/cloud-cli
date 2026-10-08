@@ -10,6 +10,7 @@ use App\Client\Requests\PurgeEdgeCacheRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
+use App\Client\Requests\UpdateVanityDomainRequestData;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\AttachEnvironmentSecretsRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
@@ -23,6 +24,7 @@ use App\Client\Resources\Environments\PurgeEdgeCacheRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
+use App\Client\Resources\Environments\UpdateVanityDomainRequest;
 use App\Dto\Environment;
 use App\Dto\EnvironmentMetrics;
 use Saloon\PaginationPlugin\Paginator;
@@ -105,6 +107,14 @@ class EnvironmentsResource extends Resource
     public function purgeEdgeCache(PurgeEdgeCacheRequestData $data): Environment
     {
         $request = new PurgeEdgeCacheRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function updateVanityDomain(UpdateVanityDomainRequestData $data): Environment
+    {
+        $request = new UpdateVanityDomainRequest($data);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
