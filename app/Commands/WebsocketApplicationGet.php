@@ -37,7 +37,7 @@ class WebsocketApplicationGet extends BaseCommand
             'ID' => $app->id,
             'Name' => $app->name,
             'App ID' => $app->appId,
-            'Key' => $app->key,
+            'Key' => $app->key ?? '—',
             'Max connections' => $app->maxConnections,
             'Ping interval' => $app->pingInterval,
             'Activity timeout' => $app->activityTimeout,

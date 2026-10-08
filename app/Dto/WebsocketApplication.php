@@ -20,9 +20,10 @@ class WebsocketApplication extends Data
         public readonly int $activityTimeout,
         public readonly int $maxMessageSize,
         public readonly int $maxConnections,
-        public readonly string $key,
+        // Cloud only returns the credentials to tokens allowed to view them.
+        public readonly ?string $key,
         #[WithTransformer(MaskSensitiveValue::class)]
-        public readonly string $secret,
+        public readonly ?string $secret,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $serverId = null,
@@ -47,8 +48,8 @@ class WebsocketApplication extends Data
             'activityTimeout' => $attributes['activity_timeout'],
             'maxMessageSize' => $attributes['max_message_size'],
             'maxConnections' => $attributes['max_connections'],
-            'key' => $attributes['key'],
-            'secret' => $attributes['secret'],
+            'key' => $attributes['key'] ?? null,
+            'secret' => $attributes['secret'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
         ];
 

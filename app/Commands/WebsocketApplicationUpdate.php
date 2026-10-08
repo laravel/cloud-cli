@@ -20,6 +20,9 @@ class WebsocketApplicationUpdate extends BaseCommand
     protected $signature = 'websocket-application:update
                             {application? : The application ID or name}
                             {--name= : Application name}
+                            {--allowed-origins= : Origins allowed to connect, comma-separated (https://example.com)}
+                            {--ping-interval= : Ping interval in seconds (1-60)}
+                            {--activity-timeout= : Activity timeout in seconds (1-60)}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update a WebSocket application';
@@ -61,12 +64,34 @@ class WebsocketApplicationUpdate extends BaseCommand
                 new UpdateWebSocketApplicationRequestData(
                     applicationId: $app->id,
                     name: $this->form()->get('name'),
+                    allowedOrigins: $this->allowedOrigins(),
+                    pingInterval: $this->form()->integer('ping_interval'),
+                    activityTimeout: $this->form()->integer('activity_timeout'),
                 ),
             ),
             'Updating WebSocket application...',
         );
 
         return $this->client->websocketApplications()->get($app->id);
+    }
+
+    /**
+     * The prompt separates origins with new lines and the option with commas; an empty answer clears them.
+     *
+     * @return list<string>|null
+     */
+    protected function allowedOrigins(): ?array
+    {
+        $origins = $this->form()->get('allowed_origins');
+
+        if ($origins === null) {
+            return null;
+        }
+
+        return collect(preg_split('/[\s,]+/', $origins))
+            ->filter()
+            ->values()
+            ->all();
     }
 
     protected function defineFields(WebsocketApplication $app): void
