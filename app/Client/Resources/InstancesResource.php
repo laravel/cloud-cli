@@ -7,6 +7,7 @@ use App\Client\Requests\UpdateInstanceRequestData;
 use App\Client\Resources\Instances\CreateInstanceRequest;
 use App\Client\Resources\Instances\DeleteInstanceRequest;
 use App\Client\Resources\Instances\DeleteManagedQueueFailedJobRequest;
+use App\Client\Resources\Instances\DeleteManagedQueueFailedJobsRequest;
 use App\Client\Resources\Instances\GetInstanceRequest;
 use App\Client\Resources\Instances\ListInstanceSizesRequest;
 use App\Client\Resources\Instances\ListInstancesRequest;
@@ -107,6 +108,14 @@ class InstancesResource extends Resource
     public function deleteFailedJob(string $instanceId, string $jobId): void
     {
         $this->send(new DeleteManagedQueueFailedJobRequest($instanceId, $jobId));
+    }
+
+    /**
+     * @param  list<string>  $jobIds
+     */
+    public function deleteFailedJobs(string $instanceId, array $jobIds = [], ?string $failedBefore = null): void
+    {
+        $this->send(new DeleteManagedQueueFailedJobsRequest($instanceId, $jobIds, $failedBefore));
     }
 
     public function retryFailedJob(string $instanceId, string $jobId): void
