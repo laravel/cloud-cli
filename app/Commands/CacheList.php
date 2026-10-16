@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\FiltersLists;
 use App\Dto\Cache;
 use Laravel\Prompts\Key;
 
@@ -10,11 +11,16 @@ use function Laravel\Prompts\warning;
 
 class CacheList extends BaseCommand
 {
+    use FiltersLists;
+
     protected ?string $jsonDataClass = Cache::class;
 
     protected bool $jsonDataIsCollection = true;
 
-    protected $signature = 'cache:list';
+    protected $signature = 'cache:list
+                            {--type= : Filter by type (upstash_redis|laravel_valkey|aws_elasticache_redis|aws_elasticache_valkey)}
+                            {--region= : Filter by region}
+                            {--status= : Filter by status (creating|updating|available|stopped|deleting|deleted|unknown)}';
 
     protected $description = 'List all caches';
 
@@ -22,12 +28,18 @@ class CacheList extends BaseCommand
     {
         $this->ensureClient();
 
+        $filters = [
+            'type' => $this->filterOption('type', ['upstash_redis', 'laravel_valkey', 'aws_elasticache_redis', 'aws_elasticache_valkey']),
+            'region' => $this->filterOption('region'),
+            'status' => $this->filterOption('status', ['creating', 'updating', 'available', 'stopped', 'deleting', 'deleted', 'unknown']),
+        ];
+
         intro('Caches');
 
         answered('Organization', $this->client->meta()->organization()->name);
 
         $items = $this->fetchList(
-            fn () => $this->client->caches()->list(),
+            fn () => $this->client->caches()->list(...$filters),
             'Fetching caches...',
         );
 

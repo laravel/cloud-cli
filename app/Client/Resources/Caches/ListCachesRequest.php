@@ -15,9 +15,29 @@ class ListCachesRequest extends Request implements Paginatable
 
     protected Method $method = Method::GET;
 
+    public function __construct(
+        protected ?string $type = null,
+        protected ?string $region = null,
+        protected ?string $status = null,
+    ) {
+        //
+    }
+
     public function resolveEndpoint(): string
     {
         return '/caches';
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_merge(
+            $this->includeQuery(),
+            array_filter([
+                'filter[type]' => $this->type,
+                'filter[region]' => $this->region,
+                'filter[status]' => $this->status,
+            ]),
+        );
     }
 
     public function createDtoFromResponse(Response $response): array

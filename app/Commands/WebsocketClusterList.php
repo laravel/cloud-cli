@@ -2,7 +2,10 @@
 
 namespace App\Commands;
 
+use App\Concerns\FiltersLists;
 use App\Dto\WebsocketCluster;
+use App\Enums\WebsocketServerStatus;
+use App\Enums\WebsocketServerType;
 use Laravel\Prompts\Key;
 
 use function Laravel\Prompts\intro;
@@ -10,11 +13,16 @@ use function Laravel\Prompts\warning;
 
 class WebsocketClusterList extends BaseCommand
 {
+    use FiltersLists;
+
     protected ?string $jsonDataClass = WebsocketCluster::class;
 
     protected bool $jsonDataIsCollection = true;
 
-    protected $signature = 'websocket-cluster:list';
+    protected $signature = 'websocket-cluster:list
+                            {--type= : Filter by type (reverb)}
+                            {--region= : Filter by region}
+                            {--status= : Filter by status (creating|updating|available|stopped|deleting|deleted|unknown)}';
 
     protected $description = 'List WebSocket clusters';
 
@@ -24,12 +32,18 @@ class WebsocketClusterList extends BaseCommand
     {
         $this->ensureClient();
 
+        $filters = [
+            'type' => $this->filterOption('type', WebsocketServerType::class),
+            'region' => $this->filterOption('region'),
+            'status' => $this->filterOption('status', WebsocketServerStatus::class),
+        ];
+
         intro('WebSocket Clusters');
 
         answered('Organization', $this->client->meta()->organization()->name);
 
         $items = $this->fetchList(
-            fn () => $this->client->websocketClusters()->list(),
+            fn () => $this->client->websocketClusters()->list(...$filters),
             'Fetching WebSocket clusters...',
         );
 

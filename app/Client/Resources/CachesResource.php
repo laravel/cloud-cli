@@ -18,9 +18,13 @@ use Saloon\PaginationPlugin\Paginator;
 
 class CachesResource extends Resource
 {
-    public function list(): Paginator
+    public function list(?string $type = null, ?string $region = null, ?string $status = null): Paginator
     {
-        $request = new ListCachesRequest;
+        $request = new ListCachesRequest(
+            type: $type,
+            region: $region,
+            status: $status,
+        );
 
         return $this->paginate($request);
     }

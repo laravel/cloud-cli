@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\FiltersLists;
 use App\Dto\DatabaseCluster;
 use Laravel\Prompts\Key;
 
@@ -10,11 +11,16 @@ use function Laravel\Prompts\warning;
 
 class DatabaseClusterList extends BaseCommand
 {
+    use FiltersLists;
+
     protected ?string $jsonDataClass = DatabaseCluster::class;
 
     protected bool $jsonDataIsCollection = true;
 
-    protected $signature = 'database-cluster:list';
+    protected $signature = 'database-cluster:list
+                            {--type= : Filter by type (laravel_mysql|aws_rds_mysql|aws_rds_postgres|neon_serverless_postgres)}
+                            {--region= : Filter by region}
+                            {--status= : Filter by status}';
 
     protected $description = 'List all database clusters';
 
@@ -24,10 +30,16 @@ class DatabaseClusterList extends BaseCommand
     {
         $this->ensureClient();
 
+        $filters = [
+            'type' => $this->filterOption('type', ['laravel_mysql', 'aws_rds_mysql', 'aws_rds_postgres', 'neon_serverless_postgres']),
+            'region' => $this->filterOption('region'),
+            'status' => $this->filterOption('status', ['creating', 'updating', 'restarting', 'upgrading', 'moving', 'available', 'stopped', 'restoring', 'restore_failed', 'disabled', 'snapshotting_before_archiving', 'archiving', 'archived', 'deleting', 'deleted', 'unknown']),
+        ];
+
         intro('Database Clusters');
 
         $items = $this->fetchList(
-            fn () => $this->client->databaseClusters()->include('databases')->list(),
+            fn () => $this->client->databaseClusters()->include('databases')->list(...$filters),
             'Fetching databases...',
         );
 

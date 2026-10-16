@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\FiltersLists;
 use App\Dto\Domain;
 use Laravel\Prompts\Key;
 
@@ -10,11 +11,18 @@ use function Laravel\Prompts\warning;
 
 class DomainList extends BaseCommand
 {
+    use FiltersLists;
+
     protected ?string $jsonDataClass = Domain::class;
 
     protected bool $jsonDataIsCollection = true;
 
-    protected $signature = 'domain:list {environment? : The environment ID}';
+    protected $signature = 'domain:list
+                            {environment? : The environment ID}
+                            {--name= : Filter by name}
+                            {--hostname-status= : Filter by hostname status (pending|verified|failed|disabled)}
+                            {--ssl-status= : Filter by SSL status (pending|verified|failed|disabled)}
+                            {--origin-status= : Filter by origin status (pending|verified|failed|disabled)}';
 
     protected $description = 'List all domains for an environment';
 
@@ -22,12 +30,19 @@ class DomainList extends BaseCommand
     {
         $this->ensureClient();
 
+        $filters = [
+            'name' => $this->filterOption('name'),
+            'hostnameStatus' => $this->filterOption('hostname-status', ['pending', 'verified', 'failed', 'disabled']),
+            'sslStatus' => $this->filterOption('ssl-status', ['pending', 'verified', 'failed', 'disabled']),
+            'originStatus' => $this->filterOption('origin-status', ['pending', 'verified', 'failed', 'disabled']),
+        ];
+
         intro('Domains');
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
         $items = $this->fetchList(
-            fn () => $this->client->domains()->list($environment->id),
+            fn () => $this->client->domains()->list($environment->id, ...$filters),
             'Fetching domains...',
         );
 

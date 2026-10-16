@@ -17,6 +17,9 @@ class ListEnvironmentsRequest extends Request implements Paginatable
 
     public function __construct(
         protected string $applicationId,
+        protected ?string $name = null,
+        protected ?string $status = null,
+        protected ?string $slug = null,
     ) {
         //
     }
@@ -24,6 +27,18 @@ class ListEnvironmentsRequest extends Request implements Paginatable
     public function resolveEndpoint(): string
     {
         return "/applications/{$this->applicationId}/environments";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_merge(
+            $this->includeQuery(),
+            array_filter([
+                'filter[name]' => $this->name,
+                'filter[status]' => $this->status,
+                'filter[slug]' => $this->slug,
+            ]),
+        );
     }
 
     public function createDtoFromResponse(Response $response): mixed

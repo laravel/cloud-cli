@@ -17,6 +17,8 @@ class ListCommandsRequest extends Request implements Paginatable
 
     public function __construct(
         protected string $environmentId,
+        protected ?string $status = null,
+        protected ?string $command = null,
     ) {
         //
     }
@@ -24,6 +26,17 @@ class ListCommandsRequest extends Request implements Paginatable
     public function resolveEndpoint(): string
     {
         return "/environments/{$this->environmentId}/commands";
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_merge(
+            $this->includeQuery(),
+            array_filter([
+                'filter[status]' => $this->status,
+                'filter[command]' => $this->command,
+            ]),
+        );
     }
 
     public function createDtoFromResponse(Response $response): mixed

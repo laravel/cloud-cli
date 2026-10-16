@@ -13,9 +13,14 @@ use Saloon\PaginationPlugin\Paginator;
 
 class DeploymentsResource extends Resource
 {
-    public function list(string $environmentId): Paginator
+    public function list(string $environmentId, ?string $status = null, ?string $branchName = null, ?string $commitHash = null): Paginator
     {
-        $request = new ListDeploymentsRequest($environmentId);
+        $request = new ListDeploymentsRequest(
+            environmentId: $environmentId,
+            status: $status,
+            branchName: $branchName,
+            commitHash: $commitHash,
+        );
 
         return $this->paginate($request);
     }

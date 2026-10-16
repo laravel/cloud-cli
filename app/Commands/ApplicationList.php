@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Concerns\FiltersLists;
 use App\Dto\Application;
 use Laravel\Prompts\Key;
 
@@ -10,11 +11,16 @@ use function Laravel\Prompts\warning;
 
 class ApplicationList extends BaseCommand
 {
+    use FiltersLists;
+
     protected ?string $jsonDataClass = Application::class;
 
     protected bool $jsonDataIsCollection = true;
 
-    protected $signature = 'application:list';
+    protected $signature = 'application:list
+                            {--name= : Filter by name}
+                            {--region= : Filter by region}
+                            {--slug= : Filter by slug}';
 
     protected $description = 'List all applications';
 
@@ -24,12 +30,18 @@ class ApplicationList extends BaseCommand
     {
         $this->ensureClient();
 
+        $filters = [
+            'name' => $this->filterOption('name'),
+            'region' => $this->filterOption('region'),
+            'slug' => $this->filterOption('slug'),
+        ];
+
         intro('Applications');
 
         answered('Organization', $this->client->meta()->organization()->name);
 
         $applications = $this->fetchList(
-            fn () => $this->client->applications()->include('organization', 'environments')->list(),
+            fn () => $this->client->applications()->include('organization', 'environments')->list(...$filters),
             'Fetching applications...',
         );
 

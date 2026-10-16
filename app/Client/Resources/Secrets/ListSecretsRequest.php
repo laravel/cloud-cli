@@ -12,9 +12,24 @@ class ListSecretsRequest extends Request implements Paginatable
 {
     protected Method $method = Method::GET;
 
+    public function __construct(
+        protected ?string $key = null,
+        protected ?string $sort = null,
+    ) {
+        //
+    }
+
     public function resolveEndpoint(): string
     {
         return '/secrets';
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_filter([
+            'filter[key]' => $this->key,
+            'sort' => $this->sort,
+        ]);
     }
 
     public function createDtoFromResponse(Response $response): array

@@ -15,9 +15,29 @@ class ListDedicatedClustersRequest extends Request implements Paginatable
 
     protected Method $method = Method::GET;
 
+    public function __construct(
+        protected ?string $region = null,
+        protected ?string $type = null,
+        protected ?string $status = null,
+    ) {
+        //
+    }
+
     public function resolveEndpoint(): string
     {
         return '/dedicated-clusters';
+    }
+
+    protected function defaultQuery(): array
+    {
+        return array_merge(
+            $this->includeQuery(),
+            array_filter([
+                'filter[region]' => $this->region,
+                'filter[type]' => $this->type,
+                'filter[status]' => $this->status,
+            ]),
+        );
     }
 
     public function createDtoFromResponse(Response $response): array
