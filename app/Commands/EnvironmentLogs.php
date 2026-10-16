@@ -21,7 +21,18 @@ class EnvironmentLogs extends BaseCommand
                             {--minutes= : Number of minutes to fetch logs}
                             {--to= : End time for filtering logs}
                             {--tail= : Number of lines to show from the end}
+                            {--type= : Log type (all, application, access)}
+                            {--query= : Only show logs containing this text}
+                            {--case-sensitive : Match --query case-sensitively}
+                            {--whole-word : Match --query as a whole word}
+                            {--instance=* : Only show logs from these instance IDs}
+                            {--cursor= : Cursor from a previous run, to fetch the next page of logs}
                             {--live : Live log output}';
+
+    /**
+     * @var array<int, string>
+     */
+    protected array $types = ['all', 'application', 'access'];
 
     protected $description = 'View environment logs';
 
@@ -36,6 +47,12 @@ class EnvironmentLogs extends BaseCommand
         $app = $this->resolvers()->application()->from($this->argument('application'));
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
+        $type = $this->option('type');
+
+        if ($type !== null && ! in_array($type, $this->types, true)) {
+            $this->failAndExit("Invalid --type value '{$type}'. Must be one of: ".implode(', ', $this->types).'.');
+        }
+
         $from = $this->resolveFrom();
         $to = $this->resolveTo();
 
@@ -45,13 +62,27 @@ class EnvironmentLogs extends BaseCommand
             info("Fetching logs since {$from->toDateTimeString()}");
         }
 
-        $logs = spin(
-            fn () => $this->client->environments()->logs($environment->id, $from, $to),
+        $fetchLogs = fn (string $fetchFrom, string $fetchTo, ?string $cursor = null) => $this->client->environments()->logs(
+            environmentId: $environment->id,
+            from: $fetchFrom,
+            to: $fetchTo,
+            cursor: $cursor,
+            type: $type,
+            query: $this->option('query'),
+            caseSensitive: $this->option('case-sensitive') ?: null,
+            wholeWord: $this->option('whole-word') ?: null,
+            instances: $this->option('instance'),
+        );
+
+        $page = spin(
+            fn () => $fetchLogs($from->toIso8601String(), $to->toIso8601String(), $this->option('cursor')),
             'Fetching logs...',
         );
 
+        $logs = $page->logs;
+
         if (empty($logs)) {
-            $this->outputJsonIfWanted(['logs' => []]);
+            $this->outputJsonIfWanted(['logs' => [], 'cursor' => $page->cursor]);
 
             warning('No logs found.');
 
@@ -64,15 +95,20 @@ class EnvironmentLogs extends BaseCommand
             $logs = array_slice($logs, -(int) $tail);
         }
 
-        $this->outputJsonIfWanted($logs);
+        $this->outputJsonIfWanted(['logs' => $logs, 'cursor' => $page->cursor]);
 
         (new EnvironmentLogsPrompt(
             logs: $logs,
             live: (bool) $this->option('live'),
-            fetchLogs: fn (string $fetchFrom, string $fetchTo) => $this->client->environments()->logs($environment->id, $fetchFrom, $fetchTo),
+            fetchLogs: fn (string $fetchFrom, string $fetchTo) => $fetchLogs($fetchFrom, $fetchTo)->logs,
             from: $from,
             to: $to,
         ))->display();
+
+        if ($page->cursor !== null && ! $this->option('live')) {
+            // The default --from and --to move with the clock, so the hint pins them to this run's window.
+            info("More logs may exist. Fetch the next page with --from={$from->toIso8601String()} --to={$to->toIso8601String()} --cursor={$page->cursor}");
+        }
     }
 
     protected function resolveFrom(): CarbonImmutable

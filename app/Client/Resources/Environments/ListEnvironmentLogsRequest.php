@@ -2,7 +2,7 @@
 
 namespace App\Client\Resources\Environments;
 
-use App\Dto\EnvironmentLog;
+use App\Dto\EnvironmentLogPage;
 use Saloon\Enums\Method;
 use Saloon\Http\Request;
 use Saloon\Http\Response;
@@ -11,6 +11,9 @@ class ListEnvironmentLogsRequest extends Request
 {
     protected Method $method = Method::GET;
 
+    /**
+     * @param  array<int, string>  $instances
+     */
     public function __construct(
         protected string $environmentId,
         protected string $from,
@@ -18,6 +21,9 @@ class ListEnvironmentLogsRequest extends Request
         protected ?string $cursor = null,
         protected ?string $type = null,
         protected ?string $queryString = null,
+        protected ?bool $caseSensitive = null,
+        protected ?bool $wholeWord = null,
+        protected array $instances = [],
     ) {
         //
     }
@@ -35,13 +41,14 @@ class ListEnvironmentLogsRequest extends Request
             'cursor' => $this->cursor,
             'type' => $this->type,
             'query' => $this->queryString,
-        ]);
+            'case_sensitive' => $this->caseSensitive,
+            'whole_word' => $this->wholeWord,
+            'instances' => $this->instances,
+        ], fn ($value) => $value !== null && $value !== '' && $value !== []);
     }
 
-    public function createDtoFromResponse(Response $response): array
+    public function createDtoFromResponse(Response $response): EnvironmentLogPage
     {
-        $responseData = $response->json();
-
-        return collect($responseData['data'] ?? [])->map(fn ($item) => EnvironmentLog::createFromResponse($item))->values()->all();
+        return EnvironmentLogPage::createFromResponse($response->json());
     }
 }

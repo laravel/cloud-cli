@@ -26,6 +26,7 @@ use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateVanityDomainRequest;
 use App\Dto\Environment;
+use App\Dto\EnvironmentLogPage;
 use App\Dto\EnvironmentMetrics;
 use Saloon\PaginationPlugin\Paginator;
 
@@ -75,8 +76,20 @@ class EnvironmentsResource extends Resource
         $this->send(new DeleteEnvironmentRequest($environmentId));
     }
 
-    public function logs(string $environmentId, string $from, string $to, ?string $cursor = null, ?string $type = null, ?string $query = null): array
-    {
+    /**
+     * @param  array<int, string>  $instances
+     */
+    public function logs(
+        string $environmentId,
+        string $from,
+        string $to,
+        ?string $cursor = null,
+        ?string $type = null,
+        ?string $query = null,
+        ?bool $caseSensitive = null,
+        ?bool $wholeWord = null,
+        array $instances = [],
+    ): EnvironmentLogPage {
         $request = new ListEnvironmentLogsRequest(
             environmentId: $environmentId,
             from: $from,
@@ -84,6 +97,9 @@ class EnvironmentsResource extends Resource
             cursor: $cursor,
             type: $type,
             queryString: $query,
+            caseSensitive: $caseSensitive,
+            wholeWord: $wholeWord,
+            instances: $instances,
         );
 
         $response = $this->send($request);
