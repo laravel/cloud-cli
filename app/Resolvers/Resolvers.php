@@ -65,6 +65,11 @@ class Resolvers
         return $this->make(DomainResolver::class);
     }
 
+    public function edgeNetwork(): EdgeNetworkResolver
+    {
+        return $this->make(EdgeNetworkResolver::class);
+    }
+
     public function cache(): CacheResolver
     {
         return $this->make(CacheResolver::class);

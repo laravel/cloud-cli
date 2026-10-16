@@ -125,9 +125,9 @@ class EnvironmentsResource extends Resource
         $this->send(new DeleteEnvironmentVariablesRequest($data));
     }
 
-    public function start(string $environmentId): void
+    public function start(string $environmentId, ?bool $redeploy = null): void
     {
-        $this->send(new StartEnvironmentRequest(new StartEnvironmentRequestData($environmentId)));
+        $this->send(new StartEnvironmentRequest(new StartEnvironmentRequestData($environmentId, $redeploy)));
     }
 
     public function stop(string $environmentId): void

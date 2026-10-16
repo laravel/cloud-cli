@@ -8,15 +8,21 @@ class CreateEnvironmentRequestData extends RequestData
         public readonly string $applicationId,
         public readonly string $name,
         public readonly string $branch,
+        public readonly ?string $buildCommand = null,
+        public readonly ?string $clusterId = null,
+        public readonly ?string $edgeNetworkId = null,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
-        return [
+        return $this->filter([
             'name' => $this->name,
             'branch' => $this->branch,
-        ];
+            'build_command' => $this->buildCommand,
+            'cluster_id' => $this->clusterId,
+            'edge_network_id' => $this->edgeNetworkId,
+        ]);
     }
 }

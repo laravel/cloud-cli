@@ -573,3 +573,18 @@ function websocketMetricsResponse(array $overrides = []): array
         ],
     ], $overrides);
 }
+
+function edgeNetworkResponse(array $overrides = []): array
+{
+    return array_replace_recursive([
+        'id' => 'en-shared',
+        'type' => 'edge_networks',
+        'attributes' => [
+            'name' => 'Laravel Cloud',
+            'domain' => 'laravel.cloud',
+            'tenancy_type' => 'shared',
+            'status' => 'available',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ],
+    ], $overrides);
+}

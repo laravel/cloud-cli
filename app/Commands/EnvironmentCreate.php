@@ -17,7 +17,10 @@ class EnvironmentCreate extends BaseCommand
     protected $signature = 'environment:create
                             {application? : The application ID}
                             {--name= : Environment name}
-                            {--branch= : Git branch}';
+                            {--branch= : Git branch}
+                            {--build-command= : Build command to run on deploy}
+                            {--cluster= : Dedicated cluster ID to deploy to (see dedicated-cluster:list)}
+                            {--edge-network= : Edge network ID or name (see edge-network:list). Default: the organization\'s preferred network}';
 
     protected $description = 'Create a new environment';
 
@@ -31,8 +34,10 @@ class EnvironmentCreate extends BaseCommand
 
         $application = $this->resolvers()->application()->from($this->argument('application'));
 
+        $edgeNetwork = $this->resolvers()->edgeNetwork()->from($this->option('edge-network'));
+
         $environment = $this->loopUntilValid(
-            fn () => $this->createEnvironment($application->id),
+            fn () => $this->createEnvironment($application->id, $edgeNetwork?->id),
         );
 
         $this->outputJsonIfWanted($environment);
@@ -42,7 +47,7 @@ class EnvironmentCreate extends BaseCommand
         success($environment->url);
     }
 
-    protected function createEnvironment(string $applicationId)
+    protected function createEnvironment(string $applicationId, ?string $edgeNetworkId)
     {
         $currentBranch = app(Git::class)->currentBranch();
 
@@ -64,12 +69,19 @@ class EnvironmentCreate extends BaseCommand
             )),
         );
 
+        // Defined but never prompted, so a validation error can name the value we sent.
+        $this->form()->define('build_command', fn ($resolver) => $resolver);
+        $this->form()->define('cluster_id', fn ($resolver) => $resolver, 'cluster');
+
         return spin(
             fn () => $this->client->environments()->create(
                 new CreateEnvironmentRequestData(
                     applicationId: $applicationId,
                     name: $this->form()->get('name'),
                     branch: $this->form()->get('branch'),
+                    buildCommand: $this->form()->get('build_command') ?: null,
+                    clusterId: $this->form()->get('cluster_id') ?: null,
+                    edgeNetworkId: $edgeNetworkId,
                 ),
             ),
             'Creating environment...',

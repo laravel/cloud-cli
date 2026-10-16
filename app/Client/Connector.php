@@ -16,6 +16,7 @@ use App\Client\Resources\DatabasesResource;
 use App\Client\Resources\DedicatedClustersResource;
 use App\Client\Resources\DeploymentsResource;
 use App\Client\Resources\DomainsResource;
+use App\Client\Resources\EdgeNetworksResource;
 use App\Client\Resources\EnvironmentsResource;
 use App\Client\Resources\InstancesResource;
 use App\Client\Resources\MetaResource;
@@ -247,6 +248,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function dedicatedClusters(): DedicatedClustersResource
     {
         return new DedicatedClustersResource($this);
+    }
+
+    public function edgeNetworks(): EdgeNetworksResource
+    {
+        return new EdgeNetworksResource($this);
     }
 
     public function usage(): UsageResource

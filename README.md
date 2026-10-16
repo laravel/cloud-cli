@@ -367,6 +367,7 @@ Managed queues are a special kind of instance. Pass the instance ID directly or 
 | `cloud browser`                | Open the application in the browser      |
 | `cloud ip:addresses`           | Get Laravel Cloud IP addresses by region |
 | `cloud dedicated-cluster:list` | List dedicated clusters                  |
+| `cloud edge-network:list`      | List edge networks                       |
 | `cloud tinker`                 | Tinker in your Laravel Cloud environment |
 | `cloud skills:install`         | Install Laravel Cloud CLI agent skills   |
 | `cloud completions`            | Generate and install shell completions   |
