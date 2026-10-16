@@ -19,14 +19,19 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?string $buildCommand = null,
         public readonly ?string $nodeVersion = null,
         public readonly ?string $deployCommand = null,
+        /** @var string|null '' clears it */
+        public readonly ?string $startCommand = null,
         public readonly ?bool $usesVanityDomain = null,
         public readonly ?string $databaseSchemaId = null,
         public readonly ?string $cacheId = null,
         public readonly ?string $websocketApplicationId = null,
         public readonly ?bool $usesOctane = null,
         public readonly ?int $sleepTimeout = null,
+        /** @var int|string|null '' disables it */
+        public readonly int|string|null $hibernationWakeUpInterval = null,
         public readonly ?int $shutdownTimeout = null,
         public readonly ?bool $usesPurgeEdgeCacheOnDeploy = null,
+        /** @var string|null '' removes it */
         #[SensitiveParameter]
         public readonly ?string $nightwatchToken = null,
         public readonly ?string $cacheStrategy = null,
@@ -37,13 +42,17 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?array $responseHeadersHsts = null,
         /** @var array<int, array{id: string, disk: string, is_default_disk: bool}>|null */
         public readonly ?array $filesystemKeys = null,
+        public readonly ?bool $firewallBlockPath = null,
+        public readonly ?bool $firewallBrowserIntegrityCheck = null,
+        /** @var array{mode: 'process', root: string|null}|null */
+        public readonly ?array $serving = null,
     ) {
         //
     }
 
     public function toRequestData(): array
     {
-        return $this->filter([
+        $data = $this->filter([
             'name' => $this->name,
             'slug' => $this->slug,
             'color' => $this->color,
@@ -55,12 +64,14 @@ class UpdateEnvironmentRequestData extends RequestData
             'build_command' => $this->buildCommand,
             'node_version' => $this->nodeVersion,
             'deploy_command' => $this->deployCommand,
+            'start_command' => $this->startCommand,
             'uses_vanity_domain' => $this->usesVanityDomain,
             'database_schema_id' => $this->databaseSchemaId,
             'cache_id' => $this->cacheId,
             'websocket_application_id' => $this->websocketApplicationId,
             'uses_octane' => $this->usesOctane,
             'sleep_timeout' => $this->sleepTimeout,
+            'hibernation_wake_up_interval' => $this->hibernationWakeUpInterval,
             'shutdown_timeout' => $this->shutdownTimeout,
             'uses_purge_edge_cache_on_deploy' => $this->usesPurgeEdgeCacheOnDeploy,
             'nightwatch_token' => $this->nightwatchToken,
@@ -70,6 +81,18 @@ class UpdateEnvironmentRequestData extends RequestData
             'response_headers_robots_tag' => $this->responseHeadersRobotsTag,
             'response_headers_hsts' => $this->responseHeadersHsts,
             'filesystem_keys' => $this->filesystemKeys,
+            'firewall_block_path' => $this->firewallBlockPath,
+            'firewall_browser_integrity_check' => $this->firewallBrowserIntegrityCheck,
+            'serving' => $this->serving,
         ]);
+
+        // filter() drops nulls, so the CLI's '' stands in for the explicit null the API needs to clear these.
+        foreach (['start_command', 'hibernation_wake_up_interval', 'nightwatch_token'] as $key) {
+            if (($data[$key] ?? null) === '') {
+                $data[$key] = null;
+            }
+        }
+
+        return $data;
     }
 }

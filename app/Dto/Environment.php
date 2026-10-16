@@ -55,6 +55,14 @@ class Environment extends Data
         #[DataCollectionOf(Secret::class)]
         public readonly array $secrets = [],
         public readonly ?EnvironmentResend $resend = null,
+        public readonly ?string $framework = null,
+        public readonly ?string $language = null,
+        /** The spec documents a string; an object is accepted too so a richer shape can't fail the whole response. */
+        public readonly string|array|null $serving = null,
+        public readonly ?string $startCommand = null,
+        public readonly ?int $hibernationWakeUpInterval = null,
+        public readonly ?int $timeout = null,
+        public readonly ?int $shutdownTimeout = null,
     ) {
         //
     }
@@ -91,6 +99,13 @@ class Environment extends Data
             'networkSettings' => $attributes['network_settings'] ?? [],
             'createdAt' => $attributes['created_at'] ?? null,
             'updatedAt' => $attributes['updated_at'] ?? null,
+            'framework' => $attributes['framework'] ?? null,
+            'language' => $attributes['language'] ?? null,
+            'serving' => $attributes['serving'] ?? null,
+            'startCommand' => $attributes['start_command'] ?? null,
+            'hibernationWakeUpInterval' => $attributes['hibernation_wake_up_interval'] ?? null,
+            'timeout' => $attributes['timeout'] ?? null,
+            'shutdownTimeout' => $attributes['shutdown_timeout'] ?? null,
             'resend' => isset($attributes['resend']) ? EnvironmentResend::createFromResponse($attributes['resend']) : null,
         ];
 
