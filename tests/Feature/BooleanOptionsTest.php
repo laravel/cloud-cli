@@ -72,8 +72,7 @@ it('sends instance options passed as false as false', function (string $option, 
     ['uses-scheduler', 'uses_scheduler'],
     ['uses-octane', 'uses_octane'],
     ['uses-inertia-ssr', 'uses_inertia_ssr'],
-    ['scale-to-zero', 'uses_sleep_mode'],
-    ['hibernation', 'uses_sleep_mode'],
+    ['sleep-with-app', 'sleep_with_app'],
 ]);
 
 it('sends instance options passed as true as true', function () {

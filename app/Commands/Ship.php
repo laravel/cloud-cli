@@ -430,7 +430,6 @@ class Ship extends BaseCommand
             'scheduler' => 'uses_scheduler',
             'octane' => 'uses_octane',
             'inertia_ssr' => 'uses_inertia_ssr',
-            'scale_to_zero' => 'uses_sleep_mode',
         ];
 
         foreach ($mapping as $option => $param) {
@@ -439,7 +438,7 @@ class Ship extends BaseCommand
             }
         }
 
-        if ($instanceParams['uses_sleep_mode'] ?? false) {
+        if (in_array('scale_to_zero', $selectedOptions)) {
             $scaleToZeroAfter = number(
                 label: 'Scale to zero after',
                 default: '5',
@@ -449,7 +448,7 @@ class Ship extends BaseCommand
                 max: 60,
             );
 
-            $instanceParams['sleep_timeout'] = $scaleToZeroAfter;
+            $instanceParams['hibernation_timeout'] = (int) $scaleToZeroAfter;
         }
 
         if (in_array('database_cluster', $selectedOptions)) {
@@ -483,8 +482,7 @@ class Ship extends BaseCommand
                         usesScheduler: $instanceParams['uses_scheduler'] ?? null,
                         usesOctane: $instanceParams['uses_octane'] ?? null,
                         usesInertiaSsr: $instanceParams['uses_inertia_ssr'] ?? null,
-                        usesSleepMode: $instanceParams['uses_sleep_mode'] ?? null,
-                        sleepTimeout: isset($instanceParams['sleep_timeout']) ? (int) $instanceParams['sleep_timeout'] : null,
+                        hibernationTimeout: $instanceParams['hibernation_timeout'] ?? null,
                     )),
                     'Updating instance...',
                 ),
@@ -530,8 +528,6 @@ class Ship extends BaseCommand
 
         $instanceParams = [
             'uses_scheduler' => true,
-            'uses_sleep_mode' => false,
-            // 'sleep_timeout' => 5,
             'uses_octane' => $composer?->hasPackage('laravel/octane') ?? false,
         ];
 
@@ -557,8 +553,7 @@ class Ship extends BaseCommand
                 usesScheduler: $instanceParams['uses_scheduler'],
                 usesOctane: $instanceParams['uses_octane'],
                 usesInertiaSsr: null,
-                usesSleepMode: $instanceParams['uses_sleep_mode'],
-                // sleepTimeout: $instanceParams['sleep_timeout'],
+                disableHibernation: true,
             ),
         );
 

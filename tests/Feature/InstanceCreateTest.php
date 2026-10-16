@@ -210,3 +210,30 @@ it('still sends replicas when the scaling type is custom', function () {
 
     expect($sentBody())->toMatchArray(['min_replicas' => 2, 'max_replicas' => 4]);
 });
+
+it('sends sleep with app when the flag is passed', function () {
+    $sentBody = setupInstanceCreateMocks();
+
+    $this->artisan('instance:create', [
+        'environment' => 'env-1',
+        '--name' => 'analytics',
+        '--size' => 'standard-1',
+        '--sleep-with-app' => 'true',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody()['sleep_with_app'])->toBeTrue();
+});
+
+it('leaves out sleep with app when the flag is not passed', function () {
+    $sentBody = setupInstanceCreateMocks();
+
+    $this->artisan('instance:create', [
+        'environment' => 'env-1',
+        '--name' => 'analytics',
+        '--size' => 'standard-1',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->not->toHaveKey('sleep_with_app');
+});

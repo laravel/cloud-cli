@@ -29,7 +29,8 @@ class InstanceCreate extends BaseCommand
                             {--max-replicas= : Maximum replicas}
                             {--scaling-cpu-threshold-percentage= : CPU threshold for custom scaling}
                             {--scaling-memory-threshold-percentage= : Memory threshold for custom scaling}
-                            {--uses-scheduler= : Enable scheduler (true|false)}';
+                            {--uses-scheduler= : Enable scheduler (true|false)}
+                            {--sleep-with-app= : Scale worker replicas to zero alongside the app (true|false)}';
 
     protected $description = 'Create a new instance';
 
@@ -144,6 +145,9 @@ class InstanceCreate extends BaseCommand
                 ->nonInteractively(fn () => false),
         );
 
+        // Left out of the prompts so Cloud's default applies unless the flag is passed.
+        $this->form()->define('sleep_with_app', fn ($resolver) => $resolver);
+
         return spin(
             fn () => $this->client->instances()->create(
                 new CreateInstanceRequestData(
@@ -155,6 +159,7 @@ class InstanceCreate extends BaseCommand
                     minReplicas: $scalingType === InstanceScalingType::AUTO ? null : $this->form()->integer('min_replicas'),
                     maxReplicas: $scalingType === InstanceScalingType::AUTO ? null : $this->form()->integer('max_replicas'),
                     usesScheduler: $this->form()->boolean('uses_scheduler'),
+                    sleepWithApp: $this->form()->boolean('sleep_with_app'),
                     scalingCpuThresholdPercentage: $this->form()->integer('scaling_cpu_threshold_percentage'),
                     scalingMemoryThresholdPercentage: $this->form()->integer('scaling_memory_threshold_percentage'),
                 ),
