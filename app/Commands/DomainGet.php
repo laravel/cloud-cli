@@ -31,6 +31,10 @@ class DomainGet extends BaseCommand
             'Status' => $domain->status(),
             'Primary' => $domain->isPrimary() ? 'Yes' : 'No',
             'Verification' => $domain->verificationStatus(),
+            'Stage' => $domain->stage ?? '—',
+            'Cloudflare Strategy' => $domain->cloudflareStrategy ?? '—',
+            'Wildcard' => $domain->wildcardEnabled ? 'Yes' : 'No',
+            'Action Required' => $domain->actionRequiredLabel() ?? '—',
             'Created At' => $domain->createdAt?->toIso8601String() ?? '—',
             'Last Verified At' => $domain->lastVerifiedAt?->toIso8601String() ?? '—',
         ]);

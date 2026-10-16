@@ -10,6 +10,8 @@ class CreateDomainRequestData extends RequestData
         public readonly ?string $wwwRedirect = null,
         public readonly ?bool $wildcardEnabled = null,
         public readonly ?string $verificationMethod = null,
+        public readonly ?bool $allowDowntime = null,
+        public readonly ?string $cloudflareStrategy = null,
     ) {
         //
     }
@@ -21,6 +23,8 @@ class CreateDomainRequestData extends RequestData
             'www_redirect' => $this->wwwRedirect,
             'wildcard_enabled' => $this->wildcardEnabled,
             'verification_method' => $this->verificationMethod,
+            'allow_downtime' => $this->allowDowntime,
+            'cloudflare_strategy' => $this->cloudflareStrategy,
         ]);
     }
 }

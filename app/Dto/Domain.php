@@ -25,6 +25,11 @@ class Domain extends Data
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         public readonly ?string $environmentId = null,
+        public readonly ?string $stage = null,
+        public readonly ?string $cloudflareStrategy = null,
+        public readonly ?bool $downtime = null,
+        public readonly bool $wildcardEnabled = false,
+        public readonly ?string $actionRequired = null,
     ) {
         //
     }
@@ -42,6 +47,16 @@ class Domain extends Data
     public function verificationStatus(): ?string
     {
         return $this->hostnameStatus;
+    }
+
+    public function actionRequiredLabel(): ?string
+    {
+        return match ($this->actionRequired) {
+            'add_txt_records' => 'Add the TXT records to verify ownership',
+            'add_dns_records' => 'Add the DNS records to point the domain at Laravel Cloud',
+            'failed' => 'Verification failed',
+            default => $this->actionRequired,
+        };
     }
 
     public static function createFromResponse(array $response): self
@@ -63,6 +78,11 @@ class Domain extends Data
             'www' => $attributes['www'] ?? null,
             'lastVerifiedAt' => $attributes['last_verified_at'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
+            'stage' => $attributes['stage'] ?? null,
+            'cloudflareStrategy' => $attributes['cloudflare_strategy'] ?? null,
+            'downtime' => $attributes['downtime'] ?? null,
+            'wildcardEnabled' => $attributes['wildcard_enabled'] ?? false,
+            'actionRequired' => $attributes['action_required'] ?? null,
         ];
 
         if (isset($relationships['environment']['data']['id'])) {
