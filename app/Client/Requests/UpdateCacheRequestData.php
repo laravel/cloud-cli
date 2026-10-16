@@ -11,6 +11,8 @@ class UpdateCacheRequestData extends RequestData
         public readonly ?bool $autoUpgradeEnabled = null,
         public readonly ?bool $isPublic = null,
         public readonly ?string $evictionPolicy = null,
+        public readonly ?bool $usesHibernation = null,
+        public readonly ?int $hibernationTimeout = null,
     ) {
         //
     }
@@ -23,6 +25,8 @@ class UpdateCacheRequestData extends RequestData
             'auto_upgrade_enabled' => $this->autoUpgradeEnabled,
             'is_public' => $this->isPublic,
             'eviction_policy' => $this->evictionPolicy,
+            'uses_hibernation' => $this->usesHibernation,
+            'hibernation_timeout' => $this->hibernationTimeout,
         ]);
     }
 }

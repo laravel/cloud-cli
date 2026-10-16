@@ -12,6 +12,9 @@ class CreateCacheRequestData extends RequestData
         public readonly bool $autoUpgradeEnabled,
         public readonly bool $isPublic,
         public readonly ?string $evictionPolicy = null,
+        public readonly ?bool $usesHibernation = null,
+        public readonly ?int $hibernationTimeout = null,
+        public readonly ?string $clusterId = null,
     ) {
         //
     }
@@ -26,6 +29,11 @@ class CreateCacheRequestData extends RequestData
             'auto_upgrade_enabled' => $this->autoUpgradeEnabled,
             'is_public' => $this->isPublic,
             'eviction_policy' => $this->evictionPolicy,
+            ...$this->filter([
+                'uses_hibernation' => $this->usesHibernation,
+                'hibernation_timeout' => $this->hibernationTimeout,
+                'cluster_id' => $this->clusterId,
+            ]),
         ];
     }
 }

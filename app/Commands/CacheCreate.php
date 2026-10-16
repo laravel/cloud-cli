@@ -4,9 +4,11 @@ namespace App\Commands;
 
 use App\Client\Requests\CreateCacheRequestData;
 use App\Concerns\DeterminesDefaultRegion;
+use App\Concerns\ValidatesCacheInput;
 use App\Dto\Cache;
 use App\Dto\CacheType;
 use App\Dto\Region;
+use App\Enums\CacheEvictionPolicy;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\intro;
@@ -19,6 +21,7 @@ class CacheCreate extends BaseCommand
     protected ?string $jsonDataClass = Cache::class;
 
     use DeterminesDefaultRegion;
+    use ValidatesCacheInput;
 
     protected $signature = 'cache:create
                             {--name= : Cache name}
@@ -27,7 +30,10 @@ class CacheCreate extends BaseCommand
                             {--size= : Cache size}
                             {--auto-upgrade-enabled= : Auto upgrade enabled}
                             {--is-public= : Is public}
-                            {--eviction-policy= : Eviction policy}';
+                            {--eviction-policy= : Eviction policy}
+                            {--uses-hibernation= : Hibernate the cache when idle}
+                            {--hibernation-timeout= : Minutes idle before hibernating (1-60), required with --uses-hibernation}
+                            {--cluster-id= : Dedicated cluster ID}';
 
     protected $description = 'Create a new cache';
 
@@ -76,11 +82,7 @@ class CacheCreate extends BaseCommand
                     label: 'Cache name',
                     default: $value ?? '',
                     required: true,
-                    validate: fn ($value) => match (true) {
-                        strlen($value) < 3 => 'Name must be at least 3 characters',
-                        strlen($value) > 40 => 'Name must be less than 40 characters',
-                        default => null,
-                    },
+                    validate: fn ($value) => $this->validateCacheName($value),
                 ),
             ),
         );
@@ -134,25 +136,49 @@ class CacheCreate extends BaseCommand
             )),
         );
 
-        if ($type->type === 'laravel_valkey') {
+        if ($type->supportsEvictionPolicy) {
             $this->form()->prompt(
                 'eviction_policy',
-                fn ($resolver) => $resolver->fromInput(fn (?string $value) => select(
-                    label: 'Eviction policy',
-                    options: [
-                        'allkeys-lru' => 'All keys LRU',
-                        'noeviction' => 'No eviction',
-                        'volatile-lru' => 'Volatile LRU',
-                        'allkeys-random' => 'All keys random',
-                        'volatile-random' => 'Volatile random',
-                        'volatile-ttl' => 'Volatile TTL',
-                        'allkeys-lfu' => 'All keys LFU',
-                        'volatile-lfu' => 'Volatile LFU',
-                    ],
-                    default: $value ?? 'allkeys-lru',
+                fn ($resolver) => $resolver
+                    ->fromInput(fn (?string $value) => select(
+                        label: 'Eviction policy',
+                        options: CacheEvictionPolicy::options(),
+                        default: $value ?? CacheEvictionPolicy::ALLKEYS_LRU->value,
+                    ))
+                    ->nonInteractively(fn () => CacheEvictionPolicy::ALLKEYS_LRU->value),
+            );
+        } else {
+            // Not prompted, but a passed flag still reaches the API so it can say why it was rejected.
+            $this->form()->define('eviction_policy', fn ($resolver) => $resolver);
+        }
+
+        if ($type->supportsHibernationFor($this->form()->get('size'))) {
+            $this->form()->prompt(
+                'uses_hibernation',
+                fn ($resolver) => $resolver
+                    ->fromInput(fn (?string $value) => confirm(
+                        label: 'Hibernate when idle?',
+                        default: $value !== null ? filter_var($value, FILTER_VALIDATE_BOOLEAN) : false,
+                    ))
+                    ->nonInteractively(fn () => false),
+            );
+        } else {
+            $this->form()->define('uses_hibernation', fn ($resolver) => $resolver);
+        }
+
+        if ($this->form()->boolean('uses_hibernation')) {
+            $this->form()->prompt(
+                'hibernation_timeout',
+                fn ($resolver) => $resolver->fromInput(fn (?string $value) => text(
+                    label: 'Minutes idle before hibernating',
+                    default: $value ?? '',
+                    required: true,
+                    validate: fn ($value) => $this->validateHibernationTimeout($value),
                 )),
             );
         }
+
+        $this->form()->define('cluster_id', fn ($resolver) => $resolver);
 
         return spin(
             fn () => $this->client->caches()->create(
@@ -161,9 +187,12 @@ class CacheCreate extends BaseCommand
                     name: $this->form()->get('name'),
                     region: $this->form()->get('region'),
                     size: $this->form()->get('size'),
-                    autoUpgradeEnabled: $this->form()->boolean('auto_upgrade_enabled'),
+                    autoUpgradeEnabled: $this->form()->boolean('auto_upgrade_enabled') ?? false,
                     isPublic: $this->form()->boolean('is_public'),
                     evictionPolicy: $this->form()->get('eviction_policy'),
+                    usesHibernation: $this->form()->boolean('uses_hibernation'),
+                    hibernationTimeout: $this->form()->boolean('uses_hibernation') ? $this->form()->integer('hibernation_timeout') : null,
+                    clusterId: $this->form()->get('cluster_id'),
                 ),
             ),
             'Creating cache...',

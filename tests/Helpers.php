@@ -430,6 +430,9 @@ function cacheResponse(array $overrides = []): array
             'size' => '250mb',
             'auto_upgrade_enabled' => false,
             'is_public' => false,
+            'eviction_policy' => 'allkeys-lru',
+            'uses_hibernation' => false,
+            'hibernation_timeout' => null,
             'created_at' => '2026-01-01T00:00:00.000000Z',
         ], $overrides['attributes'] ?? []),
     ];

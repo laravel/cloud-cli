@@ -14,6 +14,8 @@ class CacheType extends Data
         #[DataCollectionOf(CacheTypeSize::class)]
         public readonly array $sizes,
         public readonly bool $supportsAutoUpgrade,
+        public readonly bool $supportsEvictionPolicy = false,
+        public readonly bool $supportsHibernation = false,
     ) {
         //
     }
@@ -26,8 +28,29 @@ class CacheType extends Data
             'type' => $data['type'] ?? '',
             'label' => $data['label'] ?? '',
             'regions' => $data['regions'] ?? [],
-            'sizes' => $data['sizes'] ?? [],
+            'sizes' => array_map(fn (array $size) => [
+                'value' => $size['value'] ?? '',
+                'label' => $size['label'] ?? '',
+                'supportsHibernation' => $size['supports_hibernation'] ?? false,
+            ], $data['sizes'] ?? []),
             'supportsAutoUpgrade' => $data['supports_auto_upgrade'] ?? false,
+            'supportsEvictionPolicy' => $data['supports_eviction_policy'] ?? false,
+            'supportsHibernation' => $data['supports_hibernation'] ?? false,
         ]);
+    }
+
+    public function supportsHibernationFor(?string $size): bool
+    {
+        if (! $this->supportsHibernation) {
+            return false;
+        }
+
+        foreach ($this->sizes as $typeSize) {
+            if ($typeSize->value === $size) {
+                return $typeSize->supportsHibernation;
+            }
+        }
+
+        return false;
     }
 }

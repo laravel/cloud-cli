@@ -20,6 +20,9 @@ class Cache extends Data
         public readonly string $size,
         public readonly bool $autoUpgradeEnabled,
         public readonly bool $isPublic,
+        public readonly ?string $evictionPolicy = null,
+        public readonly bool $usesHibernation = false,
+        public readonly ?int $hibernationTimeout = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $createdAt = null,
         #[WithTransformer(MaskSensitiveKeys::class)]
@@ -44,6 +47,9 @@ class Cache extends Data
             'size' => $attributes['size'] ?? '',
             'autoUpgradeEnabled' => $attributes['auto_upgrade_enabled'] ?? false,
             'isPublic' => $attributes['is_public'] ?? false,
+            'evictionPolicy' => $attributes['eviction_policy'] ?? null,
+            'usesHibernation' => $attributes['uses_hibernation'] ?? false,
+            'hibernationTimeout' => $attributes['hibernation_timeout'] ?? null,
             'createdAt' => $attributes['created_at'] ?? null,
             'connection' => $attributes['connection'] ?? [],
         ];

@@ -33,6 +33,8 @@ class CacheGet extends BaseCommand
             'Size' => $cache->size,
             'Auto upgrade' => $cache->autoUpgradeEnabled ? 'Yes' : 'No',
             'Public' => $cache->isPublic ? 'Yes' : 'No',
+            'Eviction policy' => $cache->evictionPolicy ?? '—',
+            'Hibernation' => $cache->usesHibernation ? "After {$cache->hibernationTimeout} minutes idle" : 'No',
             'Created At' => $cache->createdAt?->toIso8601String() ?? '—',
         ]);
     }

@@ -34,10 +34,12 @@ function setupCacheUpdateMocks(): Closure
                     'label' => 'Laravel Valkey',
                     'regions' => ['us-east-1'],
                     'sizes' => [
-                        ['value' => '250mb', 'label' => '250 MB'],
-                        ['value' => '1gb', 'label' => '1 GB'],
+                        ['value' => '250mb', 'label' => '250 MB', 'supports_hibernation' => true],
+                        ['value' => '1gb', 'label' => '1 GB', 'supports_hibernation' => false],
                     ],
                     'supports_auto_upgrade' => true,
+                    'supports_eviction_policy' => true,
+                    'supports_hibernation' => true,
                 ],
                 [
                     'type' => 'upstash_redis',
@@ -61,14 +63,19 @@ function setupCacheUpdateMocks(): Closure
     return fn () => $sentBody->value ?? null;
 }
 
-function cacheSizeOptions(array $cacheAttributes): array
+function invokeCacheUpdate(string $method, array $cacheAttributes): array
 {
     $command = app(CacheUpdate::class);
     (new ReflectionProperty($command, 'client'))->setValue($command, new Connector('test-api-token'));
 
     $cache = Cache::createFromResponse(['data' => cacheResponse(['attributes' => $cacheAttributes])]);
 
-    return (new ReflectionMethod($command, 'sizeOptions'))->invoke($command, $cache);
+    return (new ReflectionMethod($command, $method))->invoke($command, $cache);
+}
+
+function cacheSizeOptions(array $cacheAttributes): array
+{
+    return invokeCacheUpdate('sizeOptions', $cacheAttributes);
 }
 
 it('offers the sizes for the cache type from the api', function () {
@@ -85,4 +92,46 @@ it('sends the size option without fetching cache types', function () {
 
     expect($sentBody())->toMatchArray(['size' => '1gb']);
     MockClient::global()->assertNotSent(ListCacheTypesRequest::class);
+});
+
+it('sends the eviction policy option', function () {
+    $sentBody = setupCacheUpdateMocks();
+
+    $this->artisan('cache:update', ['cache' => 'cache-1', '--eviction-policy' => 'noeviction', '--no-interaction' => true])
+        ->assertSuccessful();
+
+    expect($sentBody())->toBe(['eviction_policy' => 'noeviction']);
+});
+
+it('sends the hibernation options', function () {
+    $sentBody = setupCacheUpdateMocks();
+
+    $this->artisan('cache:update', [
+        'cache' => 'cache-1',
+        '--uses-hibernation' => 'true',
+        '--hibernation-timeout' => '30',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toBe(['uses_hibernation' => true, 'hibernation_timeout' => 30]);
+});
+
+it('offers every field when the cache type and size support them', function () {
+    setupCacheUpdateMocks();
+
+    expect(invokeCacheUpdate('unsupportedFields', ['type' => 'laravel_valkey', 'size' => '250mb']))->toBe([]);
+});
+
+it('hides hibernation for a size that cannot hibernate', function () {
+    setupCacheUpdateMocks();
+
+    expect(invokeCacheUpdate('unsupportedFields', ['type' => 'laravel_valkey', 'size' => '1gb']))
+        ->toBe(['uses_hibernation', 'hibernation_timeout']);
+});
+
+it('hides eviction policy and hibernation for a type without them', function () {
+    setupCacheUpdateMocks();
+
+    expect(invokeCacheUpdate('unsupportedFields', ['type' => 'upstash_redis', 'size' => '256mb']))
+        ->toBe(['eviction_policy', 'uses_hibernation', 'hibernation_timeout']);
 });
