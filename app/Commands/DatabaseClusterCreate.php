@@ -19,7 +19,9 @@ class DatabaseClusterCreate extends BaseCommand
                             {--name= : Database cluster name}
                             {--type= : Database type (run `cloud database:types` for options)}
                             {--engine-version= : Database engine version (e.g. 18, 8.4). Default: newest available}
-                            {--region= : Database region}';
+                            {--region= : Database region}
+                            {--cluster= : Dedicated cluster ID to create the database cluster on}
+                            {--create-default-database= : Whether to create a default database (true or false; Neon clusters cannot skip it). Default: true}';
 
     protected $description = 'Create a new database cluster';
 

@@ -31,7 +31,9 @@ class DatabaseClusterUpdate extends BaseCommand
                             {--suspend-seconds= : Seconds before scale to zero (Neon)}
                             {--uses-pitr= : Whether point-in-time recovery is enabled}
                             {--maintenance-window= : UTC maintenance window}
-                            {--deployment-option= : single-az or multi-az}
+                            {--deployment-option= : single-az, single-az-with-read-replicas, or multi-az (AWS RDS)}
+                            {--read-replicas= : Number of read replicas (AWS RDS)}
+                            {--storage-autoscale-max-gb= : Largest storage in GB the cluster may grow to on its own, or "null" to turn it off (Laravel MySQL)}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update a database cluster';
@@ -226,6 +228,11 @@ class DatabaseClusterUpdate extends BaseCommand
 
         $schema = is_array($schemaField) ? $schemaField : $schemaField->toArray();
         $fieldType = $schema['type'] ?? 'string';
+
+        // Nullable fields such as storage_autoscale_max_gb use null to turn the setting off.
+        if (is_string($value) && strtolower($value) === 'null' && in_array($fieldType, ['integer', 'number'], true)) {
+            return null;
+        }
 
         return match ($fieldType) {
             'integer' => (int) $value,

@@ -6,11 +6,12 @@ class CreateDatabaseClusterRequestData extends RequestData
 {
     public function __construct(
         public readonly string $type,
+        public readonly string $version,
         public readonly string $name,
         public readonly string $region,
         public readonly array $config,
-        public readonly ?string $version = null,
-        public readonly ?int $clusterId = null,
+        public readonly ?string $clusterId = null,
+        public readonly ?bool $createDefaultDatabase = null,
     ) {
         //
     }
@@ -24,6 +25,7 @@ class CreateDatabaseClusterRequestData extends RequestData
             'region' => $this->region,
             'config' => $this->config,
             'cluster_id' => $this->clusterId,
+            'create_default_database' => $this->createDefaultDatabase,
         ]);
     }
 }

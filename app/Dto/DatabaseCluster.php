@@ -27,6 +27,9 @@ class DatabaseCluster extends Data
         public readonly ?CarbonImmutable $updatedAt = null,
         #[DataCollectionOf(Database::class)]
         public readonly array $schemas = [],
+        public readonly ?bool $supportsPitr = null,
+        #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
+        public readonly ?CarbonImmutable $earliestRestoreTime = null,
     ) {
         //
     }
@@ -47,6 +50,11 @@ class DatabaseCluster extends Data
             'connection' => $attributes['connection'] ?? [],
             'createdAt' => $attributes['created_at'] ?? null,
             'updatedAt' => $attributes['updated_at'] ?? null,
+            // The spec types this as a string, so accept "true"/"1" as well as a real boolean.
+            'supportsPitr' => isset($attributes['supports_pitr'])
+                ? filter_var($attributes['supports_pitr'], FILTER_VALIDATE_BOOLEAN)
+                : null,
+            'earliestRestoreTime' => $attributes['earliest_restore_time'] ?? null,
         ];
 
         $schemas = collect($included)->filter(fn ($item) => $item['type'] === 'databaseSchemas');

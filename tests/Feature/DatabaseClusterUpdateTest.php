@@ -35,6 +35,9 @@ function databaseClusterTypesResponse(): array
                     ['name' => 'storage', 'type' => 'integer', 'required' => true, 'example' => '5'],
                     ['name' => 'retention_days', 'type' => 'integer', 'required' => true, 'example' => '1'],
                     ['name' => 'is_public', 'type' => 'boolean', 'required' => true, 'example' => 'false'],
+                    ['name' => 'storage_autoscale_max_gb', 'type' => 'integer', 'required' => false, 'example' => null],
+                    ['name' => 'read_replicas', 'type' => 'integer', 'required' => false, 'example' => null],
+                    ['name' => 'deployment_option', 'type' => 'string', 'required' => true, 'enum' => ['single-az', 'single-az-with-read-replicas', 'multi-az'], 'example' => 'single-az'],
                 ],
             ],
         ],
@@ -125,4 +128,43 @@ it('fails when no options are given non-interactively', function () {
     ])->assertFailed();
 
     expect($sentConfig())->toBeNull();
+});
+
+it('sets the storage autoscale limit', function () {
+    $sentConfig = setupDatabaseClusterUpdateMocks();
+
+    $this->artisan('database-cluster:update', [
+        'cluster' => 'db-123',
+        '--storage-autoscale-max-gb' => '100',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentConfig()['storage_autoscale_max_gb'])->toBe(100);
+});
+
+it('turns the storage autoscale limit off with null', function () {
+    $sentConfig = setupDatabaseClusterUpdateMocks();
+
+    $this->artisan('database-cluster:update', [
+        'cluster' => 'db-123',
+        '--storage-autoscale-max-gb' => 'null',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentConfig())->toHaveKey('storage_autoscale_max_gb')
+        ->and($sentConfig()['storage_autoscale_max_gb'])->toBeNull();
+});
+
+it('sets read replicas with the matching deployment option', function () {
+    $sentConfig = setupDatabaseClusterUpdateMocks();
+
+    $this->artisan('database-cluster:update', [
+        'cluster' => 'db-123',
+        '--deployment-option' => 'single-az-with-read-replicas',
+        '--read-replicas' => '2',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentConfig()['deployment_option'])->toBe('single-az-with-read-replicas')
+        ->and($sentConfig()['read_replicas'])->toBe(2);
 });
