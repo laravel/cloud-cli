@@ -8,7 +8,7 @@ class UpdateObjectStorageBucketRequestData extends RequestData
         public readonly string $bucketId,
         public readonly ?string $name = null,
         public readonly ?string $visibility = null,
-        public readonly ?array $allowedOrigins = null,
+        public readonly ?BucketCorsSettingsData $corsSettings = null,
     ) {
         //
     }
@@ -18,7 +18,7 @@ class UpdateObjectStorageBucketRequestData extends RequestData
         return $this->filter([
             'name' => $this->name,
             'visibility' => $this->visibility,
-            'allowed_origins' => $this->allowedOrigins,
+            'cors_settings' => $this->corsSettings?->isEmpty() === false ? $this->corsSettings->toRequestData() : null,
         ]);
     }
 }

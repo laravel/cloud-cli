@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Dto\ObjectStorageBucket;
 use App\Enums\FilesystemJurisdiction;
+use App\Enums\FilesystemLocationHint;
 
 use function Laravel\Prompts\intro;
 
@@ -32,6 +33,8 @@ class BucketGet extends BaseCommand
             'Status' => $bucket->status->value,
             'Visibility' => $bucket->visibility->value,
             'Jurisdiction' => FilesystemJurisdiction::tryFrom($bucket->jurisdiction)?->label() ?? $bucket->jurisdiction,
+            'Location Hint' => $bucket->locationHint ? (FilesystemLocationHint::tryFrom($bucket->locationHint)?->label() ?? $bucket->locationHint) : '—',
+            'Allowed Origins' => implode(', ', $bucket->corsSettings['allowed_origins'] ?? $bucket->allowedOrigins ?? []) ?: '—',
             'Endpoint' => $bucket->endpoint ?? '—',
             'URL' => $bucket->url ?? '—',
             'Created At' => $bucket->createdAt?->toIso8601String() ?? '—',

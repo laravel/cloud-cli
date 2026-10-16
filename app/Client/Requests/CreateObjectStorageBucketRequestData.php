@@ -10,7 +10,8 @@ class CreateObjectStorageBucketRequestData extends RequestData
         public readonly string $jurisdiction,
         public readonly string $keyName,
         public readonly string $keyPermission,
-        public readonly ?array $allowedOrigins = null,
+        public readonly ?string $locationHint = null,
+        public readonly ?BucketCorsSettingsData $corsSettings = null,
     ) {
         //
     }
@@ -21,7 +22,8 @@ class CreateObjectStorageBucketRequestData extends RequestData
             'name' => $this->name,
             'visibility' => $this->visibility,
             'jurisdiction' => $this->jurisdiction,
-            'allowed_origins' => $this->allowedOrigins,
+            'location_hint' => $this->locationHint,
+            'cors_settings' => $this->corsSettings?->isEmpty() === false ? $this->corsSettings->toRequestData() : null,
             'key_name' => $this->keyName,
             'key_permission' => $this->keyPermission,
         ]);

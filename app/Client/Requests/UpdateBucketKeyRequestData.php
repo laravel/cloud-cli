@@ -6,7 +6,7 @@ class UpdateBucketKeyRequestData extends RequestData
 {
     public function __construct(
         public readonly string $filesystemKey,
-        public readonly ?string $name = null,
+        public readonly string $name,
     ) {
         //
     }

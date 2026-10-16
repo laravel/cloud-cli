@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Requests\UpdateObjectStorageBucketRequestData;
+use App\Concerns\DefinesBucketCorsSettings;
 use App\Dto\ObjectStorageBucket;
 use App\Exceptions\CommandExitException;
 
@@ -14,12 +15,19 @@ use function Laravel\Prompts\text;
 
 class BucketUpdate extends BaseCommand
 {
+    use DefinesBucketCorsSettings;
+
     protected ?string $jsonDataClass = ObjectStorageBucket::class;
 
     protected $signature = 'bucket:update
                             {bucket? : The bucket ID or name}
                             {--name= : Bucket name}
                             {--visibility= : Visibility (private or public)}
+                            {--allowed-origins= : CORS allowed origins (comma-separated list, empty to clear)}
+                            {--allowed-methods= : CORS allowed methods (comma-separated list of GET, POST, PUT, DELETE, HEAD)}
+                            {--allowed-headers= : CORS allowed headers (comma-separated list, empty to clear)}
+                            {--expose-headers= : CORS headers exposed to the browser (comma-separated list, empty to clear)}
+                            {--max-age-seconds= : CORS preflight cache duration in seconds}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update an object storage bucket';
@@ -60,6 +68,7 @@ class BucketUpdate extends BaseCommand
                     bucketId: $bucket->id,
                     name: $this->form()->get('name'),
                     visibility: $this->form()->get('visibility'),
+                    corsSettings: $this->corsSettingsFromForm(emptyClears: true),
                 ),
             ),
             'Updating bucket...',
@@ -95,6 +104,8 @@ class BucketUpdate extends BaseCommand
                 ),
             ),
         )->setPreviousValue($bucket->visibility->value);
+
+        $this->defineCorsFields($bucket->corsSettings ?? ['allowed_origins' => $bucket->allowedOrigins]);
     }
 
     protected function collectDataAndUpdate(ObjectStorageBucket $bucket): ObjectStorageBucket

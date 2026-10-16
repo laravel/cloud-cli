@@ -179,9 +179,11 @@ function bucketResponse(array $overrides = []): array
             'status' => 'available',
             'visibility' => 'private',
             'jurisdiction' => 'default',
+            'location_hint' => 'automatic',
             'endpoint' => 'https://example.r2.cloudflarestorage.com',
             'url' => null,
             'allowed_origins' => null,
+            'cors_settings' => null,
             'created_at' => '2026-01-01T00:00:00.000000Z',
         ], $overrides['attributes'] ?? []),
     ];

@@ -3,12 +3,14 @@
 use App\Client\Resources\BucketKeys\CreateBucketKeyRequest;
 use App\Client\Resources\BucketKeys\GetBucketKeyRequest;
 use App\Client\Resources\BucketKeys\ListBucketKeysRequest;
+use App\Client\Resources\BucketKeys\UpdateBucketKeyRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\ObjectStorageBuckets\ListObjectStorageBucketsRequest;
 use App\ConfigRepository;
 use App\Dto\BucketKey;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 
 beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
@@ -111,4 +113,27 @@ it('masks the secret in bucket-key:create json by default', function () {
         ->assertSuccessful()
         ->doesntExpectOutputToContain('super-secret-value')
         ->expectsOutputToContain('*****');
+});
+
+it('sends the key name on bucket-key:update', function () {
+    setupBucketKeyMocks();
+
+    $sent = new stdClass;
+
+    MockClient::global()->addResponses([
+        UpdateBucketKeyRequest::class => function (PendingRequest $request) use ($sent) {
+            $sent->body = $request->body()->all();
+
+            return MockResponse::make(['data' => bucketKeyResponse()], 200);
+        },
+    ]);
+
+    $this->artisan('bucket-key:update', [
+        'bucket' => 'fls-1',
+        'key' => 'flsk-1',
+        '--name' => 'renamed-key',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sent->body)->toBe(['name' => 'renamed-key']);
 });
