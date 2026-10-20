@@ -3,6 +3,7 @@
 namespace App\Client\Requests;
 
 use App\Enums\SourceProvider;
+use App\Enums\StarterKit;
 
 class CreateApplicationRequestData extends RequestData
 {
@@ -16,6 +17,7 @@ class CreateApplicationRequestData extends RequestData
         public readonly ?SourceProvider $sourceProvider = null,
         public readonly ?string $buildCommand = null,
         public readonly ?string $clusterId = null,
+        public readonly ?StarterKit $starterKit = null,
     ) {
         // The API rejects a trailing slash, which is what shell completion gives you.
         $rootDirectory = rtrim((string) $rootDirectory, '/');
@@ -33,6 +35,7 @@ class CreateApplicationRequestData extends RequestData
             'source_control_provider_type' => $this->sourceProvider?->value,
             'build_command' => $this->buildCommand,
             'cluster_id' => $this->clusterId,
+            'starter_kit' => $this->starterKit?->value,
         ]);
     }
 }

@@ -108,6 +108,8 @@ Determine the task and follow the matching path:
 
 - Provision infrastructure: `cloud <resource>:create --json -n`
 
+- Brand new project (no code yet): `cloud new --starter-kit=<kit> --repository=<owner>/<new-repo> --path=<dir> -n` creates a private GitHub repository from the starter kit, deploys it (with a database for Laravel kits), and clones it to `<dir>`. The repository must not exist yet. Run `cloud new -h` for the kits.
+
 - Monorepo (application in a subdirectory): add `--root-directory=<subdir>` to `cloud ship` or `cloud application:create`.
 
 - Custom domain: `cloud domain:create --name=<domain> --www-redirect=<strategy> --json -n`, then `cloud domain:verify -n`. Always pass `--www-redirect`; under `-n` it defaults to `www_to_root`, which adds a www variant that needs its own DNS records.

@@ -95,6 +95,18 @@ class Git
         return $this->run(['git', 'push', '-u', 'origin', 'HEAD']);
     }
 
+    /**
+     * Starter kit repositories are private, so prefer the GitHub CLI's credentials when it is signed in.
+     */
+    public function cloneGitHubRepository(string $repository, string $path): ProcessResult
+    {
+        $command = $this->run(['gh', 'auth', 'status'])->successful()
+            ? ['gh', 'repo', 'clone', $repository, $path]
+            : ['git', 'clone', 'https://github.com/'.$repository.'.git', $path];
+
+        return Process::timeout(300)->run($command);
+    }
+
     public function getDefaultBranch(): string
     {
         $result = $this->run(['git', 'symbolic-ref', 'refs/remotes/origin/HEAD']);
