@@ -1,6 +1,20 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.0...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.1...main)
+
+## [v0.7.1](https://github.com/laravel/cloud-cli/compare/v0.7.0...v0.7.1) - 2026-10-28
+
+### What's Changed
+
+* Add Push Env On Deploy by [@christophrumpel](https://github.com/christophrumpel) in https://github.com/laravel/cloud-cli/pull/282
+* Request the environment include when fetching domains by [@jigar-dhulla](https://github.com/jigar-dhulla) in https://github.com/laravel/cloud-cli/pull/280
+
+### New Contributors
+
+* [@christophrumpel](https://github.com/christophrumpel) made their first contribution in https://github.com/laravel/cloud-cli/pull/282
+* [@jigar-dhulla](https://github.com/jigar-dhulla) made their first contribution in https://github.com/laravel/cloud-cli/pull/280
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.0...v0.7.1
 
 ## [v0.7.0](https://github.com/laravel/cloud-cli/compare/v0.6.7...v0.7.0) - 2026-10-20
 
