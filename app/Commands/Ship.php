@@ -12,6 +12,7 @@ use App\Concerns\CreatesDatabaseCluster;
 use App\Concerns\CreatesWebSocketApplication;
 use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\HandlesAvatars;
+use App\Concerns\ReadsLocalEnvironmentVariables;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\ResolvesSourceProvider;
 use App\Concerns\UpdatesBuildDeployCommands;
@@ -29,7 +30,6 @@ use App\Enums\DatabaseClusterPreset;
 use App\Exceptions\CommandExitException;
 use App\Git;
 use Carbon\CarbonInterval;
-use Dotenv\Dotenv;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Http;
@@ -56,6 +56,7 @@ class Ship extends BaseCommand
     use CreatesWebSocketApplication;
     use CreatesWebSocketCluster;
     use HandlesAvatars;
+    use ReadsLocalEnvironmentVariables;
     use RequiresRemoteGitRepo;
     use ResolvesSourceProvider;
     use UpdatesBuildDeployCommands;
@@ -893,25 +894,13 @@ class Ship extends BaseCommand
 
     protected function pushCustomEnvironmentVariables(Application $application): void
     {
-        $envPath = $this->projectPath().'/.env';
+        $variables = $this->localEnvironmentVariables($this->projectPath());
 
-        if (! file_exists($envPath)) {
+        if (count($variables) === 0) {
             return;
         }
 
-        try {
-            $variables = Dotenv::parse(file_get_contents($envPath));
-        } catch (Throwable $e) {
-            return;
-        }
-
-        $diff = array_diff(array_keys($variables), config('env.laravel'));
-
-        if (count($diff) === 0) {
-            return;
-        }
-
-        $varOptions = collect($diff)->mapWithKeys(fn ($key) => [
+        $varOptions = collect(array_keys($variables))->mapWithKeys(fn ($key) => [
             $key => $key.$this->dim(str($variables[$key])->limit(5)->prepend(' (')->append(')')),
         ]);
 
