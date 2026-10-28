@@ -34,7 +34,8 @@ class Deploy extends BaseCommand
                             {environment? : The name of the environment to deploy}
                             {--open : Open the site in the browser after a successful deployment}
                             {--no-wait : Initiate deployment and return immediately}
-                            {--push-env= : Set variables from the local .env before deploying; pass a comma-separated list of keys, or no value to choose}';
+                            {--push-env : Choose variables from the local .env to set before deploying}
+                            {--push-env-keys= : Comma-separated keys from the local .env to set before deploying}';
 
     protected $description = 'Deploy an application to Laravel Cloud';
 
@@ -73,7 +74,7 @@ class Deploy extends BaseCommand
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
-        if ($this->input->hasParameterOption('--push-env')) {
+        if ($this->option('push-env') || $this->option('push-env-keys') !== null) {
             $this->pushEnvironmentVariables($environment);
         }
 
@@ -148,7 +149,7 @@ class Deploy extends BaseCommand
 
     protected function pushEnvironmentVariables(Environment $environment): void
     {
-        $named = collect(explode(',', (string) $this->option('push-env')))
+        $named = collect(explode(',', (string) $this->option('push-env-keys')))
             ->map(fn (string $key) => trim($key))
             ->filter()
             ->values();
@@ -165,7 +166,7 @@ class Deploy extends BaseCommand
 
             $keys = $named->all();
         } elseif (! $this->isInteractive()) {
-            $this->failAndExit('Name the variables to push, e.g. --push-env=KEY_ONE,KEY_TWO');
+            $this->failAndExit('Name the variables to push, e.g. --push-env-keys=KEY_ONE,KEY_TWO');
         } else {
             $keys = $this->chooseVariablesToPush($environment, $local);
         }

@@ -85,7 +85,7 @@ it('offers only new or changed custom keys and sets the chosen ones before deplo
     // Pick both offered keys. If APP_NAME or SAME_KEY were offered, a different pair would be picked.
     Prompt::fake([Key::SPACE, Key::DOWN, Key::SPACE, Key::ENTER]);
 
-    $this->artisan('test:interactive-deploy', ['--push-env' => null])->assertSuccessful();
+    $this->artisan('test:interactive-deploy', ['--push-env' => true])->assertSuccessful();
 
     expect($this->sentVariables->value)->toBe([
         'method' => 'set',
@@ -99,7 +99,7 @@ it('offers only new or changed custom keys and sets the chosen ones before deplo
 });
 
 it('sets the named keys without prompting', function () {
-    $this->artisan('deploy', ['--push-env' => 'SAME_KEY, APP_NAME', '--no-interaction' => true])->assertSuccessful();
+    $this->artisan('deploy', ['--push-env-keys' => 'SAME_KEY, APP_NAME', '--no-interaction' => true])->assertSuccessful();
 
     expect($this->sentVariables->value)->toBe([
         'method' => 'set',
@@ -113,14 +113,14 @@ it('sets the named keys without prompting', function () {
 });
 
 it('does not deploy when a named key is missing from the local .env', function () {
-    $this->artisan('deploy', ['--push-env' => 'NEW_KEY,MISSING_KEY', '--no-interaction' => true])->assertFailed();
+    $this->artisan('deploy', ['--push-env-keys' => 'NEW_KEY,MISSING_KEY', '--no-interaction' => true])->assertFailed();
 
     MockClient::global()->assertNotSent(AddEnvironmentVariablesRequest::class);
     MockClient::global()->assertNotSent(InitiateDeploymentRequest::class);
 });
 
 it('requires named keys when not interactive', function () {
-    $this->artisan('deploy', ['--push-env' => null, '--no-interaction' => true])->assertFailed();
+    $this->artisan('deploy', ['--push-env' => true, '--no-interaction' => true])->assertFailed();
 
     MockClient::global()->assertNotSent(InitiateDeploymentRequest::class);
 });

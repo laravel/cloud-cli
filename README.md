@@ -125,7 +125,7 @@ cloud repo:config my-app --organization=acme -n
     cloud deploy
     ```
 
-    Add `--push-env` to choose variables from your local `.env` to set on Cloud before deploying, or name them with `--push-env=KEY_ONE,KEY_TWO`.
+    Add `--push-env` to choose variables from your local `.env` to set on Cloud before deploying, or name them with `--push-env-keys=KEY_ONE,KEY_TWO`.
 
 3. **Dashboard** — Open the app in the Laravel Cloud dashboard:
 
