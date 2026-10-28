@@ -198,3 +198,19 @@ it('fills the cluster of a WebSocket application', function (string $method) {
 
     expect($application->server?->id)->toBe('wss-1');
 })->with(['get', 'list']);
+
+it('fills the environment of a domain', function (string $method) {
+    $connector = connectorWith(new MockClient([
+        respondWithRequestedIncludes(
+            ['id' => 'domain-1', 'type' => 'domains', 'attributes' => ['name' => 'example.com']],
+            ['environment' => ['id' => 'env-1', 'type' => 'environments']],
+            single: $method === 'get',
+        ),
+    ]));
+
+    $domain = $method === 'get'
+        ? $connector->domains()->get('domain-1')
+        : $connector->domains()->list('env-1')->collect()->first();
+
+    expect($domain->environmentId)->toBe('env-1');
+})->with(['get', 'list']);
