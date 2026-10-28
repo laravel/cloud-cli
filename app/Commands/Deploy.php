@@ -2,22 +2,29 @@
 
 namespace App\Commands;
 
+use App\Client\Requests\AddEnvironmentVariablesRequestData;
 use App\Client\Requests\InitiateDeploymentRequestData;
+use App\Concerns\ReadsLocalEnvironmentVariables;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\WatchesDeployments;
+use App\Dto\Environment;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
+use function Laravel\Prompts\multiselect;
 use function Laravel\Prompts\outro;
+use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
 
 class Deploy extends BaseCommand
 {
+    use ReadsLocalEnvironmentVariables;
     use RequiresRemoteGitRepo;
     use UpdatesBuildDeployCommands;
     use WatchesDeployments;
@@ -26,7 +33,8 @@ class Deploy extends BaseCommand
                             {application? : The application ID or name}
                             {environment? : The name of the environment to deploy}
                             {--open : Open the site in the browser after a successful deployment}
-                            {--no-wait : Initiate deployment and return immediately}';
+                            {--no-wait : Initiate deployment and return immediately}
+                            {--push-env= : Set variables from the local .env before deploying; pass a comma-separated list of keys, or no value to choose}';
 
     protected $description = 'Deploy an application to Laravel Cloud';
 
@@ -64,6 +72,10 @@ class Deploy extends BaseCommand
         }
 
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
+
+        if ($this->input->hasParameterOption('--push-env')) {
+            $this->pushEnvironmentVariables($environment);
+        }
 
         $deployment = $this->client->deployments()->initiate(
             new InitiateDeploymentRequestData($environment->id),
@@ -132,5 +144,72 @@ class Deploy extends BaseCommand
         ]);
 
         outro($environment->url);
+    }
+
+    protected function pushEnvironmentVariables(Environment $environment): void
+    {
+        $named = collect(explode(',', (string) $this->option('push-env')))
+            ->map(fn (string $key) => trim($key))
+            ->filter()
+            ->values();
+
+        // A key named on the command line is pushed even if it is one of Laravel's own.
+        $local = $this->localEnvironmentVariables((string) getcwd(), includeLaravelKeys: $named->isNotEmpty());
+
+        if ($named->isNotEmpty()) {
+            $missing = $named->diff(array_keys($local));
+
+            if ($missing->isNotEmpty()) {
+                $this->failAndExit('Not found in the local .env file: '.$missing->implode(', '));
+            }
+
+            $keys = $named->all();
+        } elseif (! $this->isInteractive()) {
+            $this->failAndExit('Name the variables to push, e.g. --push-env=KEY_ONE,KEY_TWO');
+        } else {
+            $keys = $this->chooseVariablesToPush($environment, $local);
+        }
+
+        if ($keys === []) {
+            return;
+        }
+
+        spin(
+            fn () => $this->client->environments()->addVariables(
+                new AddEnvironmentVariablesRequestData(
+                    environmentId: $environment->id,
+                    variables: collect($keys)->map(fn (string $key) => ['key' => $key, 'value' => $local[$key]])->all(),
+                    method: 'set',
+                ),
+            ),
+            'Setting environment variables...',
+        );
+
+        success('Set '.implode(', ', $keys));
+    }
+
+    /**
+     * @param  array<string, string|null>  $local
+     * @return list<string>
+     */
+    protected function chooseVariablesToPush(Environment $environment, array $local): array
+    {
+        $remote = collect($environment->environmentVariables)->pluck('value', 'key');
+
+        $changed = collect($local)
+            ->filter(fn ($value, string $key) => ! $remote->has($key) || $remote->get($key) !== $value)
+            ->keys();
+
+        if ($changed->isEmpty()) {
+            info('No new or changed variables in the local .env file.');
+
+            return [];
+        }
+
+        return multiselect(
+            label: 'Which local variables should be set on '.$environment->name.'?',
+            options: $changed->all(),
+            hint: 'New or changed compared to Cloud.',
+        );
     }
 }
