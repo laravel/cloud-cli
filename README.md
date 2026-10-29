@@ -330,7 +330,19 @@ Without an environment argument, `resend:attach` offers only environments withou
 | `cloud background-process:update` | Update a background process |
 | `cloud background-process:delete` | Delete a background process |
 
-### Commands (scheduled/one-off)
+### Scheduled commands
+
+| Command                          | Description                             |
+| -------------------------------- | --------------------------------------- |
+| `cloud scheduled-command:list`   | List scheduled commands for an instance |
+| `cloud scheduled-command:get`    | Get scheduled command details           |
+| `cloud scheduled-command:create` | Create a scheduled command              |
+| `cloud scheduled-command:update` | Update a scheduled command              |
+| `cloud scheduled-command:delete` | Delete a scheduled command              |
+
+Schedules are five-field cron expressions evaluated in UTC, such as `0 0 * * *`. The `@hourly`, `@daily`, `@weekly`, `@monthly`, and `@yearly` descriptors also work.
+
+### Commands (one-off)
 
 | Command              | Description                      |
 | -------------------- | -------------------------------- |

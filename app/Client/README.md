@@ -79,6 +79,13 @@ $data = $response->json();
 - `UpdateBackgroundProcessRequest` - Update a background process
 - `DeleteBackgroundProcessRequest` - Delete a background process
 
+#### Scheduled Commands
+- `ListScheduledCommandsRequest` - List scheduled commands for an instance
+- `GetScheduledCommandRequest` - Get a specific scheduled command
+- `CreateScheduledCommandRequest` - Create a new scheduled command
+- `UpdateScheduledCommandRequest` - Update a scheduled command
+- `DeleteScheduledCommandRequest` - Delete a scheduled command
+
 #### Database Clusters
 - `ListDatabaseClustersRequest` - List all database clusters
 - `GetDatabaseClusterRequest` - Get a specific database cluster
