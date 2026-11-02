@@ -12,6 +12,7 @@ use App\Concerns\CreatesDatabaseCluster;
 use App\Concerns\CreatesWebSocketApplication;
 use App\Concerns\CreatesWebSocketCluster;
 use App\Concerns\HandlesAvatars;
+use App\Concerns\ProvisionsQueueWorker;
 use App\Concerns\ReadsLocalEnvironmentVariables;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\ResolvesSourceProvider;
@@ -56,6 +57,7 @@ class Ship extends BaseCommand
     use CreatesWebSocketApplication;
     use CreatesWebSocketCluster;
     use HandlesAvatars;
+    use ProvisionsQueueWorker;
     use ReadsLocalEnvironmentVariables;
     use RequiresRemoteGitRepo;
     use ResolvesSourceProvider;
@@ -70,6 +72,7 @@ class Ship extends BaseCommand
                             {--source-provider= : Source provider (github, gitlab, gitlab_self_hosted, bitbucket). Default: detected from the origin remote}
                             {--build-command= : Build command to run on deploy}
                             {--cluster= : Dedicated cluster ID to deploy to (see dedicated-cluster:list)}
+                            {--queue= : Queue worker to create (worker, managed, horizon). Default: none when non-interactive}
 ';
 
     protected $description = 'Ship a new application to Laravel Cloud';
@@ -90,6 +93,7 @@ class Ship extends BaseCommand
 
         $this->ensureClient();
         $this->ensureRemoteGitRepo();
+        $this->resolveRequestedQueueType();
 
         $repository = $this->git->remoteRepo();
 
@@ -153,14 +157,17 @@ class Ship extends BaseCommand
         $this->region = $application->region;
         $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
+        $queueType = null;
+
         if (! $this->isInteractive()) {
-            $this->applyOpinionatedOptions($environment);
+            $queueType = $this->requestedQueueType;
+            $this->applyOpinionatedOptions($environment, $queueType);
         } else {
             $this->loopUntilValid(
                 fn () => $this->pushCustomEnvironmentVariables($application),
             );
 
-            $this->loopUntilValid(
+            $queueType = $this->loopUntilValid(
                 fn () => $this->collectOptionsToEnable($environment),
             );
 
@@ -182,11 +189,15 @@ class Ship extends BaseCommand
 
         $environment = $this->client->environments()->include('instances')->get($application->defaultEnvironmentId ?? '');
 
-        $this->outputJsonIfWanted([
+        $this->outputJsonIfWanted(array_filter([
             'application_id' => $application->id,
             'environment_id' => $environment->id,
             'url' => $environment->url,
-        ]);
+            'queue' => $queueType,
+            'suggestions' => $queueType === null && $this->appDispatchesQueuedJobs()
+                ? ['The app has queued jobs but no queue worker. Create one with `cloud background-process:create '.$environment->instances[0].' --type=worker` or `cloud managed-queue:create '.$environment->id.'`.']
+                : null,
+        ], fn ($value) => $value !== null));
 
         if (confirm('Open site in browser?')) {
             $isReady = spin(
@@ -400,7 +411,7 @@ class Ship extends BaseCommand
         return new Composer(app('files'), $path);
     }
 
-    protected function collectOptionsToEnable(Environment $environment): void
+    protected function collectOptionsToEnable(Environment $environment): ?string
     {
         $composer = $this->composer();
 
@@ -408,6 +419,7 @@ class Ship extends BaseCommand
             'scheduler' => 'Laravel Scheduler',
             'scale_to_zero' => 'Scale to Zero',
             'database_cluster' => 'Database Cluster',
+            'queue' => 'Queue Worker',
         ];
 
         $packages = [
@@ -425,10 +437,17 @@ class Ship extends BaseCommand
         $selectedOptions = multiselect(
             label: 'Enable any of the following features?',
             options: $enableOptions,
+            default: $this->requestedQueueType !== null || $this->appDispatchesQueuedJobs() ? ['queue'] : [],
         );
 
         if (count($selectedOptions) === 0) {
-            return;
+            return null;
+        }
+
+        $queueType = in_array('queue', $selectedOptions) ? $this->promptForQueueType() : null;
+
+        if ($queueType !== 'managed' && $queueType !== null && in_array('scale_to_zero', $selectedOptions)) {
+            warning('Queue workers on the app instance stop while it is scaled to zero, so jobs wait for the next web request.');
         }
 
         $instanceParams = [];
@@ -528,9 +547,15 @@ class Ship extends BaseCommand
                 shouldRetry: fn ($errors) => $errors->messageContains('global', 'wait a few seconds'),
             );
         }
+
+        if ($queueType !== null) {
+            $this->provisionQueue($queueType, $environment);
+        }
+
+        return $queueType;
     }
 
-    protected function applyOpinionatedOptions(Environment $environment): void
+    protected function applyOpinionatedOptions(Environment $environment, ?string $queueType = null): void
     {
         $composer = $this->composer();
 
@@ -591,6 +616,10 @@ class Ship extends BaseCommand
                     return false;
                 },
             );
+        }
+
+        if ($queueType !== null) {
+            $this->provisionQueue($queueType, $environment);
         }
     }
 

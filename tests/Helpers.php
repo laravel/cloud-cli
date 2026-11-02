@@ -690,3 +690,16 @@ function edgeNetworkResponse(array $overrides = []): array
         ],
     ], $overrides);
 }
+
+function managedQueueSize(string $name): array
+{
+    return [
+        'name' => $name,
+        'label' => $name,
+        'description' => $name,
+        'cpu_type' => 'shared',
+        'compute_class' => 'standard',
+        'cpu_count' => 1,
+        'memory_mib' => 1024,
+    ];
+}
