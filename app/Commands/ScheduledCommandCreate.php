@@ -58,7 +58,7 @@ class ScheduledCommandCreate extends BaseCommand
                     placeholder: '0 0 * * *',
                     default: $value ?? '',
                     required: true,
-                    hint: 'A five-field cron expression, evaluated in UTC. @hourly, @daily, @weekly, @monthly, and @yearly also work.',
+                    hint: 'A five-field cron expression, evaluated in UTC. @hourly, @daily, @midnight, @weekly, @monthly, @yearly, and @annually also work.',
                 ),
             ),
         );

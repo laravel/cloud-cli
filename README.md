@@ -338,7 +338,7 @@ Without an environment argument, `resend:attach` offers only environments withou
 | `cloud scheduled-command:update` | Update a scheduled command              |
 | `cloud scheduled-command:delete` | Delete a scheduled command              |
 
-Schedules are five-field cron expressions evaluated in UTC, such as `0 0 * * *`. The `@hourly`, `@daily`, `@weekly`, `@monthly`, and `@yearly` descriptors also work.
+Schedules are five-field cron expressions evaluated in UTC, such as `0 0 * * *`. The `@hourly`, `@daily`, `@midnight`, `@weekly`, `@monthly`, `@yearly`, and `@annually` descriptors also work.
 
 ### Commands (one-off)
 

@@ -97,7 +97,7 @@ class ScheduledCommandUpdate extends BaseCommand
                     label: 'Schedule',
                     required: true,
                     default: $value ?? $scheduledCommand->schedule,
-                    hint: 'A five-field cron expression, evaluated in UTC. @hourly, @daily, @weekly, @monthly, and @yearly also work.',
+                    hint: 'A five-field cron expression, evaluated in UTC. @hourly, @daily, @midnight, @weekly, @monthly, @yearly, and @annually also work.',
                 ),
             ),
         )->setPreviousValue($scheduledCommand->schedule);
