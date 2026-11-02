@@ -35,6 +35,11 @@ class Resolvers
         return $this->make(BackgroundProcessResolver::class);
     }
 
+    public function scheduledCommand(): ScheduledCommandResolver
+    {
+        return $this->make(ScheduledCommandResolver::class);
+    }
+
     public function command(): CommandResolver
     {
         return $this->make(CommandResolver::class);

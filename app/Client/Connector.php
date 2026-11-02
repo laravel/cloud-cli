@@ -22,6 +22,7 @@ use App\Client\Resources\InstancesResource;
 use App\Client\Resources\MetaResource;
 use App\Client\Resources\ObjectStorageBucketsResource;
 use App\Client\Resources\ResendResource;
+use App\Client\Resources\ScheduledCommandsResource;
 use App\Client\Resources\SecretsResource;
 use App\Client\Resources\UsageResource;
 use App\Client\Resources\WebSocketApplicationsResource;
@@ -183,6 +184,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function backgroundProcesses(): BackgroundProcessesResource
     {
         return new BackgroundProcessesResource($this);
+    }
+
+    public function scheduledCommands(): ScheduledCommandsResource
+    {
+        return new ScheduledCommandsResource($this);
     }
 
     public function databaseClusters(): DatabaseClustersResource
