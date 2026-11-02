@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.1...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.2...main)
+
+## [v0.7.2](https://github.com/laravel/cloud-cli/compare/v0.7.1...v0.7.2) - 2026-11-02
+
+### What's Changed
+
+* Add commands for managing scheduled-command by [@ryangjchandler](https://github.com/ryangjchandler) in https://github.com/laravel/cloud-cli/pull/281
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.1...v0.7.2
 
 ## [v0.7.1](https://github.com/laravel/cloud-cli/compare/v0.7.0...v0.7.1) - 2026-10-28
 
