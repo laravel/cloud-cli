@@ -6,6 +6,7 @@ use App\Client\Resources\Instances\ListInstanceSizesRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\ConfigRepository;
 use Illuminate\Support\Composer;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
@@ -52,8 +53,9 @@ function setupManagedQueueCreateMocks(): Closure
                     'id' => 'instance-1',
                     'type' => 'instances',
                     'attributes' => [
-                        'name' => 'emails',
+                        'name' => $sentBody->value['name'].(($sentBody->value['fifo'] ?? false) ? '.fifo' : ''),
                         'type' => 'managed_queue',
+                        'queue_type' => ($sentBody->value['fifo'] ?? false) ? 'fifo' : 'standard',
                         'size' => $sentBody->value['size'],
                         'scaling_type' => 'custom',
                         'min_replicas' => 1,
@@ -80,7 +82,8 @@ it('leaves out the polling interval for a current-generation size', function () 
 
     expect($sentBody())
         ->toMatchArray(['size' => 'mq.pro.1gb'])
-        ->not->toHaveKey('polling_interval');
+        ->not->toHaveKey('polling_interval')
+        ->not->toHaveKey('fifo');
 });
 
 it('ignores --polling-interval for a current-generation size', function () {
@@ -125,4 +128,29 @@ it('defaults the polling interval for a previous-generation size', function () {
     ])->assertSuccessful();
 
     expect($sentBody()['polling_interval'])->toBe(5);
+});
+
+it('creates a FIFO queue from the base name with --fifo', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::call('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--fifo' => true,
+        '--json' => true,
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toMatchArray([
+        'name' => 'orders.fifo',
+        'queueType' => 'fifo',
+    ]);
+
+    expect($sentBody())->toMatchArray([
+        'name' => 'orders',
+        'type' => 'managed_queue',
+        'fifo' => true,
+    ]);
+    expect($sentBody()['background_processes'][0]['config']['queue'])->toBe('orders');
 });

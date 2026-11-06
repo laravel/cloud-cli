@@ -27,7 +27,8 @@ class ManagedQueueCreate extends BaseCommand
                             {--max-workers= : Maximum number of workers}
                             {--visibility-timeout= : Visibility timeout in seconds (0-43200)}
                             {--polling-interval= : Polling interval in seconds (0-60), previous-generation sizes only}
-                            {--shutdown-timeout= : Shutdown timeout in seconds}';
+                            {--shutdown-timeout= : Shutdown timeout in seconds}
+                            {--fifo : Create a FIFO queue; Laravel Cloud appends .fifo to the name}';
 
     protected $description = 'Create a new managed queue';
 
@@ -68,7 +69,9 @@ class ManagedQueueCreate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
                     label: 'Queue name',
-                    hint: 'Must match the queue name your application dispatches to',
+                    hint: $this->option('fifo')
+                        ? 'Without the .fifo suffix, which Laravel Cloud appends'
+                        : 'Must match the queue name your application dispatches to',
                     default: $value ?? 'default',
                     required: true,
                 ),
@@ -237,6 +240,8 @@ class ManagedQueueCreate extends BaseCommand
                             ],
                         ],
                     ],
+                    // Left out rather than false when omitted, so standard queues send the same payload as before.
+                    fifo: $this->option('fifo') ? true : null,
                 ),
             ),
             'Creating managed queue...',
