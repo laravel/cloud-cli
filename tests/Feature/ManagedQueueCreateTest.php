@@ -8,9 +8,12 @@ use App\ConfigRepository;
 use Illuminate\Support\Composer;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
+use Laravel\Prompts\Key;
+use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveManagedQueueCreateCommand;
 
 beforeEach(function () {
     Sleep::fake();
@@ -153,4 +156,49 @@ it('creates a FIFO queue from the base name with --fifo', function () {
         'fifo' => true,
     ]);
     expect($sentBody()['background_processes'][0]['config']['queue'])->toBe('orders');
+});
+
+dataset('interactive fifo answers', [
+    'yes' => [['y', Key::ENTER], true],
+    'no' => [[Key::ENTER], false],
+]);
+
+it('asks whether to create a FIFO queue when interactive', function (array $answer, bool $fifo) {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    // The answer, then accept the backoff, tries and timeout defaults, which always ask once.
+    Prompt::fake([...$answer, Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+        '--visibility-timeout' => 60,
+        '--shutdown-timeout' => 90,
+    ])->assertSuccessful();
+
+    expect(($sentBody()['fifo'] ?? false))->toBe($fifo);
+})->with('interactive fifo answers');
+
+it('does not ask about FIFO when --fifo is passed', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    Prompt::fake([Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+        '--visibility-timeout' => 60,
+        '--shutdown-timeout' => 90,
+        '--fifo' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody()['fifo'])->toBeTrue();
 });

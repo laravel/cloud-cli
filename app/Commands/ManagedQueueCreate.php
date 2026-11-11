@@ -55,21 +55,28 @@ class ManagedQueueCreate extends BaseCommand
 
         $environment = $this->resolvers()->environment()->from($this->argument('environment'));
 
-        $instance = $this->loopUntilValid(fn () => $this->createManagedQueue($environment->id));
+        // Asked here, outside the retry loop, because a bare flag reads false when omitted and the form would treat that as answered.
+        $fifo = $this->option('fifo') || ($this->isInteractive() && confirm(
+            label: 'Create a FIFO queue?',
+            default: false,
+            hint: 'Processes jobs in order, exactly once',
+        ));
+
+        $instance = $this->loopUntilValid(fn () => $this->createManagedQueue($environment->id, $fifo));
 
         $this->outputJsonIfWanted($instance);
 
         success("Managed queue created: {$instance->name}");
     }
 
-    protected function createManagedQueue(string $environmentId)
+    protected function createManagedQueue(string $environmentId, bool $fifo)
     {
         $this->form()->prompt(
             'name',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
                     label: 'Queue name',
-                    hint: $this->option('fifo')
+                    hint: $fifo
                         ? 'Without the .fifo suffix, which Laravel Cloud appends'
                         : 'Must match the queue name your application dispatches to',
                     default: $value ?? 'default',
@@ -241,7 +248,7 @@ class ManagedQueueCreate extends BaseCommand
                         ],
                     ],
                     // Left out rather than false when omitted, so standard queues send the same payload as before.
-                    fifo: $this->option('fifo') ? true : null,
+                    fifo: $fifo ? true : null,
                 ),
             ),
             'Creating managed queue...',
