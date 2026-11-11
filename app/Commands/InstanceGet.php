@@ -24,16 +24,17 @@ class InstanceGet extends BaseCommand
 
         $this->outputJsonIfWanted($instance);
 
-        dataList([
+        dataList(array_filter([
             'ID' => $instance->id,
             'Name' => $instance->name,
             'Type' => $instance->type,
+            'Queue Type' => $instance->queueType,
             'Size' => $instance->size,
             'Replicas' => $instance->minReplicas === $instance->maxReplicas ? $instance->minReplicas : "{$instance->minReplicas}-{$instance->maxReplicas}",
             'Scheduler' => $instance->usesScheduler ? 'Yes' : 'No',
             'Scaling CPU Threshold' => $instance->scalingCpuThresholdPercentage.'%',
             'Scaling Memory Threshold' => $instance->scalingMemoryThresholdPercentage.'%',
             'Background Processes' => count($instance->backgroundProcessIds),
-        ]);
+        ], fn ($value) => $value !== null));
     }
 }

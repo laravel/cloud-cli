@@ -24,6 +24,7 @@ class CreateInstanceRequestData extends RequestData
         public readonly ?int $pollingInterval = null,
         public readonly ?int $shutdownTimeout = null,
         public readonly ?array $backgroundProcesses = null,
+        public readonly ?bool $fifo = null,
     ) {
         //
     }
@@ -45,6 +46,7 @@ class CreateInstanceRequestData extends RequestData
             'polling_interval' => $this->pollingInterval,
             'shutdown_timeout' => $this->shutdownTimeout,
             'background_processes' => $this->backgroundProcesses,
+            'fifo' => $this->fifo,
         ]);
     }
 }
