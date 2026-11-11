@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.2...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.3...main)
+
+## [v0.7.3](https://github.com/laravel/cloud-cli/compare/v0.7.2...v0.7.3) - 2026-11-11
+
+### What's Changed
+
+* Optionally provision queue when shipping by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/283
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.2...v0.7.3
 
 ## [v0.7.2](https://github.com/laravel/cloud-cli/compare/v0.7.1...v0.7.2) - 2026-11-02
 
