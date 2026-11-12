@@ -30,6 +30,7 @@ use Illuminate\Support\Sleep;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveNewApplicationCommand;
 
 beforeEach(function () {
     Sleep::fake();
@@ -424,4 +425,20 @@ it('shows paths under home with a tilde', function () {
     } finally {
         putenv('HOME='.$originalHome);
     }
+});
+
+it('links the dashboard and repository when the application is ready', function () {
+    Artisan::registerCommand(new InteractiveNewApplicationCommand);
+
+    $exitCode = Artisan::call('test:interactive-new', [
+        '--starter-kit' => 'go',
+        '--repository' => 'user/new-app',
+        '--name' => 'new-app',
+        '--region' => 'us-east-1',
+        '--path' => $this->clonePath,
+    ]);
+
+    expect($exitCode)->toBe(0)
+        ->and(Artisan::output())
+        ->toMatch('/URL.*\n.*Dashboard.*\n.*Repository.*https:\/\/github\.com\/user\/new-app.*\n.*Local/');
 });
