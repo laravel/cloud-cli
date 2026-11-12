@@ -14,14 +14,17 @@ use App\Concerns\WatchesDeployments;
 use App\Dto\Application;
 use App\Dto\Deployment;
 use App\Dto\Environment;
+use App\Dto\QueuedDeployment;
 use App\Dto\Region;
 use App\Enums\SourceProvider;
 use App\Enums\StarterKit;
 use App\Git;
 use App\LocalConfig;
 use App\SourceProviders\GitHubProvider;
+use Carbon\CarbonInterval;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
 
 use function Laravel\Prompts\autocomplete;
@@ -58,6 +61,8 @@ class NewApplication extends BaseCommand
 
     protected string $path;
 
+    protected ?string $failureReason = null;
+
     public function handle(Git $git)
     {
         intro('Creating a New Application on Laravel Cloud');
@@ -83,14 +88,13 @@ class NewApplication extends BaseCommand
             $this->attachToEnvironment($environment, $databaseSchemaId, null);
 
             // The first deployment started before the database existed, so it has none of its credentials.
-            $deployment = $this->watchDeployment(
-                $this->client->deployments()->initiate(new InitiateDeploymentRequestData($environment->id)),
-            );
+            $deployment = $this->redeploy($environment);
         }
 
         $isReady = false;
 
         if ($deployment?->failed()) {
+            $this->failureReason = $deployment->failureReason;
             error('Deployment failed: '.$deployment->failureReason);
         } elseif ($deployment?->succeeded()) {
             $isReady = spin(
@@ -113,6 +117,8 @@ class NewApplication extends BaseCommand
             'url' => $environment->url,
             'repository' => $application->repositoryFullName,
             'path' => $cloned ? $this->path : null,
+            // A first deployment that never showed up no longer matters once the redeploy succeeds.
+            'failure_reason' => $deployment?->succeeded() ? null : $this->failureReason,
         ];
 
         if (! $deployment?->succeeded() || ! $cloned) {
@@ -281,16 +287,48 @@ class NewApplication extends BaseCommand
     }
 
     /**
-     * Cloud starts the first deployment itself when it creates a starter kit application.
+     * Cloud starts the first deployment itself when it creates a starter kit application,
+     * but it can take a few seconds to show up after the create call returns.
      */
-    protected function watchFirstDeployment(Environment $environment): ?Deployment
+    protected function watchFirstDeployment(Environment $environment, int $attempts = 15): ?Deployment
     {
-        $deployment = $this->client->deployments()->list($environment->id)->collect()->first();
+        $deployment = spin(function () use ($environment, $attempts) {
+            for ($attempt = 1; $attempt <= $attempts; $attempt++) {
+                $deployment = $this->client->deployments()->list($environment->id)->collect()->first();
+
+                if ($deployment !== null || $attempt === $attempts) {
+                    return $deployment;
+                }
+
+                Sleep::for(CarbonInterval::seconds(2));
+            }
+        }, 'Waiting for the first deployment to start...');
 
         if ($deployment === null) {
+            $this->failureReason = 'Cloud did not start a deployment.';
             warning('Cloud did not start a deployment. Run `cloud deploy` from the cloned repository.');
 
             return null;
+        }
+
+        return $this->watchDeployment($deployment);
+    }
+
+    protected function redeploy(Environment $environment): ?Deployment
+    {
+        $deployment = $this->client->deployments()->initiate(new InitiateDeploymentRequestData($environment->id));
+
+        if ($deployment instanceof QueuedDeployment) {
+            $queued = $this->waitForQueuedDeployment($deployment);
+
+            if (! $queued->wasPromoted() || $queued->deployment === null) {
+                $this->failureReason = $queued->notStartedReason();
+                error('Deployment did not start: '.$this->failureReason);
+
+                return null;
+            }
+
+            $deployment = $queued->deployment;
         }
 
         return $this->watchDeployment($deployment);

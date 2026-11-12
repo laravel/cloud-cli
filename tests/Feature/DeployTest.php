@@ -379,29 +379,6 @@ it('stops monitoring when the deployment reaches the failed status', function ()
         ->assertSuccessful();
 });
 
-function createQueuedDeploymentResponse(string $status = 'pending', ?string $failureReason = null, ?array $deployment = null): array
-{
-    return [
-        'data' => [
-            'id' => 'queued-1',
-            'type' => 'queuedDeployments',
-            'attributes' => [
-                'status' => $status,
-                'branch_name' => 'main',
-                'commit_hash' => 'abc123',
-                'commit_message' => 'Add feature',
-                'commit_author' => 'Taylor',
-                'failure_reason' => $failureReason,
-                'created_at' => now()->toISOString(),
-            ],
-            'relationships' => [
-                'deployment' => ['data' => $deployment ? ['id' => $deployment['id'], 'type' => 'deployments'] : null],
-            ],
-        ],
-        'included' => $deployment ? [$deployment] : [],
-    ];
-}
-
 /**
  * Cloud answers a deploy with 202 and a queued deployment while the environment's resources provision.
  *

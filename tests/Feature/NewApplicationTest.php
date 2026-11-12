@@ -11,6 +11,7 @@ use App\Client\Resources\DatabaseClusters\ListDatabasePresetsRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
 use App\Client\Resources\Databases\CreateDatabaseRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
+use App\Client\Resources\Deployments\GetQueuedDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
@@ -61,13 +62,7 @@ beforeEach(function () {
         'included' => [organizationResponse()['data'], createEnvironmentResponse()],
     ];
 
-    $deployment = fn (string $status) => [
-        'data' => [
-            'id' => 'deploy-1',
-            'type' => 'deployments',
-            'attributes' => ['status' => $status, 'started_at' => now()->toISOString(), 'finished_at' => now()->toISOString()],
-        ],
-    ];
+    $deployment = newApplicationDeployment(...);
 
     $record = fn (string $name, $response) => function (PendingRequest $request) use ($name, $response) {
         $this->sent[] = $name;
@@ -108,6 +103,17 @@ afterEach(function () {
     File::deleteDirectory($this->clonePath);
 });
 
+function newApplicationDeployment(string $status): array
+{
+    return [
+        'data' => [
+            'id' => 'deploy-1',
+            'type' => 'deployments',
+            'attributes' => ['status' => $status, 'started_at' => now()->toISOString(), 'finished_at' => now()->toISOString()],
+        ],
+    ];
+}
+
 function runNew(array $options = []): int
 {
     return Artisan::call('new', array_merge([
@@ -134,6 +140,64 @@ it('attaches a database to a Laravel kit and redeploys so it picks up the creden
 
     expect($this->sent)->toBe(['create-application', 'database', 'attach', 'redeploy'])
         ->and($this->attachedDatabase)->toBe(databaseSchemaResponse()['id']);
+});
+
+it('waits for a queued redeploy to start and then watches it', function () {
+    $polls = 0;
+
+    MockClient::global()->addResponses([
+        InitiateDeploymentRequest::class => MockResponse::make(createQueuedDeploymentResponse('pending'), 202),
+        GetQueuedDeploymentRequest::class => function () use (&$polls) {
+            return MockResponse::make($polls++ === 0
+                ? createQueuedDeploymentResponse('pending')
+                : createQueuedDeploymentResponse('promoted', deployment: newApplicationDeployment('pending')['data']), 200);
+        },
+    ]);
+
+    expect(runNew())->toBe(0)
+        ->and($polls)->toBe(2);
+
+    expect(json_decode(collect(explode(PHP_EOL, trim(Artisan::output())))->last(), true))->toMatchArray([
+        'deployment_status' => 'deployment.succeeded',
+    ]);
+});
+
+it('fails with the reason when a queued redeploy never starts', function () {
+    MockClient::global()->addResponses([
+        InitiateDeploymentRequest::class => MockResponse::make(createQueuedDeploymentResponse('pending'), 202),
+        GetQueuedDeploymentRequest::class => MockResponse::make(createQueuedDeploymentResponse('failed', 'The database failed to provision.'), 200),
+    ]);
+
+    expect(runNew())->toBe(1);
+
+    expect(json_decode(collect(explode(PHP_EOL, trim(Artisan::output())))->last(), true))->toMatchArray([
+        'deployment_id' => null,
+        'failure_reason' => 'The database failed to provision.',
+    ]);
+});
+
+it('waits for Cloud to start the first deployment', function () {
+    $lists = 0;
+
+    MockClient::global()->addResponses([
+        ListDeploymentsRequest::class => function () use (&$lists) {
+            return MockResponse::make([
+                'data' => $lists++ < 2 ? [] : [newApplicationDeployment('pending')['data']],
+                'links' => ['next' => null],
+            ], 200);
+        },
+    ]);
+
+    expect(runNew(['--starter-kit' => 'go']))->toBe(0)
+        ->and($lists)->toBe(3);
+});
+
+it('gives up on the first deployment when Cloud never starts one', function () {
+    MockClient::global()->addResponses([
+        ListDeploymentsRequest::class => MockResponse::make(['data' => [], 'links' => ['next' => null]], 200),
+    ]);
+
+    expect(runNew(['--starter-kit' => 'go']))->toBe(1);
 });
 
 it('skips the database for kits outside Laravel', function () {
@@ -249,4 +313,17 @@ it('suggests owners from existing applications alone when the GitHub CLI is not 
     ]);
 
     expect(newApplicationOwners(['laravel/two']))->toBe(['laravel']);
+});
+
+it('drops the first deployment warning from the result once the redeploy succeeds', function () {
+    MockClient::global()->addResponses([
+        ListDeploymentsRequest::class => MockResponse::make(['data' => [], 'links' => ['next' => null]], 200),
+    ]);
+
+    expect(runNew())->toBe(0);
+
+    expect(json_decode(collect(explode(PHP_EOL, trim(Artisan::output())))->last(), true))->toMatchArray([
+        'deployment_status' => 'deployment.succeeded',
+        'failure_reason' => null,
+    ]);
 });
