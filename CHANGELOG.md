@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.6...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.7...main)
+
+## [v0.7.7](https://github.com/laravel/cloud-cli/compare/v0.7.6...v0.7.7) - 2026-11-12
+
+### What's Changed
+
+* Add repository link in final `cloud new` callout by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/292
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.6...v0.7.7
 
 ## [v0.7.6](https://github.com/laravel/cloud-cli/compare/v0.7.5...v0.7.6) - 2026-11-12
 
