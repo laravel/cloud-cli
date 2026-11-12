@@ -1,6 +1,23 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.3...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.4...main)
+
+## [v0.7.4](https://github.com/laravel/cloud-cli/compare/v0.7.3...v0.7.4) - 2026-11-12
+
+### What's Changed
+
+* Tell the Cloud skill to skip the www redirect for subdomains by [@than](https://github.com/than) in https://github.com/laravel/cloud-cli/pull/285
+* Add --fifo flag to managed-queue:create by [@ryangjchandler](https://github.com/ryangjchandler) in https://github.com/laravel/cloud-cli/pull/284
+* Handle queued deployments by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/286
+* Handle truncated command output by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/287
+* Handle Octane SSR fields correctly by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/288
+* Add database user commands by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/289
+
+### New Contributors
+
+* [@than](https://github.com/than) made their first contribution in https://github.com/laravel/cloud-cli/pull/285
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.3...v0.7.4
 
 ## [v0.7.3](https://github.com/laravel/cloud-cli/compare/v0.7.2...v0.7.3) - 2026-11-11
 
