@@ -27,6 +27,11 @@ trait ProvisionsDefaultResources
 
     protected ?string $region = null;
 
+    /**
+     * @var array{0: DatabaseType, 1: string, 2: DatabasePreset}|null
+     */
+    protected ?array $validatedDatabase = null;
+
     protected function attachToEnvironment(Environment $environment, ?string $databaseSchemaId, ?string $websocketApplicationId): void
     {
         if ($databaseSchemaId === null && $websocketApplicationId === null) {
@@ -156,7 +161,21 @@ trait ProvisionsDefaultResources
         return $preset;
     }
 
-    protected function provisionDatabaseOpinionated(): ?string
+    /**
+     * Check the database options before anything is created, so a bad flag fails fast instead
+     * of leaving half-provisioned resources behind.
+     */
+    protected function validateDatabaseOptions(string $region): void
+    {
+        [$type, $version] = $this->resolveDatabaseTypeAndVersion();
+
+        $this->validatedDatabase = [$type, $version, $this->resolveDatabasePreset($type->type, $region)];
+    }
+
+    /**
+     * @return array{0: DatabaseType, 1: string}
+     */
+    protected function resolveDatabaseTypeAndVersion(): array
     {
         $types = $this->client->databaseClusters()->types();
         $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
@@ -180,6 +199,13 @@ trait ProvisionsDefaultResources
             ));
         }
 
+        return [$type, $version];
+    }
+
+    protected function provisionDatabaseOpinionated(): ?string
+    {
+        [$type, $version, $preset] = $this->validatedDatabase ?? [...$this->resolveDatabaseTypeAndVersion(), null];
+
         $defaults = $this->databaseClusterDefaults();
         $name = $defaults['name'] ?? 'database';
         $region = $defaults['region'] ?? 'us-east-2';
@@ -189,7 +215,7 @@ trait ProvisionsDefaultResources
         $databaseName = $this->appName ? str($this->appName)->snake()->replace('-', '_')->toString() : 'main';
 
         if (! $cluster) {
-            $preset = $this->resolveDatabasePreset($type->type, $region);
+            $preset ??= $this->resolveDatabasePreset($type->type, $region);
             $cluster = $this->createDatabaseClusterWithOptions($type->type, $version, $preset, $name, $region);
             $cluster = $this->client->databaseClusters()->include('databases')->get($cluster->id);
         }
