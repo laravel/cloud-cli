@@ -10,9 +10,11 @@ class LocalConfig
 {
     protected string $configPath;
 
-    public function __construct(Git $git)
+    public function __construct(Git $git, ?string $directory = null)
     {
-        if ($git->isRepo() && $root = $git->getRoot()) {
+        if ($directory !== null) {
+            $this->configPath = join_paths($directory, '.cloud', 'config.json');
+        } elseif ($git->isRepo() && $root = $git->getRoot()) {
             $this->configPath = join_paths($root, '.cloud', 'config.json');
         } else {
             $this->configPath = join_paths(getcwd(), '.cloud', 'config.json');
