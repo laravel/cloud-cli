@@ -259,6 +259,28 @@ function databaseSnapshotResponse(array $overrides = []): array
     ];
 }
 
+function databaseUserResponse(array $overrides = []): array
+{
+    return [
+        'id' => $overrides['id'] ?? 'dbu-1',
+        'type' => 'databaseUsers',
+        'attributes' => array_merge([
+            'username' => 'app_reader',
+            'type' => 'read_only',
+            'status' => 'available',
+            'created_at' => '2026-01-01T00:00:00.000000Z',
+        ], $overrides['attributes'] ?? []),
+        'relationships' => [
+            'databases' => [
+                'data' => array_map(
+                    fn (string $id) => ['id' => $id, 'type' => 'databaseSchemas'],
+                    $overrides['databases'] ?? ['schema-1'],
+                ),
+            ],
+        ],
+    ];
+}
+
 function databaseClusterResponse(array $overrides = []): array
 {
     $schemas = $overrides['included'] ?? [databaseSchemaResponse()];

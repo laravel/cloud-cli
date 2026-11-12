@@ -13,6 +13,7 @@ use App\Client\Resources\DatabaseClustersResource;
 use App\Client\Resources\DatabaseRestoresResource;
 use App\Client\Resources\DatabaseSnapshotsResource;
 use App\Client\Resources\DatabasesResource;
+use App\Client\Resources\DatabaseUsersResource;
 use App\Client\Resources\DedicatedClustersResource;
 use App\Client\Resources\DeploymentsResource;
 use App\Client\Resources\DomainsResource;
@@ -204,6 +205,11 @@ class Connector extends SaloonConnector implements HasPagination
     public function databaseSnapshots(): DatabaseSnapshotsResource
     {
         return new DatabaseSnapshotsResource($this);
+    }
+
+    public function databaseUsers(): DatabaseUsersResource
+    {
+        return new DatabaseUsersResource($this);
     }
 
     public function databaseRestores(): DatabaseRestoresResource

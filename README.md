@@ -246,6 +246,11 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud database-snapshot:get`    | Get snapshot details                   |
 | `cloud database-snapshot:create` | Create a snapshot                      |
 | `cloud database-snapshot:delete` | Delete a snapshot                      |
+| `cloud database-user:list`       | List database users                    |
+| `cloud database-user:get`        | Get database user details              |
+| `cloud database-user:create`     | Create a database user                 |
+| `cloud database-user:update`     | Update a user's permission and access  |
+| `cloud database-user:delete`     | Delete a database user                 |
 | `cloud database-restore:create`  | Create a restore from snapshot or PITR |
 
 ### Cache
