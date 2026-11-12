@@ -403,7 +403,11 @@ class NewApplication extends BaseCommand
         $path = str_replace('/./', '/', $path);
 
         // Trimming a root would change its meaning: `C:` is the drive's current directory, not `C:/`.
-        return preg_match('#^([A-Za-z]:)?/$#', $path) === 1 ? $path : rtrim($path, '/');
+        if (preg_match('#^([A-Za-z]:)?/+$#', $path, $matches) === 1) {
+            return ($matches[1] ?? '').'/';
+        }
+
+        return rtrim($path, '/');
     }
 
     protected function isAbsolutePath(string $path): bool

@@ -222,7 +222,9 @@ it('treats Windows drive and UNC paths as absolute', function () {
         ->and($absolute('C:\\Dev/new-app'))->toBe('C:\\Dev/new-app')
         ->and($absolute('d:/new-app'))->toBe('d:/new-app')
         ->and($absolute('C:/'))->toBe('C:/')
+        ->and($absolute('C://'))->toBe('C:/')
         ->and($absolute('/'))->toBe('/')
+        ->and($absolute('//'))->toBe('/')
         ->and($absolute('/tmp/new-app/'))->toBe('/tmp/new-app')
         ->and($absolute('\\\\server\\share\\new-app'))->toBe('\\\\server\\share\\new-app')
         ->and($absolute('new-app'))->toBe(getcwd().'/new-app');
