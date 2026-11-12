@@ -138,7 +138,7 @@ it('creates the application from the starter kit on GitHub', function () {
 it('attaches a database to a Laravel kit and redeploys so it picks up the credentials', function () {
     runNew();
 
-    expect($this->sent)->toBe(['create-application', 'database', 'attach', 'redeploy'])
+    expect($this->sent)->toBe(['database', 'create-application', 'attach', 'redeploy'])
         ->and($this->attachedDatabase)->toBe(databaseSchemaResponse()['id']);
 });
 
@@ -200,6 +200,31 @@ it('gives up on the first deployment when Cloud never starts one', function () {
     expect(runNew(['--starter-kit' => 'go']))->toBe(1);
 });
 
+it('rejects an unknown database type before creating anything', function () {
+    expect(runNew(['--database' => 'postgress']))->toBe(1)
+        ->and($this->sent)->toBe(['database']);
+});
+
+it('rejects an unavailable database preset before creating anything', function () {
+    expect(runNew(['--database-preset' => 'enormous']))->toBe(1)
+        ->and($this->sent)->toBe(['database']);
+});
+
+it('refuses the root directory as a clone path before creating anything', function () {
+    expect(runNew(['--path' => '/']))->toBe(1)
+        ->and($this->sent)->toBe([]);
+});
+
+it('treats Windows drive and UNC paths as absolute', function () {
+    $absolute = fn (string $path) => (fn () => $this->absolutePath($path))->call(app(NewApplication::class));
+
+    expect($absolute('C:\\Projects\\new-app'))->toBe('C:\\Projects\\new-app')
+        ->and($absolute('C:\\Dev/new-app'))->toBe('C:\\Dev/new-app')
+        ->and($absolute('d:/new-app'))->toBe('d:/new-app')
+        ->and($absolute('\\\\server\\share\\new-app'))->toBe('\\\\server\\share\\new-app')
+        ->and($absolute('new-app'))->toBe(getcwd().'/new-app');
+});
+
 it('creates an Astro application without a database', function () {
     expect(runNew(['--starter-kit' => 'astro']))->toBe(0)
         ->and($this->sentBody['starter_kit'])->toBe('astro')
@@ -221,7 +246,7 @@ it('skips the database when asked to', function () {
 it('provisions a database for other kits when asked to', function () {
     runNew(['--starter-kit' => 'rails', '--database' => 'postgres']);
 
-    expect($this->sent)->toBe(['create-application', 'database', 'attach', 'redeploy']);
+    expect($this->sent)->toBe(['database', 'create-application', 'attach', 'redeploy']);
 });
 
 it('clones the repository and points it at the new application', function () {
@@ -285,7 +310,11 @@ it('fails when the clone fails', function () {
         new FakeProcessResult(exitCode: 128, errorOutput: 'Repository not found.'),
     );
 
-    expect(runNew(['--starter-kit' => 'go']))->toBe(1);
+    expect(runNew(['--starter-kit' => 'go']))->toBe(1)
+        ->and(json_decode(collect(explode(PHP_EOL, trim(Artisan::output())))->last(), true))->toMatchArray([
+            'path' => null,
+            'failure_reason' => 'Could not clone user/new-app: Repository not found.',
+        ]);
 });
 
 function newApplicationOwners(array $repositories): array

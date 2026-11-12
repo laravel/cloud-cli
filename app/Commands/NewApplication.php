@@ -63,6 +63,8 @@ class NewApplication extends BaseCommand
 
     protected ?string $failureReason = null;
 
+    protected ?string $cloneError = null;
+
     public function handle(Git $git)
     {
         intro('Creating a New Application on Laravel Cloud');
@@ -119,7 +121,7 @@ class NewApplication extends BaseCommand
             'repository' => $application->repositoryFullName,
             'path' => $cloned ? $this->path : null,
             // A first deployment that never showed up no longer matters once the redeploy succeeds.
-            'failure_reason' => $deployment?->succeeded() ? null : $this->failureReason,
+            'failure_reason' => ($deployment?->succeeded() ? null : $this->failureReason) ?? $this->cloneError,
         ];
 
         if (! $deployment?->succeeded() || ! $cloned) {
@@ -225,6 +227,10 @@ class NewApplication extends BaseCommand
         // Checked before creating anything, so a bad path cannot leave behind an app and repository.
         if (! $this->pathIsUsable($this->path)) {
             $this->failAndExit('Cannot clone into '.$this->path.': the directory already exists and is not empty.');
+        }
+
+        if ($this->wantsDatabase($starterKit)) {
+            $this->validateDatabaseOptions($this->form()->get('region'));
         }
 
         $this->form()->define('cluster_id', fn ($resolver) => $resolver, 'cluster');
@@ -351,7 +357,8 @@ class NewApplication extends BaseCommand
         );
 
         if (! $result->successful()) {
-            error('Could not clone '.$repository.': '.trim($result->errorOutput()));
+            $this->cloneError = 'Could not clone '.$repository.': '.trim($result->errorOutput());
+            $this->outputError($this->cloneError);
 
             return false;
         }
@@ -389,11 +396,18 @@ class NewApplication extends BaseCommand
             $path = rtrim((string) getenv('HOME'), '/').substr($path, 1);
         }
 
-        if (! str_starts_with($path, '/')) {
+        if (! $this->isAbsolutePath($path)) {
             $path = getcwd().'/'.$path;
         }
 
-        return rtrim(str_replace('/./', '/', $path), '/');
+        return rtrim(str_replace('/./', '/', $path), '/') ?: '/';
+    }
+
+    protected function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/')
+            || str_starts_with($path, '\\\\')
+            || preg_match('/^[A-Za-z]:[\\\\\/]/', $path) === 1;
     }
 
     protected function pathIsUsable(string $path): bool
