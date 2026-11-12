@@ -1,6 +1,7 @@
 <?php
 
 use App\Client\Resources\Deployments\GetDeploymentRequest;
+use App\Client\Resources\Deployments\GetQueuedDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateVanityDomainRequest;
@@ -177,3 +178,42 @@ it('fails when the deployment after the change fails', function () {
         '--no-interaction' => true,
     ])->assertFailed();
 });
+
+function queuedVanityDeploymentResponse(string $status, ?string $failureReason = null): array
+{
+    $promoted = $status === 'promoted';
+
+    return [
+        'data' => [
+            'id' => 'queued-1',
+            'type' => 'queuedDeployments',
+            'attributes' => ['status' => $status, 'failure_reason' => $failureReason],
+            'relationships' => [
+                'deployment' => ['data' => $promoted ? ['id' => 'depl-1', 'type' => 'deployments'] : null],
+            ],
+        ],
+        'included' => $promoted ? [['id' => 'depl-1', 'type' => 'deployments', 'attributes' => ['status' => 'pending']]] : [],
+    ];
+}
+
+it('waits for a queued deployment after the change to start', function (string $finalStatus, bool $succeeds) {
+    setupVanityDomainMocks();
+
+    MockClient::global()->addResponses([
+        InitiateDeploymentRequest::class => MockResponse::make(queuedVanityDeploymentResponse('pending'), 202),
+        GetQueuedDeploymentRequest::class => MockResponse::make(queuedVanityDeploymentResponse($finalStatus, $succeeds ? null : 'Resources expired.'), 200),
+    ]);
+
+    $command = $this->artisan('environment:vanity-domain', [
+        'environment' => 'env-1',
+        '--name' => 'new-name',
+        '--force' => true,
+        '--deploy' => true,
+        '--no-interaction' => true,
+    ]);
+
+    $succeeds ? $command->assertSuccessful() : $command->assertFailed();
+})->with([
+    'promoted' => ['promoted', true],
+    'expired' => ['expired', false],
+]);

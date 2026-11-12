@@ -3,11 +3,13 @@
 namespace App\Concerns;
 
 use App\Dto\Deployment;
+use App\Dto\QueuedDeployment;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Support\Logger;
 
+use function Laravel\Prompts\spin;
 use function Laravel\Prompts\task;
 
 trait WatchesDeployments
@@ -23,6 +25,22 @@ trait WatchesDeployments
         );
 
         return $this->client->deployments()->get($deployment->id);
+    }
+
+    /**
+     * Wait for Cloud to start or give up on a queued deployment and return its final state.
+     */
+    protected function waitForQueuedDeployment(QueuedDeployment $queued): QueuedDeployment
+    {
+        return spin(function () use ($queued) {
+            while ($queued->isPending()) {
+                Sleep::for(CarbonInterval::seconds(5));
+
+                $queued = $this->client->deployments()->include('deployment')->getQueued($queued->id);
+            }
+
+            return $queued;
+        }, 'Waiting for resources to finish provisioning before deploying...');
     }
 
     protected function updateDeploymentStatus(Deployment $deployment, Logger $log): void
