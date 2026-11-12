@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Client\Requests\RunCommandRequestData;
 use App\Concerns\InteractsWithClipbboard;
+use App\Concerns\WarnsAboutTruncatedOutput;
 use App\Dto\Application;
 use App\Dto\Command;
 use App\Dto\Environment;
@@ -26,6 +27,7 @@ class CommandRun extends BaseCommand
     protected ?string $jsonDataClass = Command::class;
 
     use InteractsWithClipbboard;
+    use WarnsAboutTruncatedOutput;
 
     protected $signature = 'command:run
                             {environment? : The environment ID}
@@ -67,13 +69,18 @@ class CommandRun extends BaseCommand
 
         $this->outputJsonIfWanted($command);
 
-        (new MonitorCommand(
+        $monitor = new MonitorCommand(
             fn (string $id) => $this->client->commands()->get($id),
             $command,
-        ))->display();
+        );
+
+        $monitor->display();
+
+        $command = $monitor->lastCommand ?? $this->client->commands()->get($command->id);
+
+        $this->warnIfOutputTruncated($command);
 
         if ($this->option('copy-output')) {
-            $command = $this->client->commands()->get($command->id);
             $this->copyToClipboard($command->output ?? '');
             success('Output copied to clipboard');
         }

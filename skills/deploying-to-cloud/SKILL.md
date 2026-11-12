@@ -240,6 +240,7 @@ Review past commands:
 
 - `cloud command:list {environment} --json -n` — list command history
 - `cloud command:get {commandId} --json -n` — get details and output of a specific command
+- When `outputTruncated` is true, `output` holds only the tail (or is null). Download the full output from `outputUrl`, a JSON file with an `output` key. The link expires within minutes, so fetch it right away.
 
 ### Billing and Usage
 
