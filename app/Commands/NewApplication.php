@@ -135,8 +135,9 @@ class NewApplication extends BaseCommand
         callout("{$application->name} is ready", [
             Element::keyValueList([
                 'URL' => Element::link($environment->url).($isReady ? '' : ' (still starting)'),
-                'Local' => $this->tildePath($this->path),
                 'Dashboard' => Element::link($result['dashboard_url']),
+                'Repository' => Element::link((new GitHubProvider)->repositoryUrl($application->repositoryFullName ?? $this->form()->get('repository'))),
+                'Local' => $this->tildePath($this->path),
             ]),
         ]);
     }
