@@ -254,6 +254,14 @@ it('reports the result as JSON', function () {
     ]);
 });
 
+it('includes the dashboard URL in the result', function () {
+    runNew(['--starter-kit' => 'go']);
+
+    $result = json_decode(collect(explode(PHP_EOL, trim(Artisan::output())))->last(), true);
+
+    expect($result['dashboard_url'])->toEndWith('/my-org/my-app/production');
+});
+
 it('refuses a clone path that already has files before creating anything', function () {
     File::ensureDirectoryExists($this->clonePath);
     File::put($this->clonePath.'/README.md', 'taken');
@@ -366,4 +374,20 @@ it('suggests an absolute clone path outside home', function () {
     expect(newApplicationDefaultPath($tmp.'/cloud-home-'.uniqid(), $cwd))->toBe($cwd.'/new-app');
 
     File::deleteDirectory($cwd);
+});
+
+it('shows paths under home with a tilde', function () {
+    $originalHome = getenv('HOME');
+    putenv('HOME=/Users/taylor/');
+
+    try {
+        $tilde = fn (string $path) => (fn () => $this->tildePath($path))->call(app(NewApplication::class));
+
+        expect($tilde('/Users/taylor/Dev/new-app'))->toBe('~/Dev/new-app')
+            ->and($tilde('/Users/taylor'))->toBe('~')
+            ->and($tilde('/Users/taylorotwell/new-app'))->toBe('/Users/taylorotwell/new-app')
+            ->and($tilde('/opt/new-app'))->toBe('/opt/new-app');
+    } finally {
+        putenv('HOME='.$originalHome);
+    }
 });

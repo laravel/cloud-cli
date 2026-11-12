@@ -31,7 +31,6 @@ use Laravel\Prompts\Elements\Element;
 use function Laravel\Prompts\autocomplete;
 use function Laravel\Prompts\callout;
 use function Laravel\Prompts\error;
-use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
@@ -116,6 +115,7 @@ class NewApplication extends BaseCommand
             'deployment_id' => $deployment?->id,
             'deployment_status' => $deployment?->status->value,
             'url' => $environment->url,
+            'dashboard_url' => $application->url($environment),
             'repository' => $application->repositoryFullName,
             'path' => $cloned ? $this->path : null,
             // A first deployment that never showed up no longer matters once the redeploy succeeds.
@@ -132,8 +132,9 @@ class NewApplication extends BaseCommand
 
         callout("{$application->name} is ready", [
             Element::keyValueList([
-                'URL' => $environment->url.($isReady ? '' : ' (still starting)'),
-                'Local' => $this->path,
+                'URL' => Element::link($environment->url).($isReady ? '' : ' (still starting)'),
+                'Local' => $this->tildePath($this->path),
+                'Dashboard' => Element::link($result['dashboard_url']),
             ]),
         ]);
     }
@@ -360,8 +361,6 @@ class NewApplication extends BaseCommand
             'application_id' => $application->id,
         ]);
 
-        info('Cloned into '.$this->path);
-
         return true;
     }
 
@@ -370,12 +369,18 @@ class NewApplication extends BaseCommand
      */
     protected function defaultClonePath(string $repositoryName): string
     {
-        $path = getcwd().'/'.$repositoryName;
+        return $this->tildePath(getcwd().'/'.$repositoryName);
+    }
+
+    protected function tildePath(string $path): string
+    {
         $home = rtrim((string) getenv('HOME'), '/');
 
-        return $home !== '' && str_starts_with($path, $home.'/')
-            ? '~'.substr($path, strlen($home))
-            : $path;
+        if ($home === '' || ($path !== $home && ! str_starts_with($path, $home.'/'))) {
+            return $path;
+        }
+
+        return '~'.substr($path, strlen($home));
     }
 
     protected function absolutePath(string $path): string
