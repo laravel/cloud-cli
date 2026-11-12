@@ -259,22 +259,22 @@ class InstanceUpdate extends BaseCommand
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
                     label: 'Use Octane?',
-                    default: false,
+                    default: $instance->usesOctane ?? false,
                 ),
             ),
             'uses-octane',
-        )->setPreviousValue($instance->environment?->usesOctane)->setLabel('Octane');
+        )->setPreviousValue($instance->usesOctane)->setLabel('Octane');
 
         $this->form()->define(
             'uses_inertia_ssr',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => confirm(
                     label: 'Use Inertia SSR?',
-                    default: false,
+                    default: $instance->usesInertiaSsr ?? false,
                 ),
             ),
             'uses-inertia-ssr',
-        )->setLabel('Inertia SSR');
+        )->setPreviousValue($instance->usesInertiaSsr)->setLabel('Inertia SSR');
 
         $this->form()->define(
             'scale_to_zero',

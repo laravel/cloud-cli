@@ -32,6 +32,8 @@ class InstanceGet extends BaseCommand
             'Size' => $instance->size,
             'Replicas' => $instance->minReplicas === $instance->maxReplicas ? $instance->minReplicas : "{$instance->minReplicas}-{$instance->maxReplicas}",
             'Scheduler' => $instance->usesScheduler ? 'Yes' : 'No',
+            'Octane' => $instance->usesOctane === null ? null : ($instance->usesOctane ? 'Yes' : 'No'),
+            'Inertia SSR' => $instance->usesInertiaSsr === null ? null : ($instance->usesInertiaSsr ? 'Yes' : 'No'),
             'Scaling CPU Threshold' => $instance->scalingCpuThresholdPercentage.'%',
             'Scaling Memory Threshold' => $instance->scalingMemoryThresholdPercentage.'%',
             'Background Processes' => count($instance->backgroundProcessIds),

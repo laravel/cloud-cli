@@ -13,6 +13,7 @@ use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveInstanceGetCommand;
 use Tests\Fixtures\InteractiveInstanceUpdateCommand;
 
 beforeEach(function () {
@@ -407,6 +408,65 @@ it('maps the instance fields the API returns', function () {
         'retireAt' => '2026-12-01T00:00:00.000000Z',
         'retiredAt' => null,
     ]);
+});
+
+it('maps Octane and Inertia SSR, keeping null for instances they do not apply to', function (array $attributes, ?bool $octane, ?bool $ssr) {
+    setupInstanceUpdateMocks($attributes);
+
+    Artisan::call('instance:get', ['instance' => 'inst-1', '--json' => true]);
+
+    $json = json_decode(Artisan::output(), true);
+
+    expect($json)->toHaveKeys(['usesOctane', 'usesInertiaSsr'])
+        ->and($json['usesOctane'])->toBe($octane)
+        ->and($json['usesInertiaSsr'])->toBe($ssr);
+})->with([
+    'app' => [['uses_octane' => true, 'uses_inertia_ssr' => false], true, false],
+    'worker' => [['type' => 'service', 'uses_octane' => null, 'uses_inertia_ssr' => null], null, null],
+]);
+
+it('selects Octane and Inertia SSR through --fields', function () {
+    setupInstanceUpdateMocks(['uses_octane' => false, 'uses_inertia_ssr' => true]);
+
+    Artisan::call('instance:get', ['instance' => 'inst-1', '--json' => true, '--fields' => 'usesOctane,usesInertiaSsr']);
+
+    expect(json_decode(Artisan::output(), true))->toBe(['usesOctane' => false, 'usesInertiaSsr' => true]);
+});
+
+it('shows Octane and Inertia SSR for app instances only', function () {
+    Artisan::registerCommand(new InteractiveInstanceGetCommand);
+
+    setupInstanceUpdateMocks(['uses_octane' => true, 'uses_inertia_ssr' => false]);
+    Artisan::call('test:interactive-instance-get', ['instance' => 'inst-1']);
+
+    // Each label sits on its own line above its value.
+    expect(preg_replace('/\e\[[0-9;]*m/', '', Artisan::output()))
+        ->toMatch('/Octane\W+Yes/u')
+        ->toMatch('/Inertia SSR\W+No/u');
+
+    MockClient::destroyGlobal();
+    setupInstanceUpdateMocks(['type' => 'service', 'uses_octane' => null, 'uses_inertia_ssr' => null]);
+    Artisan::call('test:interactive-instance-get', ['instance' => 'inst-1']);
+
+    expect(Artisan::output())->not->toContain('Octane')->not->toContain('Inertia SSR');
+});
+
+it('starts the interactive Octane and Inertia SSR prompts from the current values', function () {
+    $sent = setupInstanceUpdateMocks(['uses_octane' => true, 'uses_inertia_ssr' => true]);
+
+    Artisan::registerCommand(new InteractiveInstanceUpdateCommand);
+
+    Prompt::fake([
+        // Octane and Inertia SSR are the 8th and 9th entries in the update menu.
+        Key::DOWN, Key::DOWN, Key::DOWN, Key::DOWN, Key::DOWN, Key::DOWN, Key::DOWN, Key::SPACE,
+        Key::DOWN, Key::SPACE, Key::ENTER,
+        // Accept both defaults.
+        Key::ENTER, Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-instance-update', ['instance' => 'inst-1'])->assertSuccessful();
+
+    expect($sent->body)->toMatchArray(['uses_octane' => true, 'uses_inertia_ssr' => true]);
 });
 
 it('distinguishes leaving hibernation alone from turning it off', function () {
