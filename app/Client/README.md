@@ -107,6 +107,13 @@ $data = $response->json();
 - `CreateDatabaseSnapshotRequest` - Create a new snapshot
 - `DeleteDatabaseSnapshotRequest` - Delete a snapshot
 
+#### Database Users
+- `ListDatabaseUsersRequest` - List users for a cluster
+- `GetDatabaseUserRequest` - Get a specific user
+- `CreateDatabaseUserRequest` - Create a user (the response holds its only copy of the password)
+- `UpdateDatabaseUserRequest` - Replace a user's permission and database access
+- `DeleteDatabaseUserRequest` - Delete a user
+
 #### Database Restores
 - `CreateDatabaseRestoreRequest` - Restore a database from a snapshot or point in time
 

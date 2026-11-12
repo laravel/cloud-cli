@@ -60,6 +60,11 @@ class Resolvers
         return $this->make(DatabaseSnapshotResolver::class);
     }
 
+    public function databaseUser(): DatabaseUserResolver
+    {
+        return $this->make(DatabaseUserResolver::class);
+    }
+
     public function deployment(): DeploymentResolver
     {
         return $this->make(DeploymentResolver::class);
