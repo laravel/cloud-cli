@@ -8,7 +8,9 @@ use App\Concerns\ReadsLocalEnvironmentVariables;
 use App\Concerns\RequiresRemoteGitRepo;
 use App\Concerns\UpdatesBuildDeployCommands;
 use App\Concerns\WatchesDeployments;
+use App\Dto\Deployment;
 use App\Dto\Environment;
+use App\Dto\QueuedDeployment;
 use App\Exceptions\CommandExitException;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Artisan;
@@ -82,6 +84,10 @@ class Deploy extends BaseCommand
             new InitiateDeploymentRequestData($environment->id),
         );
 
+        if ($deployment instanceof QueuedDeployment) {
+            $deployment = $this->startQueuedDeployment($deployment);
+        }
+
         $this->writeJsonIfWanted([
             'deployment_id' => $deployment->id,
             'status' => 'initiated',
@@ -145,6 +151,50 @@ class Deploy extends BaseCommand
         ]);
 
         outro($environment->url);
+    }
+
+    protected function startQueuedDeployment(QueuedDeployment $queued): Deployment
+    {
+        $message = 'Deployment queued until the environment\'s resources finish provisioning';
+
+        $this->writeJsonIfWanted([
+            'queued_deployment_id' => $queued->id,
+            'status' => 'queued',
+            'message' => $message,
+            'timestamp' => CarbonImmutable::now()->timestamp,
+        ]);
+
+        if ($this->option('no-wait')) {
+            $this->outputJsonIfWanted([
+                'queued_deployment_id' => $queued->id,
+                'status' => 'queued',
+                'message' => $message,
+            ]);
+
+            success($message.': '.$queued->id);
+
+            throw new CommandExitException(self::SUCCESS);
+        }
+
+        info($message.'.');
+
+        $queued = $this->waitForQueuedDeployment($queued);
+
+        if ($queued->wasPromoted() && $queued->deployment) {
+            return $queued->deployment;
+        }
+
+        $reason = $queued->notStartedReason();
+
+        $this->writeJsonIfWanted([
+            'queued_deployment_id' => $queued->id,
+            'status' => $queued->status->value,
+            'failure_reason' => $reason,
+        ]);
+
+        error('Deployment did not start: '.$reason);
+
+        throw new CommandExitException(self::FAILURE);
     }
 
     protected function pushEnvironmentVariables(Environment $environment): void

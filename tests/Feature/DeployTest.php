@@ -2,6 +2,7 @@
 
 use App\Client\Resources\Applications\ListApplicationsRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
+use App\Client\Resources\Deployments\GetQueuedDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
@@ -12,6 +13,7 @@ use Illuminate\Support\Sleep;
 use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Saloon\Http\PendingRequest;
 
 beforeEach(function () {
     Sleep::fake();
@@ -374,5 +376,152 @@ it('stops monitoring when the deployment reaches the failed status', function ()
         '--no-interaction' => true,
     ])
         ->expectsOutputToContain('"status":"failed"')
+        ->assertSuccessful();
+});
+
+function createQueuedDeploymentResponse(string $status = 'pending', ?string $failureReason = null, ?array $deployment = null): array
+{
+    return [
+        'data' => [
+            'id' => 'queued-1',
+            'type' => 'queuedDeployments',
+            'attributes' => [
+                'status' => $status,
+                'branch_name' => 'main',
+                'commit_hash' => 'abc123',
+                'commit_message' => 'Add feature',
+                'commit_author' => 'Taylor',
+                'failure_reason' => $failureReason,
+                'created_at' => now()->toISOString(),
+            ],
+            'relationships' => [
+                'deployment' => ['data' => $deployment ? ['id' => $deployment['id'], 'type' => 'deployments'] : null],
+            ],
+        ],
+        'included' => $deployment ? [$deployment] : [],
+    ];
+}
+
+/**
+ * Cloud answers a deploy with 202 and a queued deployment while the environment's resources provision.
+ *
+ * @param  list<array>  $queuedPolls  Successive GET /queued-deployments/{id} bodies; the last one repeats.
+ */
+function setupQueuedDeployMocks(array $queuedPolls): void
+{
+    setupSuccessfulDeployMocks();
+
+    $polls = 0;
+
+    MockClient::global()->addResponses([
+        InitiateDeploymentRequest::class => MockResponse::make(
+            createQueuedDeploymentResponse('pending'),
+            202,
+            ['Content-Location' => 'https://cloud.laravel.com/api/queued-deployments/queued-1'],
+        ),
+
+        GetQueuedDeploymentRequest::class => function (PendingRequest $request) use (&$polls, $queuedPolls) {
+            expect($request->query()->get('include'))->toContain('deployment');
+
+            $body = $queuedPolls[min($polls++, count($queuedPolls) - 1)];
+
+            return MockResponse::make($body, 200);
+        },
+
+        // Cloud binds /deployments/{id} to deployments only, so a queued ID 404s there.
+        GetDeploymentRequest::class => fn (PendingRequest $request) => str_contains($request->getUrl(), 'queued-1')
+            ? MockResponse::make(['message' => 'Not found.'], 404)
+            : MockResponse::make(createDeploymentResponse('deployment.succeeded'), 200),
+    ]);
+}
+
+it('waits for a queued deployment to be promoted and then watches it', function () {
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupQueuedDeployMocks([
+        createQueuedDeploymentResponse('pending'),
+        createQueuedDeploymentResponse('promoted', deployment: createDeploymentResponse('pending')['data']),
+    ]);
+
+    $this->artisan('deploy', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--json' => true,
+        '--no-interaction' => true,
+    ])
+        ->expectsOutputToContain('"queued_deployment_id":"queued-1","status":"queued"')
+        ->expectsOutputToContain('"deployment_id":"deploy-123","status":"initiated"')
+        ->expectsOutputToContain('"status":"deployment.succeeded"')
+        ->assertSuccessful();
+});
+
+it('waits for a queued deployment interactively', function () {
+    Prompt::fake();
+
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupQueuedDeployMocks([
+        createQueuedDeploymentResponse('promoted', deployment: createDeploymentResponse('pending')['data']),
+    ]);
+
+    $this->artisan('deploy', [
+        'application' => 'My App',
+        'environment' => 'production',
+    ])->assertSuccessful();
+});
+
+it('fails with the reason when a queued deployment does not start', function () {
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupQueuedDeployMocks([
+        createQueuedDeploymentResponse('pending'),
+        createQueuedDeploymentResponse('failed', 'The database failed to provision.'),
+    ]);
+
+    $this->artisan('deploy', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--json' => true,
+        '--no-interaction' => true,
+    ])
+        ->expectsOutputToContain('"queued_deployment_id":"queued-1","status":"failed","failure_reason":"The database failed to provision."')
+        ->assertFailed();
+});
+
+it('reports a queued deployment without claiming a deployment ID when not waiting', function () {
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupQueuedDeployMocks([createQueuedDeploymentResponse('pending')]);
+
+    $this->artisan('deploy', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--no-wait' => true,
+        '--json' => true,
+        '--no-interaction' => true,
+    ])
+        ->expectsOutputToContain('"queued_deployment_id":"queued-1","status":"queued"')
+        ->doesntExpectOutputToContain('deployment_id":"queued-1')
+        ->assertSuccessful();
+});
+
+it('reports the deployment ID when not waiting on a deployment that started right away', function () {
+    $this->mockGit->shouldReceive('hasRemote')->andReturn(true);
+    $this->mockGit->shouldReceive('remoteRepo')->andReturn('user/my-app');
+
+    setupSuccessfulDeployMocks();
+
+    $this->artisan('deploy', [
+        'application' => 'My App',
+        'environment' => 'production',
+        '--no-wait' => true,
+        '--json' => true,
+        '--no-interaction' => true,
+    ])
+        ->expectsOutputToContain('"deployment_id":"deploy-123","status":"pending"')
         ->assertSuccessful();
 });

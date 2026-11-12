@@ -5,10 +5,12 @@ namespace App\Client\Resources;
 use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Client\Resources\Deployments\GetDeploymentLogsRequest;
 use App\Client\Resources\Deployments\GetDeploymentRequest;
+use App\Client\Resources\Deployments\GetQueuedDeploymentRequest;
 use App\Client\Resources\Deployments\InitiateDeploymentRequest;
 use App\Client\Resources\Deployments\ListDeploymentsRequest;
 use App\Dto\Deployment;
 use App\Dto\DeploymentLog;
+use App\Dto\QueuedDeployment;
 use Saloon\PaginationPlugin\Paginator;
 
 class DeploymentsResource extends Resource
@@ -36,9 +38,17 @@ class DeploymentsResource extends Resource
         return $request->createDtoFromResponse($response);
     }
 
-    public function initiate(InitiateDeploymentRequestData $data): Deployment
+    public function initiate(InitiateDeploymentRequestData $data): Deployment|QueuedDeployment
     {
         $request = new InitiateDeploymentRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function getQueued(string $queuedDeploymentId): QueuedDeployment
+    {
+        $request = new GetQueuedDeploymentRequest($queuedDeploymentId);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

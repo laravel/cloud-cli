@@ -6,12 +6,14 @@ use App\Client\Requests\InitiateDeploymentRequestData;
 use App\Client\Requests\UpdateVanityDomainRequestData;
 use App\Concerns\WatchesDeployments;
 use App\Dto\Environment;
+use App\Dto\QueuedDeployment;
 use App\Prompts\SuffixedTextPrompt;
 use Illuminate\Support\Str;
 use Saloon\Exceptions\Request\Statuses\TooManyRequestsException;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\error;
+use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\warning;
@@ -94,6 +96,20 @@ class EnvironmentVanityDomain extends BaseCommand
             fn () => $this->client->deployments()->initiate(new InitiateDeploymentRequestData($environment->id)),
             'Starting deployment...',
         );
+
+        if ($deployment instanceof QueuedDeployment) {
+            info('Deployment queued until the environment\'s resources finish provisioning.');
+
+            $queued = $this->waitForQueuedDeployment($deployment);
+
+            if (! $queued->wasPromoted() || ! $queued->deployment) {
+                error('Deployment did not start: '.$queued->notStartedReason());
+
+                return self::FAILURE;
+            }
+
+            $deployment = $queued->deployment;
+        }
 
         $deployment = $this->watchDeployment($deployment);
 
