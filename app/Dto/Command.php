@@ -18,6 +18,8 @@ class Command extends Data
         #[WithCast(EnumCast::class)]
         public readonly CommandStatus $status,
         public readonly ?string $output = null,
+        public readonly bool $outputTruncated = false,
+        public readonly ?string $outputUrl = null,
         public readonly ?int $exitCode = null,
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $startedAt = null,
@@ -66,6 +68,8 @@ class Command extends Data
             'command' => $attributes['command'] ?? '',
             'status' => $attributes['status'] ?? '',
             'output' => $attributes['output'] ?? null,
+            'outputTruncated' => $attributes['output_truncated'] ?? false,
+            'outputUrl' => $attributes['output_url'] ?? null,
             'exitCode' => $attributes['exit_code'] ?? null,
             'startedAt' => $attributes['started_at'] ?? null,
             'finishedAt' => $attributes['finished_at'] ?? null,

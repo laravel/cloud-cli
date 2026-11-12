@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Concerns\InteractsWithClipbboard;
+use App\Concerns\WarnsAboutTruncatedOutput;
 use App\Dto\Command;
 
 use function Laravel\Prompts\intro;
@@ -12,6 +13,7 @@ class CommandGet extends BaseCommand
     protected ?string $jsonDataClass = Command::class;
 
     use InteractsWithClipbboard;
+    use WarnsAboutTruncatedOutput;
 
     protected $signature = 'command:get {commandId? : The command ID} {--copy-output : Copy the output to the clipboard}';
 
@@ -40,6 +42,8 @@ class CommandGet extends BaseCommand
             'Finished At' => $cmd->finishedAt?->format('Y-m-d H:i:s') ?? '—',
             'Created At' => $cmd->createdAt?->format('Y-m-d H:i:s') ?? '—',
         ], fn ($value) => $value !== null));
+
+        $this->warnIfOutputTruncated($cmd);
 
         if ($this->option('copy-output')) {
             $this->copyToClipboard($cmd->output ?? '');

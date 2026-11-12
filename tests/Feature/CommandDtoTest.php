@@ -3,12 +3,16 @@
 use App\Client\Connector;
 use App\Client\Resources\Commands\GetCommandRequest;
 use App\Client\Resources\Commands\ListCommandsRequest;
+use App\Client\Resources\Commands\RunCommandRequest;
+use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\ConfigRepository;
 use App\Dto\Command;
 use Illuminate\Support\Facades\Artisan;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
+use Tests\Fixtures\InteractiveCommandGetCommand;
+use Tests\Fixtures\InteractiveCommandRunCommand;
 
 beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
@@ -111,4 +115,96 @@ it('includes the failure reason in the command JSON', function () {
     expect($json['initiator']['name'])->toBe('Taylor');
     expect($json)->not->toHaveKey('instance');
     expect($json)->not->toHaveKey('updatedAt');
+});
+
+function truncatedCommandResponse(): array
+{
+    return [
+        'data' => commandData('comm-1', 'user-1', null, [
+            'output' => 'last lines of output',
+            'output_truncated' => true,
+            'output_url' => 'https://logs.example.com/command-output.json?signature=abc',
+        ]),
+        'included' => commandIncluded(),
+    ];
+}
+
+it('includes the output truncation fields in the command JSON', function () {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetCommandRequest::class => MockResponse::make(truncatedCommandResponse(), 200),
+    ]);
+
+    Artisan::call('command:get', [
+        'commandId' => 'comm-1',
+        '--json' => true,
+    ]);
+
+    $json = json_decode(Artisan::output(), true);
+
+    expect($json['outputTruncated'])->toBeTrue();
+    expect($json['outputUrl'])->toBe('https://logs.example.com/command-output.json?signature=abc');
+});
+
+it('defaults the truncation fields when the API leaves them out', function () {
+    $command = Command::createFromResponse(['data' => commandData('comm-1', 'user-1', null)]);
+
+    expect($command->outputTruncated)->toBeFalse();
+    expect($command->outputUrl)->toBeNull();
+});
+
+it('warns with the download link when command:get output is truncated', function () {
+    Artisan::registerCommand(new InteractiveCommandGetCommand);
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetCommandRequest::class => MockResponse::make(truncatedCommandResponse(), 200),
+    ]);
+
+    Artisan::call('test:interactive-command-get', ['commandId' => 'comm-1']);
+
+    expect(Artisan::output())
+        ->toContain('Output is truncated')
+        ->toContain('https://logs.example.com/command-output.json?signature=abc');
+});
+
+it('does not warn when command:get output is complete', function () {
+    Artisan::registerCommand(new InteractiveCommandGetCommand);
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetCommandRequest::class => MockResponse::make([
+            'data' => commandData('comm-1', 'user-1', null, ['output' => 'all of it']),
+            'included' => commandIncluded(),
+        ], 200),
+    ]);
+
+    Artisan::call('test:interactive-command-get', ['commandId' => 'comm-1']);
+
+    expect(Artisan::output())
+        ->toContain('all of it')
+        ->not->toContain('truncated');
+});
+
+it('warns with the download link when command:run output is truncated', function () {
+    Artisan::registerCommand(new InteractiveCommandRunCommand);
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetEnvironmentRequest::class => MockResponse::make(['data' => createEnvironmentResponse()], 200),
+        RunCommandRequest::class => MockResponse::make([
+            'data' => commandData('comm-1', 'user-1', null, ['status' => 'pending']),
+            'included' => commandIncluded(),
+        ], 200),
+        GetCommandRequest::class => MockResponse::make(truncatedCommandResponse(), 200),
+    ]);
+
+    Artisan::call('test:interactive-command-run', [
+        'environment' => 'env-1',
+        '--cmd' => 'php artisan migrate',
+    ]);
+
+    expect(Artisan::output())
+        ->toContain('Output is truncated')
+        ->toContain('https://logs.example.com/command-output.json?signature=abc');
 });
