@@ -6,6 +6,7 @@ use App\Concerns\DrawsThemeBoxes;
 use App\Enums\TimelineSymbol;
 use InvalidArgumentException;
 use Laravel\Prompts\Callout;
+use Laravel\Prompts\Elements\KeyValueList;
 
 class CalloutRenderer extends Renderer
 {
@@ -20,6 +21,10 @@ class CalloutRenderer extends Renderer
 
         $body = collect($content)
             ->map(function ($part) use ($width) {
+                if ($part instanceof KeyValueList) {
+                    return $this->keyValueList($part, $width);
+                }
+
                 if (! is_string($part)) {
                     throw new InvalidArgumentException('Unsupported callout content part: '.get_debug_type($part));
                 }
@@ -44,5 +49,21 @@ class CalloutRenderer extends Renderer
             info: $prompt->info,
             symbol: $symbol,
         );
+    }
+
+    protected function keyValueList(KeyValueList $list, int $width): string
+    {
+        $keyWidth = max(array_map(mb_strwidth(...), array_keys($list->items)));
+
+        return collect($list->items)
+            ->flatMap(function (string $value, string $key) use ($keyWidth, $width) {
+                $lines = $this->ansiWordwrap($value, $width - $keyWidth - 2);
+
+                return [
+                    $this->dim(mb_str_pad($key, $keyWidth)).'  '.array_shift($lines),
+                    ...array_map(fn (string $line) => str_repeat(' ', $keyWidth + 2).$line, $lines),
+                ];
+            })
+            ->implode(PHP_EOL);
     }
 }

@@ -19,6 +19,7 @@ enum StarterKit: string
     case DJANGO = 'django';
     case FASTAPI = 'fastapi';
     case RAILS = 'rails';
+    case ASTRO = 'astro';
 
     public function label(): string
     {
@@ -35,6 +36,7 @@ enum StarterKit: string
             self::DJANGO => 'Django',
             self::FASTAPI => 'FastAPI',
             self::RAILS => 'Rails',
+            self::ASTRO => 'Astro',
         };
     }
 

@@ -200,6 +200,12 @@ it('gives up on the first deployment when Cloud never starts one', function () {
     expect(runNew(['--starter-kit' => 'go']))->toBe(1);
 });
 
+it('creates an Astro application without a database', function () {
+    expect(runNew(['--starter-kit' => 'astro']))->toBe(0)
+        ->and($this->sentBody['starter_kit'])->toBe('astro')
+        ->and($this->sent)->toBe(['create-application']);
+});
+
 it('skips the database for kits outside Laravel', function () {
     runNew(['--starter-kit' => 'nextjs']);
 
@@ -326,4 +332,38 @@ it('drops the first deployment warning from the result once the redeploy succeed
         'deployment_status' => 'deployment.succeeded',
         'failure_reason' => null,
     ]);
+});
+
+function newApplicationDefaultPath(string $home, string $cwd): string
+{
+    $originalHome = getenv('HOME');
+    $originalCwd = getcwd();
+
+    putenv('HOME='.$home);
+    File::ensureDirectoryExists($cwd);
+    chdir($cwd);
+
+    try {
+        return (fn () => $this->defaultClonePath('new-app'))->call(app(NewApplication::class));
+    } finally {
+        putenv('HOME='.$originalHome);
+        chdir($originalCwd);
+    }
+}
+
+it('suggests a clone path under the current directory, written from home', function () {
+    $home = realpath(sys_get_temp_dir()).'/cloud-home-'.uniqid();
+
+    expect(newApplicationDefaultPath($home, $home.'/Dev'))->toBe('~/Dev/new-app');
+
+    File::deleteDirectory($home);
+});
+
+it('suggests an absolute clone path outside home', function () {
+    $tmp = realpath(sys_get_temp_dir());
+    $cwd = $tmp.'/cloud-elsewhere-'.uniqid();
+
+    expect(newApplicationDefaultPath($tmp.'/cloud-home-'.uniqid(), $cwd))->toBe($cwd.'/new-app');
+
+    File::deleteDirectory($cwd);
 });

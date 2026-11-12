@@ -26,12 +26,13 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Sleep;
 use Illuminate\Support\Str;
+use Laravel\Prompts\Elements\Element;
 
 use function Laravel\Prompts\autocomplete;
+use function Laravel\Prompts\callout;
 use function Laravel\Prompts\error;
 use function Laravel\Prompts\info;
 use function Laravel\Prompts\intro;
-use function Laravel\Prompts\outro;
 use function Laravel\Prompts\select;
 use function Laravel\Prompts\spin;
 use function Laravel\Prompts\text;
@@ -48,7 +49,7 @@ class NewApplication extends BaseCommand
     use WatchesDeployments;
 
     protected $signature = 'new
-                            {--starter-kit= : Starter kit (laravel, laravel-react, laravel-vue, laravel-livewire, laravel-svelte, nextjs, nuxt, express, go, django, fastapi, rails)}
+                            {--starter-kit= : Starter kit (laravel, laravel-react, laravel-vue, laravel-livewire, laravel-svelte, nextjs, nuxt, express, go, django, fastapi, rails, astro)}
                             {--repository= : New GitHub repository to create (owner/name). Must not exist yet}
                             {--name= : Application name. Default: the repository name}
                             {--region= : Region. Default: most-used or us-east-2}
@@ -129,7 +130,12 @@ class NewApplication extends BaseCommand
 
         $this->outputJsonIfWanted($result);
 
-        outro('Live at '.$environment->url.($isReady ? '' : ' (still starting)').'. Code is in '.$this->path);
+        callout("{$application->name} is ready", [
+            Element::keyValueList([
+                'URL' => $environment->url.($isReady ? '' : ' (still starting)'),
+                'Local' => $this->path,
+            ]),
+        ]);
     }
 
     protected function createApplication(): Application
@@ -204,13 +210,13 @@ class NewApplication extends BaseCommand
             fn ($resolver) => $resolver
                 ->fromInput(fn (?string $value) => text(
                     label: 'Clone to',
-                    default: $value ?? './'.$repositoryName,
+                    default: $value ?? $this->defaultClonePath($repositoryName),
                     required: true,
                     validate: fn (string $path) => $this->pathIsUsable($this->absolutePath($path))
                         ? null
                         : 'That directory already exists and is not empty.',
                 ))
-                ->nonInteractively(fn () => './'.$repositoryName),
+                ->nonInteractively(fn () => $this->defaultClonePath($repositoryName)),
         );
 
         $this->path = $this->absolutePath($this->form()->get('path'));
@@ -357,6 +363,19 @@ class NewApplication extends BaseCommand
         info('Cloned into '.$this->path);
 
         return true;
+    }
+
+    /**
+     * A full path is easier to correct than `./name`, and `~` keeps it short.
+     */
+    protected function defaultClonePath(string $repositoryName): string
+    {
+        $path = getcwd().'/'.$repositoryName;
+        $home = rtrim((string) getenv('HOME'), '/');
+
+        return $home !== '' && str_starts_with($path, $home.'/')
+            ? '~'.substr($path, strlen($home))
+            : $path;
     }
 
     protected function absolutePath(string $path): string

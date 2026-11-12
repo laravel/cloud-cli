@@ -3,6 +3,7 @@
 use App\Prompts\CalloutRenderer;
 use App\Prompts\Renderer;
 use Laravel\Prompts\Callout;
+use Laravel\Prompts\Elements\Element;
 
 // Commands run earlier in the suite leave output suppressed, which blanks every frame.
 beforeEach(fn () => Renderer::$suppressOutput = false);
@@ -12,7 +13,7 @@ beforeEach(fn () => Renderer::$suppressOutput = false);
  *
  * @return array<int, string>
  */
-function calloutBoxLines(string $content): array
+function calloutBoxLines(string|array $content): array
 {
     $callout = new Callout('Routing traffic', $content, 'success', '2s');
 
@@ -30,4 +31,17 @@ it('keeps every line of the box the same width when the content has tabs', funct
     expect($lines)->toHaveCount(4);
     expect(array_unique(array_map('mb_strwidth', $lines)))->toHaveCount(1);
     expect($lines[2])->not->toContain("\t");
+});
+
+it('lines up the values of a key value list', function () {
+    $lines = calloutBoxLines([
+        'Your app is live.',
+        Element::keyValueList(['URL' => 'https://new-app.laravel.cloud', 'Local' => '~/Dev/new-app']),
+    ]);
+
+    expect(implode(PHP_EOL, $lines))
+        ->toContain('Your app is live.')
+        ->toContain('URL    https://new-app.laravel.cloud')
+        ->toContain('Local  ~/Dev/new-app');
+    expect(array_unique(array_map('mb_strwidth', $lines)))->toHaveCount(1);
 });
