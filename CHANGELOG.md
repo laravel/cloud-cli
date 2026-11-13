@@ -1,6 +1,14 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.7...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.8...main)
+
+## [v0.7.8](https://github.com/laravel/cloud-cli/compare/v0.7.7...v0.7.8) - 2026-11-13
+
+### What's Changed
+
+* `ship` now defaults to MySQL + scale to zero by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/293
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.7...v0.7.8
 
 ## [v0.7.7](https://github.com/laravel/cloud-cli/compare/v0.7.6...v0.7.7) - 2026-11-12
 
