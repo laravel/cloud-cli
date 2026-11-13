@@ -101,16 +101,12 @@ trait ProvisionsDefaultResources
     {
         $input = strtolower((string) $this->option('database'));
 
-        if ($input === '') {
-            return [DatabaseClusterPreset::NeonServerlessPostgres->value, null];
+        if ($input === '' || $input === 'mysql') {
+            return [DatabaseClusterPreset::LaravelMysql->value, null];
         }
 
         if ($input === 'postgres') {
             return [DatabaseClusterPreset::NeonServerlessPostgres->value, null];
-        }
-
-        if ($input === 'mysql') {
-            return [DatabaseClusterPreset::LaravelMysql->value, null];
         }
 
         if (preg_match('/^postgres(\d+)$/', $input, $matches)) {
@@ -167,7 +163,7 @@ trait ProvisionsDefaultResources
      */
     protected function validateDatabaseOptions(string $region): void
     {
-        [$type, $version] = $this->resolveDatabaseTypeAndVersion();
+        [$type, $version] = $this->resolveDatabaseTypeAndVersion($region);
 
         $this->validatedDatabase = [$type, $version, $this->resolveDatabasePreset($type->type, $region)];
     }
@@ -175,12 +171,17 @@ trait ProvisionsDefaultResources
     /**
      * @return array{0: DatabaseType, 1: string}
      */
-    protected function resolveDatabaseTypeAndVersion(): array
+    protected function resolveDatabaseTypeAndVersion(string $region): array
     {
         $types = $this->client->databaseClusters()->types();
         $types = collect($types)->filter(fn (DatabaseType $type) => DatabaseClusterPreset::tryFrom($type->type) !== null)->values();
 
         [$resolvedType, $resolvedVersion] = $this->resolveDatabaseType();
+
+        // MySQL isn't offered everywhere, so the default falls back to Postgres like the dashboard does.
+        if ((string) $this->option('database') === '' && ! in_array($region, $types->firstWhere('type', $resolvedType)->regions ?? [], true)) {
+            $resolvedType = DatabaseClusterPreset::NeonServerlessPostgres->value;
+        }
 
         $type = $types->firstWhere('type', $resolvedType);
 
@@ -204,11 +205,11 @@ trait ProvisionsDefaultResources
 
     protected function provisionDatabaseOpinionated(): ?string
     {
-        [$type, $version, $preset] = $this->validatedDatabase ?? [...$this->resolveDatabaseTypeAndVersion(), null];
-
         $defaults = $this->databaseClusterDefaults();
         $name = $defaults['name'] ?? 'database';
         $region = $defaults['region'] ?? 'us-east-2';
+
+        [$type, $version, $preset] = $this->validatedDatabase ?? [...$this->resolveDatabaseTypeAndVersion($region), null];
 
         $clusters = $this->client->databaseClusters()->list()->collect();
         $cluster = $clusters->firstWhere('name', $name);

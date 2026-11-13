@@ -295,6 +295,7 @@ it('lets config flags override the preset', function () {
         'retention_days' => 1,
         'uses_scheduled_snapshots' => false,
         'is_public' => true,
+        'suspend_seconds' => 300,
         'maintenance_window' => 'sun:06:00-sun:06:30',
     ]);
 });
@@ -370,8 +371,8 @@ it('sends the corrected custom value after the API rejects a flag', function () 
     Prompt::fake([
         // Custom is the last configuration option.
         Key::UP, Key::ENTER,
-        // Accept the defaults for storage, retention days, scheduled snapshots, public and maintenance window.
-        Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER,
+        // Accept the defaults for storage, retention days, scheduled snapshots, public, maintenance window and suspend seconds.
+        Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER,
         // Replace the rejected size.
         ...array_fill(0, strlen('bogus'), Key::BACKSPACE), ...str_split('db-flex.m-1vcpu-1gb'), Key::ENTER,
     ]);

@@ -51,12 +51,12 @@ function shipCommandProvisioningDatabase(array $options): Ship
     return $command;
 }
 
-function setupShipDatabaseMocks(): Closure
+function setupShipDatabaseMocks(?array $types = null): Closure
 {
     $sentBody = new stdClass;
 
     MockClient::global([
-        ListDatabaseTypesRequest::class => MockResponse::make(versionlessDatabaseTypesResponse(), 200),
+        ListDatabaseTypesRequest::class => MockResponse::make($types ?? versionlessDatabaseTypesResponse(), 200),
         ListDatabasePresetsRequest::class => fn (PendingRequest $request) => MockResponse::make(
             databasePresetsResponse($request->query()->get('type')),
             200,
@@ -94,10 +94,48 @@ it('resolves the database option into a type and version', function (string $opt
     'a retired versioned MySQL type' => ['laravel_mysql_8', 'laravel_mysql', '8.4'],
 ]);
 
-it('defaults to the newest Serverless Postgres the API offers', function () {
+it('defaults to Laravel MySQL that scales to zero', function () {
     $sentBody = setupShipDatabaseMocks();
 
     $command = shipCommandProvisioningDatabase([]);
+
+    (fn () => $this->provisionDatabaseOpinionated())->call($command);
+
+    expect($sentBody()['type'])->toBe('laravel_mysql')
+        ->and($sentBody()['version'])->toBe('8.4')
+        ->and($sentBody()['region'])->toBe('us-east-1')
+        ->and($sentBody()['config']['suspend_seconds'])->toBe(300);
+});
+
+it('defaults to Serverless Postgres where Laravel MySQL is not offered', function () {
+    $types = versionlessDatabaseTypesResponse();
+    $types['data'][0]['regions'] = ['eu-central-1'];
+    $sentBody = setupShipDatabaseMocks($types);
+
+    $command = shipCommandProvisioningDatabase([]);
+
+    (fn () => $this->provisionDatabaseOpinionated())->call($command);
+
+    expect($sentBody()['type'])->toBe('neon_serverless_postgres')
+        ->and($sentBody()['version'])->toBe('18');
+});
+
+it('keeps an explicit MySQL choice even where the API does not list the region', function () {
+    $types = versionlessDatabaseTypesResponse();
+    $types['data'][0]['regions'] = ['eu-central-1'];
+    $sentBody = setupShipDatabaseMocks($types);
+
+    $command = shipCommandProvisioningDatabase(['--database' => 'mysql']);
+
+    (fn () => $this->provisionDatabaseOpinionated())->call($command);
+
+    expect($sentBody()['type'])->toBe('laravel_mysql');
+});
+
+it('provisions the newest Serverless Postgres the API offers', function () {
+    $sentBody = setupShipDatabaseMocks();
+
+    $command = shipCommandProvisioningDatabase(['--database' => 'postgres']);
 
     $schemaId = (fn () => $this->provisionDatabaseOpinionated())->call($command);
 

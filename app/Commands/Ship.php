@@ -61,7 +61,7 @@ class Ship extends BaseCommand
     use UpdatesBuildDeployCommands;
 
     protected $signature = 'ship
-                            {--database= : Database type or alias (postgres, postgres<version>, mysql, or a type from `cloud database:types`). Unversioned aliases use the newest available version. Default: postgres}
+                            {--database= : Database type or alias (postgres, postgres<version>, mysql, or a type from `cloud database:types`). Unversioned aliases use the newest available version. Default: mysql, or postgres where MySQL is not offered}
                             {--database-preset= : Preset for the database, as listed by the API for the type and region (e.g. dev, prod, scale — case-insensitive). Default: dev, or the first preset offered}
                             {--name= : Application name (non-interactive). Default: derived from repository}
                             {--region= : Region (non-interactive). Default: most-used or us-east-2}
@@ -406,12 +406,8 @@ class Ship extends BaseCommand
         $selectedOptions = multiselect(
             label: 'Enable any of the following features?',
             options: $enableOptions,
-            default: $this->requestedQueueType !== null || $this->appDispatchesQueuedJobs() ? ['queue'] : [],
+            default: ['scale_to_zero', ...($this->requestedQueueType !== null || $this->appDispatchesQueuedJobs() ? ['queue'] : [])],
         );
-
-        if (count($selectedOptions) === 0) {
-            return null;
-        }
 
         $queueType = in_array('queue', $selectedOptions) ? $this->promptForQueueType() : null;
 
@@ -445,6 +441,9 @@ class Ship extends BaseCommand
             );
 
             $instanceParams['hibernation_timeout'] = (int) $scaleToZeroAfter;
+        } else {
+            // Cloud turns scale to zero on for new environments, so leaving the option unticked has to switch it off.
+            $instanceParams['disable_hibernation'] = true;
         }
 
         if (in_array('database_cluster', $selectedOptions)) {
@@ -470,20 +469,19 @@ class Ship extends BaseCommand
             }
         }
 
-        if (count($instanceParams) > 0) {
-            $this->loopUntilValid(
-                fn () => spin(
-                    fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
-                        instanceId: $environment->instances[0],
-                        usesScheduler: $instanceParams['uses_scheduler'] ?? null,
-                        usesOctane: $instanceParams['uses_octane'] ?? null,
-                        usesInertiaSsr: $instanceParams['uses_inertia_ssr'] ?? null,
-                        hibernationTimeout: $instanceParams['hibernation_timeout'] ?? null,
-                    )),
-                    'Updating instance...',
-                ),
-            );
-        }
+        $this->loopUntilValid(
+            fn () => spin(
+                fn () => $this->client->instances()->update(new UpdateInstanceRequestData(
+                    instanceId: $environment->instances[0],
+                    usesScheduler: $instanceParams['uses_scheduler'] ?? null,
+                    usesOctane: $instanceParams['uses_octane'] ?? null,
+                    usesInertiaSsr: $instanceParams['uses_inertia_ssr'] ?? null,
+                    hibernationTimeout: $instanceParams['hibernation_timeout'] ?? null,
+                    disableHibernation: $instanceParams['disable_hibernation'] ?? false,
+                )),
+                'Updating instance...',
+            ),
+        );
 
         if (count($environmentParams) > 0) {
             $this->loopUntilValid(
@@ -545,7 +543,9 @@ class Ship extends BaseCommand
                 usesScheduler: $instanceParams['uses_scheduler'],
                 usesOctane: $instanceParams['uses_octane'],
                 usesInertiaSsr: null,
-                disableHibernation: true,
+                // Cloud already turns scale to zero on for new environments, but a worker on the app
+                // instance stops while it sleeps, so its jobs would wait for the next web request.
+                disableHibernation: in_array($queueType, ['worker', 'horizon'], true),
             ),
         );
 
