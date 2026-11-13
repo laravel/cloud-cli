@@ -26,30 +26,6 @@ afterEach(function () {
     MockClient::destroyGlobal();
 });
 
-function updatableInstanceResponse(array $attributes = []): array
-{
-    return ['data' => [
-        'id' => 'inst-1',
-        'type' => 'instances',
-        'attributes' => array_merge([
-            'name' => 'web',
-            'type' => 'app',
-            'size' => 'flex.c-1vcpu-256mb',
-            'scaling_type' => 'none',
-            'min_replicas' => 1,
-            'max_replicas' => 1,
-            'uses_scheduler' => true,
-            'shutdown_timeout' => null,
-            'sleep_with_app' => null,
-            'hibernation_timeout' => null,
-            'probes' => null,
-            'retire_at' => null,
-            'retired_at' => null,
-        ], $attributes),
-        'relationships' => ['environment' => ['data' => ['id' => 'env-1', 'type' => 'environments']]],
-    ], 'included' => [createEnvironmentResponse()]];
-}
-
 function setupInstanceUpdateMocks(array $attributes = []): stdClass
 {
     $sent = new stdClass;

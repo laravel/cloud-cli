@@ -53,7 +53,7 @@ class NewApplication extends BaseCommand
                             {--name= : Application name. Default: the repository name}
                             {--region= : Region. Default: most-used or us-east-2}
                             {--path= : Where to clone the repository. Default: ./<repository name>}
-                            {--database= : Database type or alias (postgres, postgres<version>, mysql, none, or a type from `cloud database:types`). Default: postgres for Laravel kits, none otherwise}
+                            {--database= : Database type or alias (postgres, postgres<version>, mysql, none, or a type from `cloud database:types`). Default: mysql (postgres where MySQL is not offered) for Laravel kits, none otherwise}
                             {--database-preset= : Preset for the database, as listed by the API for the type and region (e.g. dev, prod, scale — case-insensitive). Default: dev, or the first preset offered}
                             {--cluster= : Dedicated cluster ID to deploy to (see dedicated-cluster:list)}';
 

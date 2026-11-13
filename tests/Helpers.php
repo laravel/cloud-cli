@@ -478,6 +478,7 @@ function versionlessDatabaseTypesResponse(): array
                     ['name' => 'uses_scheduled_snapshots', 'type' => 'boolean', 'required' => true, 'example' => 'false'],
                     ['name' => 'is_public', 'type' => 'boolean', 'required' => true, 'example' => 'false'],
                     ['name' => 'maintenance_window', 'type' => 'string', 'required' => false, 'nullable' => true, 'example' => 'sun:06:00-sun:06:30'],
+                    ['name' => 'suspend_seconds', 'type' => 'integer', 'required' => false, 'example' => '300'],
                 ],
             ],
             [
@@ -522,7 +523,7 @@ function databasePresetsResponse(string $type): array
 {
     $presets = match ($type) {
         'laravel_mysql' => [
-            ['key' => 'dev', 'label' => 'Dev', 'config' => ['size' => 'mysql-flex-512mb', 'storage' => 5, 'retention_days' => 1, 'uses_scheduled_snapshots' => false, 'is_public' => false]],
+            ['key' => 'dev', 'label' => 'Dev', 'config' => ['size' => 'mysql-flex-512mb', 'storage' => 5, 'retention_days' => 1, 'uses_scheduled_snapshots' => false, 'is_public' => false, 'suspend_seconds' => 300]],
             ['key' => 'prod', 'label' => 'Prod', 'config' => ['size' => 'mysql-flex-2gb', 'storage' => 20, 'retention_days' => 7, 'uses_scheduled_snapshots' => false, 'is_public' => false]],
         ],
         'neon_serverless_postgres' => [
@@ -747,4 +748,28 @@ function createQueuedDeploymentResponse(string $status = 'pending', ?string $fai
         ],
         'included' => $deployment ? [$deployment] : [],
     ];
+}
+
+function updatableInstanceResponse(array $attributes = []): array
+{
+    return ['data' => [
+        'id' => 'inst-1',
+        'type' => 'instances',
+        'attributes' => array_merge([
+            'name' => 'web',
+            'type' => 'app',
+            'size' => 'flex.c-1vcpu-256mb',
+            'scaling_type' => 'none',
+            'min_replicas' => 1,
+            'max_replicas' => 1,
+            'uses_scheduler' => true,
+            'shutdown_timeout' => null,
+            'sleep_with_app' => null,
+            'hibernation_timeout' => null,
+            'probes' => null,
+            'retire_at' => null,
+            'retired_at' => null,
+        ], $attributes),
+        'relationships' => ['environment' => ['data' => ['id' => 'env-1', 'type' => 'environments']]],
+    ], 'included' => [createEnvironmentResponse()]];
 }
