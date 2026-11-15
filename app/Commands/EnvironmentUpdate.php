@@ -3,9 +3,11 @@
 namespace App\Commands;
 
 use App\Client\Requests\UpdateEnvironmentRequestData;
+use App\Dto\BucketKey;
 use App\Dto\Cache;
 use App\Dto\Database;
 use App\Dto\Environment;
+use App\Dto\ObjectStorageBucket;
 use App\Dto\WebsocketApplication;
 use App\Dto\WebsocketCluster;
 use App\Enums\EnvironmentColor;
@@ -59,6 +61,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--database-id= : Database ID to attach (empty string to detach)}
                             {--cache-id= : Cache ID to attach (empty string to detach)}
                             {--websocket-application-id= : WebSocket application ID to attach (empty string to detach)}
+                            {--bucket-keys= : Bucket keys to attach as comma-separated KEY_ID:DISK entries, with :default on at most one (fk-1:local:default,fk-2:public). Replaces every attached bucket; empty string to detach all}
                             {--force : Force update without confirmation}';
 
     protected $description = 'Update an environment';
@@ -95,6 +98,8 @@ class EnvironmentUpdate extends BaseCommand
 
     protected function updateEnvironment(Environment $environment): Environment
     {
+        $filesystemKeys = $this->filesystemKeys($environment);
+
         spin(
             fn () => $this->client->environments()->update(
                 new UpdateEnvironmentRequestData(
@@ -128,12 +133,68 @@ class EnvironmentUpdate extends BaseCommand
                     responseHeadersHsts: $this->hsts($environment),
                     firewallBlockPath: $this->form()->boolean('firewall_block_path'),
                     firewallBrowserIntegrityCheck: $this->form()->boolean('firewall_browser_integrity_check'),
+                    filesystemKeys: $filesystemKeys,
                 ),
             ),
             'Updating environment...',
         );
 
         return $this->client->environments()->get($environment->id);
+    }
+
+    /**
+     * The API takes the attached buckets as one list and replaces it, so the option names every bucket the environment should end up with.
+     *
+     * @return array<int, array{id: string, disk: string, is_default_disk: bool}>|null
+     */
+    protected function filesystemKeys(Environment $environment): ?array
+    {
+        $value = $this->form()->get('bucket_keys');
+
+        if ($value === null) {
+            return null;
+        }
+
+        $keys = $this->parseBucketKeys($value);
+
+        $attached = spin(
+            fn () => $this->client->environments()->include('buckets')->get($environment->id)->bucketIds,
+            'Fetching attached buckets...',
+        );
+
+        if ($attached !== []) {
+            $this->confirmDestructive($keys === []
+                ? "Detach every bucket from {$environment->name}?"
+                : "Replace the buckets attached to {$environment->name}? Any attached bucket not listed will be detached.");
+        }
+
+        return $keys;
+    }
+
+    /**
+     * @return array<int, array{id: string, disk: string, is_default_disk: bool}>
+     */
+    protected function parseBucketKeys(string $value): array
+    {
+        if (trim($value) === '') {
+            return [];
+        }
+
+        $keys = collect(explode(',', $value))->map(function (string $entry) {
+            $parts = array_map(trim(...), explode(':', $entry));
+
+            if (count($parts) < 2 || count($parts) > 3 || $parts[0] === '' || $parts[1] === '' || (isset($parts[2]) && $parts[2] !== 'default')) {
+                $this->failAndExit("Invalid bucket key entry: {$entry}. Use KEY_ID:DISK, or KEY_ID:DISK:default for the default disk.");
+            }
+
+            return ['id' => $parts[0], 'disk' => $parts[1], 'is_default_disk' => isset($parts[2])];
+        });
+
+        if ($keys->where('is_default_disk', true)->count() > 1) {
+            $this->failAndExit('Only one bucket can be the default disk.');
+        }
+
+        return $keys->values()->all();
     }
 
     protected function clearableInteger(string $key): int|string|null
@@ -348,6 +409,14 @@ class EnvironmentUpdate extends BaseCommand
             ),
             'websocket-application-id',
         )->setPreviousValue($environment->websocketApplicationId ?? '');
+
+        $this->form()->define(
+            'bucket_keys',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => $this->selectBucketKeys(),
+            ),
+            'bucket-keys',
+        )->setLabel('Buckets');
     }
 
     /**
@@ -532,6 +601,57 @@ class EnvironmentUpdate extends BaseCommand
             options: $options,
             default: $value ?? ($selectedCluster->id === $currentCluster?->id ? $currentId : null) ?? '',
         );
+    }
+
+    protected function selectBucketKeys(): string
+    {
+        $buckets = spin(
+            fn () => $this->client->objectStorageBuckets()->list()->collect(),
+            'Fetching buckets...',
+        );
+
+        if ($buckets->isEmpty()) {
+            $this->failAndExit('No buckets found. Create one with `cloud bucket:create`.');
+        }
+
+        $entries = [];
+        $hasDefault = false;
+
+        do {
+            $bucketId = (string) select(
+                label: $entries === [] ? 'Bucket' : 'Another bucket',
+                options: ($entries === [] ? ['' => '— Detach all —'] : []) + $buckets->mapWithKeys(
+                    fn (ObjectStorageBucket $bucket) => [$bucket->id => $bucket->name],
+                )->all(),
+            );
+
+            if ($bucketId === '') {
+                return '';
+            }
+
+            $keys = spin(
+                fn () => $this->client->bucketKeys()->list($bucketId)->collect(),
+                'Fetching bucket keys...',
+            );
+
+            if ($keys->isEmpty()) {
+                $this->failAndExit('That bucket has no keys. Create one with `cloud bucket-key:create`.');
+            }
+
+            $keyId = (string) select(
+                label: 'Bucket key',
+                options: $keys->mapWithKeys(fn (BucketKey $key) => [$key->id => "{$key->name} ({$key->permission})"])->all(),
+            );
+
+            $disk = text(label: 'Disk name', placeholder: 'public', required: true);
+
+            $isDefault = ! $hasDefault && confirm(label: 'Make it the default disk?', default: false);
+            $hasDefault = $hasDefault || $isDefault;
+
+            $entries[] = $isDefault ? "{$keyId}:{$disk}:default" : "{$keyId}:{$disk}";
+        } while (confirm(label: 'Attach another bucket?', default: false));
+
+        return implode(',', $entries);
     }
 
     protected function collectDataAndUpdate(Environment $environment): Environment
