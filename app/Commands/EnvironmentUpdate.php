@@ -149,7 +149,7 @@ class EnvironmentUpdate extends BaseCommand
      */
     protected function filesystemKeys(Environment $environment): ?array
     {
-        $value = $this->form()->get('bucket_keys');
+        $value = $this->form()->get('filesystem_keys');
 
         if ($value === null) {
             return null;
@@ -410,8 +410,9 @@ class EnvironmentUpdate extends BaseCommand
             'websocket-application-id',
         )->setPreviousValue($environment->websocketApplicationId ?? '');
 
+        // Named after the API field so a validation error on filesystem_keys.* asks for the buckets again.
         $this->form()->define(
-            'bucket_keys',
+            'filesystem_keys',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => $this->selectBucketKeys(),
             ),

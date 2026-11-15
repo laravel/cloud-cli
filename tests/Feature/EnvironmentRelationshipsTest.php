@@ -1,14 +1,20 @@
 <?php
 
 use App\Client\Resources\Applications\GetApplicationRequest;
+use App\Client\Resources\BucketKeys\ListBucketKeysRequest;
 use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
+use App\Client\Resources\ObjectStorageBuckets\ListObjectStorageBucketsRequest;
 use App\ConfigRepository;
 use App\Git;
+use Illuminate\Support\Facades\Artisan;
+use Laravel\Prompts\Key;
+use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveEnvironmentUpdateCommand;
 
 beforeEach(function () {
     $this->mockGit = Mockery::mock(Git::class);
@@ -239,3 +245,42 @@ it('rejects bucket key entries without a disk or with two default disks', functi
     'unknown suffix' => 'fk-1:local:primary',
     'two defaults' => 'fk-1:local:default,fk-2:public:default',
 ]);
+
+it('asks for the buckets again when the API rejects an attached bucket', function () {
+    $bodies = [];
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make(['data' => createApplicationResponse()], 200),
+        GetEnvironmentRequest::class => fn (PendingRequest $request) => MockResponse::make(
+            attachedEnvironmentResponse($request->query()->get('include')),
+            200,
+        ),
+        ListObjectStorageBucketsRequest::class => MockResponse::make(['data' => [bucketResponse()], 'links' => ['next' => null]], 200),
+        ListBucketKeysRequest::class => MockResponse::make(['data' => [bucketKeyResponse()], 'links' => ['next' => null]], 200),
+        UpdateEnvironmentRequest::class => function (PendingRequest $request) use (&$bodies) {
+            $bodies[] = $request->body()->all();
+
+            return count($bodies) === 1
+                ? MockResponse::make(['message' => 'Invalid.', 'errors' => ['filesystem_keys.0.disk' => ['The disk format is invalid.']]], 422)
+                : MockResponse::make(attachedEnvironmentResponse(null), 200);
+        },
+    ]);
+
+    Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
+
+    Prompt::fake([
+        // Choose Buckets, the last field.
+        Key::UP, Key::SPACE, Key::ENTER,
+        // The bucket, its only key, a disk name the API rejects, not the default, no more buckets.
+        Key::DOWN, Key::ENTER, Key::ENTER, 'm', 'y', '.', 'd', 'i', 's', 'k', Key::ENTER, Key::ENTER, Key::ENTER,
+        // Asked for the buckets again.
+        Key::DOWN, Key::ENTER, Key::ENTER, 'f', 'i', 'l', 'e', 's', Key::ENTER, Key::ENTER, Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
+
+    expect($bodies)->toHaveCount(2)
+        ->and($bodies[0]['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'my.disk', 'is_default_disk' => false]])
+        ->and($bodies[1]['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'files', 'is_default_disk' => false]]);
+});
