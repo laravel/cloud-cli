@@ -106,6 +106,8 @@ Determine the task and follow the matching path:
 
 - Secrets: `echo "$VALUE" | cloud secret:create --name=NAME --json -n`, then `cloud environment-secret:attach`
 
+- Buckets: `cloud environment:update {environment} --bucket-keys=KEY_ID:DISK:default,KEY_ID:public --json -n --force` attaches bucket keys, read from `cloud bucket-key:list {bucket} --json -n`. It replaces every attached bucket, so list all of them; `--force` is needed when buckets are already attached
+
 - Provision infrastructure: `cloud <resource>:create --json -n`
 
 - Brand new project (no code yet): `cloud new --starter-kit=<kit> --repository=<owner>/<new-repo> --path=<dir> -n` creates a private GitHub repository from the starter kit, deploys it (with a database for Laravel kits), and clones it to `<dir>`. The repository must not exist yet. Run `cloud new -h` for the kits.

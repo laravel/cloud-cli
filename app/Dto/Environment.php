@@ -50,6 +50,8 @@ class Environment extends Data
         public readonly ?string $databaseSchemaId = null,
         public readonly ?string $cacheId = null,
         public readonly ?string $websocketApplicationId = null,
+        /** IDs of the attached buckets. The API does not say which key or disk each one uses. */
+        public readonly array $bucketIds = [],
         #[DataCollectionOf(Secret::class)]
         public readonly array $secrets = [],
         public readonly ?EnvironmentResend $resend = null,
@@ -146,6 +148,10 @@ class Environment extends Data
 
         if (isset($relationships['websocketApplication']['data']['id'])) {
             $transformed['websocketApplicationId'] = $relationships['websocketApplication']['data']['id'];
+        }
+
+        if (isset($relationships['buckets']['data'])) {
+            $transformed['bucketIds'] = array_column($relationships['buckets']['data'], 'id');
         }
 
         if (isset($relationships['secrets']['data'])) {
