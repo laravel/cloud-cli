@@ -644,7 +644,15 @@ class EnvironmentUpdate extends BaseCommand
                 options: $keys->mapWithKeys(fn (BucketKey $key) => [$key->id => "{$key->name} ({$key->permission})"])->all(),
             );
 
-            $disk = text(label: 'Disk name', placeholder: 'public', required: true);
+            // The API's own rule, which also keeps out the ':' and ',' the entries are joined with.
+            $disk = text(
+                label: 'Disk name',
+                placeholder: 'public',
+                required: true,
+                validate: fn (string $name) => preg_match('/^[A-Za-z0-9 _-]{1,40}$/', $name)
+                    ? null
+                    : 'Use up to 40 letters, numbers, spaces, dashes, or underscores.',
+            );
 
             $isDefault = ! $hasDefault && confirm(label: 'Make it the default disk?', default: false);
             $hasDefault = $hasDefault || $isDefault;

@@ -262,7 +262,7 @@ it('asks for the buckets again when the API rejects an attached bucket', functio
             $bodies[] = $request->body()->all();
 
             return count($bodies) === 1
-                ? MockResponse::make(['message' => 'Invalid.', 'errors' => ['filesystem_keys.0.disk' => ['The disk format is invalid.']]], 422)
+                ? MockResponse::make(['message' => 'Invalid.', 'errors' => ['filesystem_keys.0.disk' => ['The disk has already been taken.']]], 422)
                 : MockResponse::make(attachedEnvironmentResponse(null), 200);
         },
     ]);
@@ -273,7 +273,7 @@ it('asks for the buckets again when the API rejects an attached bucket', functio
         // Choose Buckets, the last field.
         Key::UP, Key::SPACE, Key::ENTER,
         // The bucket, its only key, a disk name the API rejects, not the default, no more buckets.
-        Key::DOWN, Key::ENTER, Key::ENTER, 'm', 'y', '.', 'd', 'i', 's', 'k', Key::ENTER, Key::ENTER, Key::ENTER,
+        Key::DOWN, Key::ENTER, Key::ENTER, 't', 'a', 'k', 'e', 'n', Key::ENTER, Key::ENTER, Key::ENTER,
         // Asked for the buckets again.
         Key::DOWN, Key::ENTER, Key::ENTER, 'f', 'i', 'l', 'e', 's', Key::ENTER, Key::ENTER, Key::ENTER,
     ]);
@@ -281,6 +281,32 @@ it('asks for the buckets again when the API rejects an attached bucket', functio
     $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
 
     expect($bodies)->toHaveCount(2)
-        ->and($bodies[0]['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'my.disk', 'is_default_disk' => false]])
+        ->and($bodies[0]['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'taken', 'is_default_disk' => false]])
         ->and($bodies[1]['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'files', 'is_default_disk' => false]]);
+});
+
+it('refuses a disk name the bucket list cannot carry when choosing buckets interactively', function () {
+    $sent = captureBucketUpdate([]);
+
+    MockClient::global()->addResponses([
+        ListObjectStorageBucketsRequest::class => MockResponse::make(['data' => [bucketResponse()], 'links' => ['next' => null]], 200),
+        ListBucketKeysRequest::class => MockResponse::make(['data' => [bucketKeyResponse()], 'links' => ['next' => null]], 200),
+    ]);
+
+    Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
+
+    Prompt::fake([
+        // Choose Buckets, the last field, then the bucket and its only key.
+        Key::UP, Key::SPACE, Key::ENTER,
+        Key::DOWN, Key::ENTER, Key::ENTER,
+        // A colon would read back as the default-disk marker, so the prompt refuses it.
+        'l', 'o', 'c', 'a', 'l', ':', 'd', 'e', 'f', 'a', 'u', 'l', 't', Key::ENTER,
+        Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::BACKSPACE, Key::ENTER,
+        // Not the default disk, no more buckets.
+        Key::ENTER, Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
+
+    expect($sent->body['filesystem_keys'])->toBe([['id' => 'flsk-1', 'disk' => 'local', 'is_default_disk' => false]]);
 });
