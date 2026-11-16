@@ -235,7 +235,9 @@ abstract class BaseCommand extends Command
      */
     protected function unauthorizedMessage(UnauthorizedException $e): string
     {
-        $reason = $e->getResponse()->json('message') ?: 'Unauthorized';
+        $body = json_decode($e->getResponse()->body(), true);
+        $reason = is_array($body) ? ($body['message'] ?? null) : null;
+        $reason = is_string($reason) && $reason !== '' ? $reason : 'Unauthorized';
 
         $fix = Cloud::apiTokenFromEnvironment()
             ? 'Check the token in '.Cloud::API_TOKEN_ENV_VAR.', or unset it to use your stored tokens.'
