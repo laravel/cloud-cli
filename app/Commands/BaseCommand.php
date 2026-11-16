@@ -3,6 +3,7 @@
 namespace App\Commands;
 
 use App\Client\Connector;
+use App\Cloud;
 use App\Concerns\HasAClient;
 use App\Concerns\Validates;
 use App\Exceptions\CommandExitException;
@@ -25,6 +26,7 @@ use LaravelZero\Framework\Commands\Command;
 use ReflectionClass;
 use ReflectionNamedType;
 use RuntimeException;
+use Saloon\Exceptions\Request\Statuses\UnauthorizedException;
 use Saloon\PaginationPlugin\Paginator;
 use Spatie\LaravelData\Attributes\DataCollectionOf;
 use Spatie\LaravelData\Data;
@@ -212,6 +214,10 @@ abstract class BaseCommand extends Command
             $this->outputError($e->getMessage());
 
             return self::FAILURE;
+        } catch (UnauthorizedException $e) {
+            $this->outputError($this->unauthorizedMessage($e));
+
+            return self::FAILURE;
         } catch (RuntimeException $e) {
             if ($this->wantsJson()) {
                 $this->outputError($e->getMessage());
@@ -221,6 +227,21 @@ abstract class BaseCommand extends Command
 
             throw $e;
         }
+    }
+
+    /**
+     * A revoked or expired token surfaces on whichever request happens first, so
+     * every command needs the same guidance rather than a Saloon stack trace.
+     */
+    protected function unauthorizedMessage(UnauthorizedException $e): string
+    {
+        $reason = $e->getResponse()->json('message') ?: 'Unauthorized';
+
+        $fix = Cloud::apiTokenFromEnvironment()
+            ? 'Check the token in '.Cloud::API_TOKEN_ENV_VAR.', or unset it to use your stored tokens.'
+            : 'Run `cloud auth` to sign in again, or `cloud auth:token --add --token=<token>` to save a new token.';
+
+        return "Laravel Cloud rejected your API token ({$reason}). {$fix}";
     }
 
     protected function ensureInteractive(string $message): void
