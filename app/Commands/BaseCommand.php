@@ -239,7 +239,13 @@ abstract class BaseCommand extends Command
         $reason = is_array($body) ? ($body['message'] ?? null) : null;
         $reason = is_string($reason) && $reason !== '' ? $reason : 'Unauthorized';
 
-        $fix = Cloud::apiTokenFromEnvironment()
+        // auth:token --list checks the environment token and stored tokens together,
+        // so the variable being set doesn't mean it was the token that failed.
+        $envToken = Cloud::apiTokenFromEnvironment();
+        $usesEnvironmentToken = $envToken !== null
+            && $e->getResponse()->getPendingRequest()->headers()->get('Authorization') === 'Bearer '.$envToken;
+
+        $fix = $usesEnvironmentToken
             ? 'Check the token in '.Cloud::API_TOKEN_ENV_VAR.', or unset it to use your stored tokens.'
             : 'Run `cloud auth` to sign in again, or `cloud auth:token --add --token=<token>` to save a new token.';
 
