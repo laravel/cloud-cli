@@ -47,6 +47,7 @@ class Environment extends Data
         public readonly ?string $currentDeploymentId = null,
         public readonly array $domainIds = [],
         public readonly ?string $primaryDomainId = null,
+        public readonly ?Domain $primaryDomain = null,
         public readonly ?string $databaseSchemaId = null,
         public readonly ?string $cacheId = null,
         public readonly ?string $websocketApplicationId = null,
@@ -134,6 +135,12 @@ class Environment extends Data
 
         if (isset($relationships['primaryDomain']['data']['id'])) {
             $transformed['primaryDomainId'] = $relationships['primaryDomain']['data']['id'];
+
+            $domain = collect($included)->first(fn ($item) => $item['type'] === 'domains' && $item['id'] === $transformed['primaryDomainId']);
+
+            if ($domain) {
+                $transformed['primaryDomain'] = Domain::createFromResponse(['data' => $domain]);
+            }
         }
 
         if (isset($relationships['database']['data']['id'])) {
@@ -159,6 +166,20 @@ class Environment extends Data
         }
 
         return self::from($transformed);
+    }
+
+    /**
+     * The URL visitors should use: the primary custom domain once it has been
+     * verified, otherwise the *.laravel.cloud vanity domain. An unverified
+     * custom domain may not resolve yet, so it isn't worth sending anyone to.
+     */
+    public function siteUrl(): string
+    {
+        if ($this->primaryDomain?->name && $this->primaryDomain->hostnameStatus === 'verified') {
+            return (string) str($this->primaryDomain->name)->start('https://');
+        }
+
+        return $this->url;
     }
 
     public function colorEnum(): ?EnvironmentColor
