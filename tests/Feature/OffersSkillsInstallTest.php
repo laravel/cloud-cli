@@ -47,10 +47,11 @@ it('skips when the command is in the skip list', function () {
 });
 
 it('skips when the session is non-interactive', function () {
-    // Under phpunit, STDIN is not a TTY so isInteractiveSession() returns false.
     $this->mockConfig->shouldNotReceive('get');
 
-    expect(runMiddleware(new OffersSkillsInstall))->toBeTrue();
+    $middleware = partialMiddleware(['isInteractiveSession' => false]);
+
+    expect(runMiddleware($middleware))->toBeTrue();
 });
 
 it('skips when the CLI is a project dependency', function () {
