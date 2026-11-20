@@ -12,7 +12,8 @@ class MetricPoint extends Data
     public function __construct(
         #[WithCast(DateTimeInterfaceCast::class, type: CarbonImmutable::class)]
         public readonly ?CarbonImmutable $at,
-        public readonly float $value,
+        /** Null when the instance reported no sample for the interval, which is not zero usage. */
+        public readonly ?float $value,
     ) {
         //
     }
@@ -27,7 +28,7 @@ class MetricPoint extends Data
 
         return new self(
             at: isset($point['x']) ? CarbonImmutable::parse($point['x']) : null,
-            value: (float) $value,
+            value: is_numeric($value) ? (float) $value : null,
         );
     }
 }

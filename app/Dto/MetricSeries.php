@@ -74,7 +74,7 @@ class MetricSeries extends Data
     }
 
     /**
-     * @return list<float>
+     * @return list<float|null>
      */
     public function values(): array
     {

@@ -61,6 +61,9 @@ class Environment extends Data
         public readonly ?int $hibernationWakeUpInterval = null,
         public readonly ?int $timeout = null,
         public readonly ?int $shutdownTimeout = null,
+        public readonly ?string $postDeployCommand = null,
+        public readonly bool $usesHttpBasicAuth = false,
+        public readonly ?EnvironmentInternalNetworking $internalNetworking = null,
     ) {
         //
     }
@@ -103,6 +106,9 @@ class Environment extends Data
             'hibernationWakeUpInterval' => $attributes['hibernation_wake_up_interval'] ?? null,
             'timeout' => $attributes['timeout'] ?? null,
             'shutdownTimeout' => $attributes['shutdown_timeout'] ?? null,
+            'postDeployCommand' => $attributes['post_deploy_command'] ?? null,
+            'usesHttpBasicAuth' => $attributes['uses_http_basic_auth'] ?? false,
+            'internalNetworking' => isset($attributes['internal_networking']) ? EnvironmentInternalNetworking::createFromResponse($attributes['internal_networking']) : null,
             'resend' => isset($attributes['resend']) ? EnvironmentResend::createFromResponse($attributes['resend']) : null,
         ];
 

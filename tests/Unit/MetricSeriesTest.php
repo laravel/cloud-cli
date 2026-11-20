@@ -57,3 +57,18 @@ it('returns no series when the metric is empty or failed', function () {
     expect(MetricSeries::listFromApiResponse(null))->toBe([]);
     expect(MetricSeries::listFromApiResponse(['error' => true]))->toBe([]);
 });
+
+it('keeps an interval with no sample as null rather than zero', function () {
+    $series = MetricSeries::listFromApiResponse([
+        'labels' => ['App', 'Worker'],
+        'average' => [0.5, null],
+        'data' => [
+            ['x' => '2026-08-14T12:00:00.000000Z', 'y' => [0.5, null]],
+            ['x' => '2026-08-14T12:05:00.000000Z', 'y' => [null, null]],
+        ],
+    ]);
+
+    expect($series[0]->values())->toBe([0.5, null]);
+    expect($series[1]->values())->toBe([null, null]);
+    expect($series[1]->average)->toBeNull();
+});
