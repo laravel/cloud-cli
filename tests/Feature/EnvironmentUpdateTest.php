@@ -7,9 +7,12 @@ use App\Client\Resources\Environments\UpdateEnvironmentRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\ConfigRepository;
 use Illuminate\Support\Facades\Artisan;
+use Laravel\Prompts\Key;
+use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveEnvironmentUpdateCommand;
 
 beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
@@ -209,11 +212,8 @@ it('sends the post-deploy command', function () {
     expect($this->sent->body)->toBe(['post_deploy_command' => 'php artisan queue:restart']);
 });
 
-it('sends HTTP basic auth with its password', function () {
-    updateEnvironment([
-        '--uses-http-basic-auth' => 'true',
-        '--http-basic-auth-password' => 'hunter2',
-    ]);
+it('turns HTTP basic auth on with a password', function () {
+    updateEnvironment(['--http-basic-auth-password' => 'hunter2']);
 
     expect($this->sent->body)->toBe([
         'uses_http_basic_auth' => true,
@@ -221,20 +221,40 @@ it('sends HTTP basic auth with its password', function () {
     ]);
 });
 
-it('turns HTTP basic auth off without a password', function () {
-    updateEnvironment(['--uses-http-basic-auth' => 'false']);
+it('turns HTTP basic auth off with an empty password', function () {
+    updateEnvironment(['--http-basic-auth-password' => '']);
 
     expect($this->sent->body)->toBe(['uses_http_basic_auth' => false]);
 });
 
-it('needs a password to turn HTTP basic auth on non-interactively', function () {
-    $this->artisan('environment:update', [
-        'environment' => 'env-1',
-        '--uses-http-basic-auth' => 'true',
-        '--no-interaction' => true,
-    ])->assertFailed();
+it('asks for a password when HTTP basic auth is turned on interactively', function () {
+    Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
 
-    expect($this->sent->body)->toBeNull();
+    Prompt::fake([
+        ...array_fill(0, 14, Key::DOWN), Key::SPACE, Key::ENTER,
+        Key::ENTER,
+        'h', 'u', 'n', 't', 'e', 'r', '2', Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
+
+    expect($this->sent->body)->toBe([
+        'uses_http_basic_auth' => true,
+        'http_basic_auth_password' => 'hunter2',
+    ]);
+});
+
+it('turns HTTP basic auth off interactively without asking for a password', function () {
+    Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
+
+    Prompt::fake([
+        ...array_fill(0, 14, Key::DOWN), Key::SPACE, Key::ENTER,
+        'n', Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
+
+    expect($this->sent->body)->toBe(['uses_http_basic_auth' => false]);
 });
 
 it('exposes the post-deploy command, HTTP basic auth and internal networking', function () {

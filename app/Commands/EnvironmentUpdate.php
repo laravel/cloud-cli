@@ -42,8 +42,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--uses-deploy-hook= : Enable the deploy hook}
                             {--uses-vanity-domain= : Serve the Laravel Cloud domain}
                             {--uses-octane= : Uses Octane}
-                            {--uses-http-basic-auth= : Require visitors to sign in as `admin` with --http-basic-auth-password}
-                            {--http-basic-auth-password= : HTTP basic auth password (required when turning basic auth on)}
+                            {--http-basic-auth-password= : Require visitors to sign in as `admin` with this password; pass an empty value to turn basic auth off}
                             {--uses-purge-edge-cache-on-deploy= : Purge the edge cache on deploy}
                             {--timeout= : Request timeout in seconds (5-60)}
                             {--shutdown-timeout= : Seconds to keep the previous deployment running (1-600)}
@@ -98,6 +97,9 @@ class EnvironmentUpdate extends BaseCommand
 
     protected function updateEnvironment(Environment $environment): Environment
     {
+        // The API turns basic auth on only alongside a password, so one option covers both: a password turns it on, empty turns it off.
+        $httpBasicAuthPassword = $this->form()->get('http_basic_auth_password');
+
         spin(
             fn () => $this->client->environments()->update(
                 new UpdateEnvironmentRequestData(
@@ -132,32 +134,14 @@ class EnvironmentUpdate extends BaseCommand
                     responseHeadersHsts: $this->hsts($environment),
                     firewallBlockPath: $this->form()->boolean('firewall_block_path'),
                     firewallBrowserIntegrityCheck: $this->form()->boolean('firewall_browser_integrity_check'),
-                    usesHttpBasicAuth: $this->form()->boolean('uses_http_basic_auth'),
-                    httpBasicAuthPassword: $this->httpBasicAuthPassword(),
+                    usesHttpBasicAuth: $httpBasicAuthPassword === null ? null : filled($httpBasicAuthPassword),
+                    httpBasicAuthPassword: filled($httpBasicAuthPassword) ? $httpBasicAuthPassword : null,
                 ),
             ),
             'Updating environment...',
         );
 
         return $this->client->environments()->get($environment->id);
-    }
-
-    /**
-     * The API wants a password exactly when basic auth is being turned on, so turning it on asks for one.
-     */
-    protected function httpBasicAuthPassword(): ?string
-    {
-        $password = $this->form()->get('http_basic_auth_password');
-
-        if (filled($password) || $this->form()->boolean('uses_http_basic_auth') !== true) {
-            return $password;
-        }
-
-        if (! $this->isInteractive()) {
-            $this->failAndExit('Provide --http-basic-auth-password to turn on HTTP basic auth.');
-        }
-
-        return $this->form()->prompt('http_basic_auth_password')->value();
     }
 
     protected function clearableInteger(string $key): int|string|null
@@ -291,18 +275,15 @@ class EnvironmentUpdate extends BaseCommand
         $this->defineBoolean('uses_deploy_hook', 'Deploy hook', $environment->usesDeployHook);
         $this->defineBoolean('uses_vanity_domain', 'Vanity domain', null);
         $this->defineBoolean('uses_octane', 'Octane', $environment->usesOctane);
-        $this->defineBoolean('uses_http_basic_auth', 'HTTP basic auth', $environment->usesHttpBasicAuth);
-
         $this->form()->define(
             'http_basic_auth_password',
             fn ($resolver) => $resolver->fromInput(
-                fn ($value) => password(
-                    label: 'HTTP basic auth password',
-                    required: true,
-                    hint: 'Visitors sign in as `admin`',
-                ),
+                fn ($value) => confirm(label: 'HTTP basic auth?', default: $environment->usesHttpBasicAuth)
+                    ? password(label: 'HTTP basic auth password', required: true, hint: 'Visitors sign in as `admin`')
+                    : '',
             ),
-        )->setLabel('HTTP basic auth password');
+        )->setPreviousValue(var_export($environment->usesHttpBasicAuth, true))->setLabel('HTTP basic auth');
+
         $this->defineBoolean('uses_purge_edge_cache_on_deploy', 'Purge edge cache on deploy', null);
 
         $this->defineNumber('timeout', 'Timeout (seconds)', 5, 60, $environment->timeout);
@@ -585,8 +566,7 @@ class EnvironmentUpdate extends BaseCommand
     {
         $selection = multiselect(
             label: 'What do you want to update?',
-            // The password is asked for when basic auth is turned on, never on its own.
-            options: collect($this->form()->defined())->reject(fn ($field) => $field->key === 'http_basic_auth_password')->mapWithKeys(fn ($field, $key) => [
+            options: collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
                 $field->key => $field->label(),
             ])->toArray(),
             scroll: 15,
