@@ -1,9 +1,12 @@
 <?php
 
+use App\Commands\SkillsInstall;
 use App\ConfigRepository;
 use App\Middleware\OffersSkillsInstall;
+use Illuminate\Support\Facades\Artisan;
 use Laravel\Prompts\Key;
 use Laravel\Prompts\Prompt;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
@@ -95,10 +98,29 @@ it('prompts, installs skills, and records the choice when the user confirms', fu
         ->once();
 
     $middleware = partialMiddleware();
-    $middleware->shouldReceive('runInstall')->once();
+    $middleware->shouldReceive('runInstall')->once()->with(['claude']);
     $middleware->shouldReceive('showDeclineHint')->never();
 
     expect(runMiddleware($middleware))->toBeTrue();
+});
+
+it('installs the detected agents on the terminal when the user confirms', function () {
+    Prompt::fake([Key::ENTER]);
+
+    $this->mockConfig->shouldReceive('get')->with('skills_install_prompted_at')->andReturn(null);
+    $this->mockConfig->shouldReceive('set')
+        ->with('skills_install_prompted_at', Mockery::type('string'))
+        ->once();
+
+    Artisan::shouldReceive('call')
+        ->once()
+        ->with(
+            SkillsInstall::class,
+            ['--global' => true, '--agent' => ['claude']],
+            Mockery::type(ConsoleOutput::class),
+        );
+
+    expect(runMiddleware(partialMiddleware()))->toBeTrue();
 });
 
 it('records the choice without installing when the user declines', function () {
