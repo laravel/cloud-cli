@@ -34,6 +34,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--branch= : Git branch}
                             {--build-command= : Build command}
                             {--deploy-command= : Deploy command}
+                            {--post-deploy-command= : Commands run after the deployment goes live}
                             {--start-command= : Start command for non-PHP dynamic apps (empty string to clear)}
                             {--php-version= : PHP version (8.2:1, 8.3:1, 8.4:1, 8.5:1)}
                             {--node-version= : Node version (20, 22, 24, 26)}
@@ -41,6 +42,8 @@ class EnvironmentUpdate extends BaseCommand
                             {--uses-deploy-hook= : Enable the deploy hook}
                             {--uses-vanity-domain= : Serve the Laravel Cloud domain}
                             {--uses-octane= : Uses Octane}
+                            {--uses-http-basic-auth= : Require visitors to sign in as `admin` with --http-basic-auth-password}
+                            {--http-basic-auth-password= : HTTP basic auth password (required when turning basic auth on)}
                             {--uses-purge-edge-cache-on-deploy= : Purge the edge cache on deploy}
                             {--timeout= : Request timeout in seconds (5-60)}
                             {--shutdown-timeout= : Seconds to keep the previous deployment running (1-600)}
@@ -110,6 +113,7 @@ class EnvironmentUpdate extends BaseCommand
                     buildCommand: $this->form()->get('build_command'),
                     nodeVersion: $this->form()->get('node_version'),
                     deployCommand: $this->form()->get('deploy_command'),
+                    postDeployCommand: $this->form()->get('post_deploy_command'),
                     startCommand: $this->form()->get('start_command'),
                     usesVanityDomain: $this->form()->boolean('uses_vanity_domain'),
                     databaseSchemaId: $this->form()->get('database_id'),
@@ -128,12 +132,32 @@ class EnvironmentUpdate extends BaseCommand
                     responseHeadersHsts: $this->hsts($environment),
                     firewallBlockPath: $this->form()->boolean('firewall_block_path'),
                     firewallBrowserIntegrityCheck: $this->form()->boolean('firewall_browser_integrity_check'),
+                    usesHttpBasicAuth: $this->form()->boolean('uses_http_basic_auth'),
+                    httpBasicAuthPassword: $this->httpBasicAuthPassword(),
                 ),
             ),
             'Updating environment...',
         );
 
         return $this->client->environments()->get($environment->id);
+    }
+
+    /**
+     * The API wants a password exactly when basic auth is being turned on, so turning it on asks for one.
+     */
+    protected function httpBasicAuthPassword(): ?string
+    {
+        $password = $this->form()->get('http_basic_auth_password');
+
+        if (filled($password) || $this->form()->boolean('uses_http_basic_auth') !== true) {
+            return $password;
+        }
+
+        if (! $this->isInteractive()) {
+            $this->failAndExit('Provide --http-basic-auth-password to turn on HTTP basic auth.');
+        }
+
+        return $this->form()->prompt('http_basic_auth_password')->value();
     }
 
     protected function clearableInteger(string $key): int|string|null
@@ -228,6 +252,17 @@ class EnvironmentUpdate extends BaseCommand
         )->setPreviousValue($environment->deployCommand ?? '');
 
         $this->form()->define(
+            'post_deploy_command',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => textarea(
+                    label: 'Post-deploy command',
+                    default: $value ?? $environment->postDeployCommand ?? '',
+                ),
+            ),
+            'post-deploy-command',
+        )->setPreviousValue($environment->postDeployCommand ?? '');
+
+        $this->form()->define(
             'start_command',
             fn ($resolver) => $resolver->fromInput(
                 fn ($value) => text(
@@ -256,6 +291,18 @@ class EnvironmentUpdate extends BaseCommand
         $this->defineBoolean('uses_deploy_hook', 'Deploy hook', $environment->usesDeployHook);
         $this->defineBoolean('uses_vanity_domain', 'Vanity domain', null);
         $this->defineBoolean('uses_octane', 'Octane', $environment->usesOctane);
+        $this->defineBoolean('uses_http_basic_auth', 'HTTP basic auth', $environment->usesHttpBasicAuth);
+
+        $this->form()->define(
+            'http_basic_auth_password',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => password(
+                    label: 'HTTP basic auth password',
+                    required: true,
+                    hint: 'Visitors sign in as `admin`',
+                ),
+            ),
+        )->setLabel('HTTP basic auth password');
         $this->defineBoolean('uses_purge_edge_cache_on_deploy', 'Purge edge cache on deploy', null);
 
         $this->defineNumber('timeout', 'Timeout (seconds)', 5, 60, $environment->timeout);
@@ -538,7 +585,8 @@ class EnvironmentUpdate extends BaseCommand
     {
         $selection = multiselect(
             label: 'What do you want to update?',
-            options: collect($this->form()->defined())->mapWithKeys(fn ($field, $key) => [
+            // The password is asked for when basic auth is turned on, never on its own.
+            options: collect($this->form()->defined())->reject(fn ($field) => $field->key === 'http_basic_auth_password')->mapWithKeys(fn ($field, $key) => [
                 $field->key => $field->label(),
             ])->toArray(),
             scroll: 15,

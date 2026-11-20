@@ -27,6 +27,14 @@ beforeEach(function () {
         'hibernation_wake_up_interval' => 60,
         'timeout' => 30,
         'shutdown_timeout' => 45,
+        'post_deploy_command' => 'php artisan cache:clear',
+        'uses_http_basic_auth' => true,
+        'internal_networking' => [
+            'enabled' => true,
+            'hostname' => 'production.internal',
+            'access_level' => 'specific',
+            'environment_ids' => ['env-2'],
+        ],
         'network_settings' => [
             'response_headers' => [
                 'frame' => 'deny',
@@ -192,5 +200,59 @@ it('exposes the runtime attributes of an environment', function () {
         'hibernationWakeUpInterval' => 60,
         'timeout' => 30,
         'shutdownTimeout' => 45,
+    ]);
+});
+
+it('sends the post-deploy command', function () {
+    updateEnvironment(['--post-deploy-command' => 'php artisan queue:restart']);
+
+    expect($this->sent->body)->toBe(['post_deploy_command' => 'php artisan queue:restart']);
+});
+
+it('sends HTTP basic auth with its password', function () {
+    updateEnvironment([
+        '--uses-http-basic-auth' => 'true',
+        '--http-basic-auth-password' => 'hunter2',
+    ]);
+
+    expect($this->sent->body)->toBe([
+        'uses_http_basic_auth' => true,
+        'http_basic_auth_password' => 'hunter2',
+    ]);
+});
+
+it('turns HTTP basic auth off without a password', function () {
+    updateEnvironment(['--uses-http-basic-auth' => 'false']);
+
+    expect($this->sent->body)->toBe(['uses_http_basic_auth' => false]);
+});
+
+it('needs a password to turn HTTP basic auth on non-interactively', function () {
+    $this->artisan('environment:update', [
+        'environment' => 'env-1',
+        '--uses-http-basic-auth' => 'true',
+        '--no-interaction' => true,
+    ])->assertFailed();
+
+    expect($this->sent->body)->toBeNull();
+});
+
+it('exposes the post-deploy command, HTTP basic auth and internal networking', function () {
+    Artisan::call('environment:get', [
+        'environment' => 'env-1',
+        '--json' => true,
+        '--fields' => 'postDeployCommand,usesHttpBasicAuth,internalNetworking',
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toBe([
+        'postDeployCommand' => 'php artisan cache:clear',
+        'usesHttpBasicAuth' => true,
+        'internalNetworking' => [
+            'enabled' => true,
+            'hostname' => 'production.internal',
+            'accessLevel' => 'specific',
+            'environmentIds' => ['env-2'],
+        ],
     ]);
 });

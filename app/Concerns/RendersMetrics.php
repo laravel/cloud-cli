@@ -65,7 +65,10 @@ trait RendersMetrics
      */
     protected function seriesLines(MetricSeries $series, Closure $format, array $stats = []): array
     {
-        if (! $series->hasData()) {
+        $values = $series->values();
+        $sampled = array_values(array_filter($values, fn (?float $value) => $value !== null));
+
+        if ($sampled === []) {
             return [['No data']];
         }
 
@@ -74,13 +77,11 @@ trait RendersMetrics
             ->map(fn (string $label, string $stat) => $format($series->{$stat}).' '.$label)
             ->values();
 
-        $values = $series->values();
-
         return array_values(array_filter([
             $summary->isEmpty() ? null : [$summary->first(), $summary->slice(1)->implode(' · ') ?: null],
             [
                 Sparkline::make($values, $this->sparklineWidth()),
-                $format($values[0]).' → '.$format($values[count($values) - 1]),
+                $format($sampled[0]).' → '.$format($sampled[count($sampled) - 1]),
             ],
         ]));
     }
