@@ -4,3 +4,26 @@
 BACKERS.md export-ignore
 CONTRIBUTING.md export-ignore
 CHANGELOG.md export-ignore
+
+# The package ships as the self-contained phar in builds/. Leaving the source out of the
+# dist archive keeps Composer from adding the CLI's App\ classes to projects that install it.
+/app export-ignore
+/bootstrap export-ignore
+/config export-ignore
+/resources export-ignore
+/scripts export-ignore
+/tests export-ignore
+/cloud export-ignore
+/.cursorrules export-ignore
+/.editorconfig export-ignore
+/.env.example export-ignore
+/.gitattributes export-ignore
+/.gitignore export-ignore
+/AI_CLI_DESIGN_PRINCIPLES.md export-ignore
+/CLAUDE.md export-ignore
+/bosun.json export-ignore
+/box.json export-ignore
+/composer.lock export-ignore
+/phpstan.neon.dist export-ignore
+/phpunit.xml.dist export-ignore
+/pint.json export-ignore
