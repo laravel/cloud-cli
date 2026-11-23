@@ -2,9 +2,11 @@
 
 namespace App\Client\Resources;
 
+use App\Client\Requests\SubmitFeedbackRequestData;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListIpAddressesRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
+use App\Client\Resources\Meta\SubmitFeedbackRequest;
 use App\Dto\Organization;
 
 class MetaResource extends Resource
@@ -30,5 +32,12 @@ class MetaResource extends Resource
         $response = $this->send(new ListIpAddressesRequest);
 
         return $response->json();
+    }
+
+    public function submitFeedback(SubmitFeedbackRequestData $data): array
+    {
+        $response = $this->send(new SubmitFeedbackRequest($data));
+
+        return $response->json() ?: [];
     }
 }
