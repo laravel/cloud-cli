@@ -28,14 +28,16 @@ class Browser extends BaseCommand
         $app = $this->resolvers()->application()->from($this->argument('application'));
         $environment = $this->resolvers()->environment()->withApplication($app)->from($this->argument('environment'));
 
-        if (! $environment->url) {
+        $url = $environment->siteUrl();
+
+        if (! $url) {
             warning('No site found for this environment.');
 
             return self::FAILURE;
         }
 
-        openUrl($environment->url);
+        openUrl($url);
 
-        outro($environment->url);
+        outro($url);
     }
 }
