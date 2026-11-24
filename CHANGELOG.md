@@ -1,6 +1,25 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.8...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.9...main)
+
+## [v0.7.9](https://github.com/laravel/cloud-cli/compare/v0.7.8...v0.7.9) - 2026-11-24
+
+### What's Changed
+
+* Sync environments with the current API spec by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/300
+* Fix the skills install prompt hanging by [@JonPurvis](https://github.com/JonPurvis) in https://github.com/laravel/cloud-cli/pull/294
+* Add cloud feedback command by [@mateusjatenee](https://github.com/mateusjatenee) in https://github.com/laravel/cloud-cli/pull/302
+* Change `cloud browser` to open primary custom domain (if there is one) by [@JonPurvis](https://github.com/JonPurvis) in https://github.com/laravel/cloud-cli/pull/296
+* Exclude source from dist to prevent warnings about class resolution by [@JonPurvis](https://github.com/JonPurvis) in https://github.com/laravel/cloud-cli/pull/301
+* Isolate tests from terminal environment by [@JonPurvis](https://github.com/JonPurvis) in https://github.com/laravel/cloud-cli/pull/298
+* Fix invalid token error by [@JonPurvis](https://github.com/JonPurvis) in https://github.com/laravel/cloud-cli/pull/297
+* Attach bucket keys with environment:update --bucket-keys by [@edgrosvenor](https://github.com/edgrosvenor) in https://github.com/laravel/cloud-cli/pull/295
+
+### New Contributors
+
+* [@JonPurvis](https://github.com/JonPurvis) made their first contribution in https://github.com/laravel/cloud-cli/pull/294
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.8...v0.7.9
 
 ## [v0.7.8](https://github.com/laravel/cloud-cli/compare/v0.7.7...v0.7.8) - 2026-11-13
 
