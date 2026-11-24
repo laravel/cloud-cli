@@ -393,8 +393,9 @@ Managed queues are a special kind of instance. Pass the instance ID directly or 
 | `cloud tinker`                 | Tinker in your Laravel Cloud environment |
 | `cloud skills:install`         | Install Laravel Cloud CLI agent skills   |
 | `cloud completions`            | Generate and install shell completions   |
+| `cloud feedback`               | Tell the Cloud team what got in your way |
 
-`cloud tinker` runs code against an environment, either interactively or via `--code=` for scripting (`--timeout=` caps how long to wait for output, default 60s). `cloud skills:install` installs the CLI's agent skills for supported coding agents; use `--global` or `--project` to choose the location and `--agent=` (repeatable) to pick specific agents.
+`cloud tinker` runs code against an environment, either interactively or via `--code=` for scripting (`--timeout=` caps how long to wait for output, default 60s). `cloud skills:install` installs the CLI's agent skills for supported coding agents; use `--global` or `--project` to choose the location and `--agent=` (repeatable) to pick specific agents. `cloud feedback "<message>"` sends the Cloud team a wrong result, a confusing error, a docs gap, or a missing endpoint; pass `--type=question` for a question the docs could not answer, and `--tool=` or `--environment=` to say what it is about. Each organization and each user can send 20 a day.
 
 ## Configuration
 
