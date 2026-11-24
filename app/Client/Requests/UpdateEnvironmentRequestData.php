@@ -26,6 +26,8 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?string $databaseSchemaId = null,
         public readonly ?string $cacheId = null,
         public readonly ?string $websocketApplicationId = null,
+        /** @var string|null '' detaches it */
+        public readonly ?string $modelGatewayKeyId = null,
         public readonly ?bool $usesOctane = null,
         public readonly ?int $sleepTimeout = null,
         /** @var int|string|null '' disables it */
@@ -74,6 +76,7 @@ class UpdateEnvironmentRequestData extends RequestData
             'database_schema_id' => $this->databaseSchemaId,
             'cache_id' => $this->cacheId,
             'websocket_application_id' => $this->websocketApplicationId,
+            'model_gateway_key_id' => $this->modelGatewayKeyId,
             'uses_octane' => $this->usesOctane,
             'sleep_timeout' => $this->sleepTimeout,
             'hibernation_wake_up_interval' => $this->hibernationWakeUpInterval,

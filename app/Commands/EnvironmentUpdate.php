@@ -63,6 +63,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--database-id= : Database ID to attach (empty string to detach)}
                             {--cache-id= : Cache ID to attach (empty string to detach)}
                             {--websocket-application-id= : WebSocket application ID to attach (empty string to detach)}
+                            {--model-gateway-key-id= : Model gateway key ID to attach, exposed as LARAVEL_CLOUD_MODEL_GATEWAY_API_KEY from the next deployment (empty string to detach)}
                             {--bucket-keys= : Bucket keys to attach as comma-separated KEY_ID:DISK entries, with :default on at most one (fk-1:local:default,fk-2:public). Replaces every attached bucket; empty string to detach all}
                             {--force : Force update without confirmation}';
 
@@ -126,6 +127,7 @@ class EnvironmentUpdate extends BaseCommand
                     databaseSchemaId: $this->form()->get('database_id'),
                     cacheId: $this->form()->get('cache_id'),
                     websocketApplicationId: $this->form()->get('websocket_application_id'),
+                    modelGatewayKeyId: $this->form()->get('model_gateway_key_id'),
                     usesOctane: $this->form()->boolean('uses_octane'),
                     sleepTimeout: $this->form()->integer('sleep_timeout'),
                     hibernationWakeUpInterval: $this->clearableInteger('hibernation_wake_up_interval'),
@@ -432,6 +434,19 @@ class EnvironmentUpdate extends BaseCommand
             ),
             'websocket-application-id',
         )->setPreviousValue($environment->websocketApplicationId ?? '');
+
+        // The API has no endpoint that lists model gateway keys, so there is nothing to pick from.
+        $this->form()->define(
+            'model_gateway_key_id',
+            fn ($resolver) => $resolver->fromInput(
+                fn ($value) => text(
+                    label: 'Model gateway key ID',
+                    default: $value ?? $environment->modelGatewayKeyId ?? '',
+                    hint: 'Leave empty to detach',
+                ),
+            ),
+            'model-gateway-key-id',
+        )->setPreviousValue($environment->modelGatewayKeyId ?? '')->setLabel('Model gateway key');
 
         // Named after the API field so a validation error on filesystem_keys.* asks for the buckets again.
         $this->form()->define(

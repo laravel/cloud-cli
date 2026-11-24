@@ -47,12 +47,17 @@ beforeEach(function () {
         ],
     ], 'relationships' => [
         'application' => ['data' => ['id' => 'app-123', 'type' => 'applications']],
+        'modelGatewayKey' => ['data' => ['id' => 'mgk-1', 'type' => 'model_gateway_keys']],
     ]]), 'included' => [createApplicationResponse()]];
 
     MockClient::global([
         GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
         GetApplicationRequest::class => MockResponse::make(['data' => createApplicationResponse()], 200),
-        GetEnvironmentRequest::class => MockResponse::make($environment, 200),
+        GetEnvironmentRequest::class => function (PendingRequest $request) use ($environment) {
+            $this->sent->include = $request->query()->get('include');
+
+            return MockResponse::make($environment, 200);
+        },
         UpdateEnvironmentRequest::class => function (PendingRequest $request) use ($environment) {
             $this->sent->body = $request->body()->all();
 
@@ -275,4 +280,28 @@ it('exposes the post-deploy command, HTTP basic auth and internal networking', f
             'environmentIds' => ['env-2'],
         ],
     ]);
+});
+
+it('attaches a model gateway key', function () {
+    updateEnvironment(['--model-gateway-key-id' => 'mgk-2']);
+
+    expect($this->sent->body)->toBe(['model_gateway_key_id' => 'mgk-2']);
+});
+
+it('detaches the model gateway key with an empty string', function () {
+    updateEnvironment(['--model-gateway-key-id' => '']);
+
+    expect($this->sent->body)->toBe(['model_gateway_key_id' => '']);
+});
+
+it('exposes the attached model gateway key', function () {
+    Artisan::call('environment:get', [
+        'environment' => 'env-1',
+        '--json' => true,
+        '--fields' => 'modelGatewayKeyId',
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toBe(['modelGatewayKeyId' => 'mgk-1'])
+        ->and(explode(',', $this->sent->include))->toContain('modelGatewayKey');
 });
