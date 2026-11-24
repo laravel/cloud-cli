@@ -36,6 +36,7 @@ class Environment extends Data
         public readonly bool $usesHibernation = false,
         public readonly bool $usesPushToDeploy = false,
         public readonly bool $usesDeployHook = false,
+        public readonly bool $usesReadOnlyBuildToken = false,
         #[WithTransformer(MaskEnvironmentVariables::class)]
         public readonly array $environmentVariables = [],
         public readonly array $networkSettings = [],
@@ -100,6 +101,7 @@ class Environment extends Data
             'usesHibernation' => $attributes['uses_hibernation'] ?? false,
             'usesPushToDeploy' => $attributes['uses_push_to_deploy'] ?? false,
             'usesDeployHook' => $attributes['uses_deploy_hook'] ?? false,
+            'usesReadOnlyBuildToken' => $attributes['uses_read_only_build_token'] ?? false,
             'environmentVariables' => $attributes['environment_variables'] ?? [],
             'networkSettings' => $attributes['network_settings'] ?? [],
             'createdAt' => $attributes['created_at'] ?? null,
