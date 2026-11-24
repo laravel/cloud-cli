@@ -43,10 +43,14 @@ class Feedback extends BaseCommand
                 ->fromInput(fn (?string $value) => select(
                     label: 'What kind of feedback is this?',
                     options: [
-                        'feedback' => 'Something got in the way (a wrong result, a confusing error, a docs gap, a missing endpoint)',
+                        'feedback' => 'Something got in the way',
                         'question' => 'A question the docs and CLI could not answer',
                     ],
                     default: $value ?? 'feedback',
+                    info: fn ($value) => match ($value) {
+                        'feedback' => 'Wrong result, confusing error, docs gap, missing endpoint',
+                        default => '',
+                    },
                 ))
                 ->nonInteractively(fn () => 'feedback'),
         );
@@ -92,7 +96,7 @@ class Feedback extends BaseCommand
 
             $this->failAndExit(
                 'Feedback is limited to 20 submissions a day for each organization and each user, and that limit has been reached.'
-                .($seconds > 0 ? ' Try again in '.CarbonInterval::seconds($seconds)->cascade()->forHumans(['parts' => 2]).'.' : ' Try again tomorrow.'),
+                    .($seconds > 0 ? ' Try again in '.CarbonInterval::seconds($seconds)->cascade()->forHumans(['parts' => 2]).'.' : ' Try again tomorrow.'),
             );
         }
     }
