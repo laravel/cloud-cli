@@ -32,6 +32,7 @@ beforeEach(function () {
         'shutdown_timeout' => 45,
         'post_deploy_command' => 'php artisan cache:clear',
         'uses_http_basic_auth' => true,
+        'uses_read_only_build_token' => true,
         'internal_networking' => [
             'enabled' => true,
             'hostname' => 'production.internal',
@@ -122,6 +123,7 @@ it('sends boolean options as booleans', function (string $option, string $field,
 })->with([
     ['uses-push-to-deploy', 'uses_push_to_deploy', 'false', false],
     ['uses-deploy-hook', 'uses_deploy_hook', 'true', true],
+    ['uses-read-only-build-token', 'uses_read_only_build_token', 'true', true],
     ['uses-vanity-domain', 'uses_vanity_domain', 'false', false],
     ['uses-octane', 'uses_octane', '0', false],
     ['uses-purge-edge-cache-on-deploy', 'uses_purge_edge_cache_on_deploy', '1', true],
@@ -236,7 +238,7 @@ it('asks for a password when HTTP basic auth is turned on interactively', functi
     Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
 
     Prompt::fake([
-        ...array_fill(0, 14, Key::DOWN), Key::SPACE, Key::ENTER,
+        ...array_fill(0, 15, Key::DOWN), Key::SPACE, Key::ENTER,
         Key::ENTER,
         'h', 'u', 'n', 't', 'e', 'r', '2', Key::ENTER,
     ]);
@@ -253,7 +255,7 @@ it('turns HTTP basic auth off interactively without asking for a password', func
     Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
 
     Prompt::fake([
-        ...array_fill(0, 14, Key::DOWN), Key::SPACE, Key::ENTER,
+        ...array_fill(0, 15, Key::DOWN), Key::SPACE, Key::ENTER,
         'n', Key::ENTER,
     ]);
 
@@ -304,4 +306,28 @@ it('exposes the attached model gateway key', function () {
 
     expect(json_decode(Artisan::output(), true))->toBe(['modelGatewayKeyId' => 'mgk-1'])
         ->and(explode(',', $this->sent->include))->toContain('modelGatewayKey');
+});
+
+it('exposes whether builds use a read-only token', function () {
+    Artisan::call('environment:get', [
+        'environment' => 'env-1',
+        '--json' => true,
+        '--fields' => 'usesReadOnlyBuildToken',
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toBe(['usesReadOnlyBuildToken' => true]);
+});
+
+it('turns the read-only build token off interactively', function () {
+    Artisan::registerCommand(new InteractiveEnvironmentUpdateCommand);
+
+    Prompt::fake([
+        ...array_fill(0, 12, Key::DOWN), Key::SPACE, Key::ENTER,
+        'n', Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-environment-update', ['environment' => 'env-1'])->assertSuccessful();
+
+    expect($this->sent->body)->toBe(['uses_read_only_build_token' => false]);
 });

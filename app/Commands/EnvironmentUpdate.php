@@ -42,6 +42,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--node-version= : Node version (20, 22, 24, 26)}
                             {--uses-push-to-deploy= : Deploy on push}
                             {--uses-deploy-hook= : Enable the deploy hook}
+                            {--uses-read-only-build-token= : Clone the repository with a read-only token during builds (GitHub only)}
                             {--uses-vanity-domain= : Serve the Laravel Cloud domain}
                             {--uses-octane= : Uses Octane}
                             {--http-basic-auth-password= : Require visitors to sign in as `admin` with this password; pass an empty value to turn basic auth off}
@@ -116,6 +117,7 @@ class EnvironmentUpdate extends BaseCommand
                     branch: $this->form()->get('branch'),
                     usesPushToDeploy: $this->form()->boolean('uses_push_to_deploy'),
                     usesDeployHook: $this->form()->boolean('uses_deploy_hook'),
+                    usesReadOnlyBuildToken: $this->form()->boolean('uses_read_only_build_token'),
                     timeout: $this->form()->integer('timeout'),
                     phpVersion: $this->form()->get('php_version'),
                     buildCommand: $this->form()->get('build_command'),
@@ -331,6 +333,7 @@ class EnvironmentUpdate extends BaseCommand
 
         $this->defineBoolean('uses_push_to_deploy', 'Push to deploy', $environment->usesPushToDeploy);
         $this->defineBoolean('uses_deploy_hook', 'Deploy hook', $environment->usesDeployHook);
+        $this->defineBoolean('uses_read_only_build_token', 'Read-only build token', $environment->usesReadOnlyBuildToken);
         $this->defineBoolean('uses_vanity_domain', 'Vanity domain', null);
         $this->defineBoolean('uses_octane', 'Octane', $environment->usesOctane);
         $this->form()->define(
