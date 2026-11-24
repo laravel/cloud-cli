@@ -29,7 +29,7 @@ afterEach(function () {
     MockClient::destroyGlobal();
 });
 
-function browserEnvironmentResponse(?string $hostnameStatus): array
+function browserEnvironmentResponse(?string $hostnameStatus, string $sslStatus = 'verified'): array
 {
     if ($hostnameStatus === null) {
         return ['data' => createEnvironmentResponse(), 'included' => []];
@@ -48,19 +48,19 @@ function browserEnvironmentResponse(?string $hostnameStatus): array
                 'name' => 'example.com',
                 'type' => 'root',
                 'hostname_status' => $hostnameStatus,
-                'ssl_status' => 'verified',
+                'ssl_status' => $sslStatus,
                 'origin_status' => 'verified',
             ],
         ]],
     ];
 }
 
-function mockBrowserApi(?string $hostnameStatus): void
+function mockBrowserApi(?string $hostnameStatus, string $sslStatus = 'verified'): void
 {
     MockClient::global([
         GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
         GetApplicationRequest::class => MockResponse::make(['data' => createApplicationResponse()], 200),
-        GetEnvironmentRequest::class => MockResponse::make(browserEnvironmentResponse($hostnameStatus), 200),
+        GetEnvironmentRequest::class => MockResponse::make(browserEnvironmentResponse($hostnameStatus, $sslStatus), 200),
     ]);
 }
 
@@ -80,6 +80,15 @@ it('opens the verified primary domain', function () {
 
 it('falls back to the vanity domain while the primary domain is unverified', function () {
     mockBrowserApi('pending');
+
+    $this->artisan('browser', ['application' => 'app-123', 'environment' => 'env-1', '--no-interaction' => true])
+        ->assertSuccessful();
+
+    openedUrl('https://my-app.cloud.laravel.com');
+});
+
+it('falls back to the vanity domain while the certificate is pending', function () {
+    mockBrowserApi('verified', 'pending');
 
     $this->artisan('browser', ['application' => 'app-123', 'environment' => 'env-1', '--no-interaction' => true])
         ->assertSuccessful();

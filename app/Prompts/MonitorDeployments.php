@@ -98,7 +98,7 @@ class MonitorDeployments extends Prompt
 
         $keyPressListener = KeyPressListener::for($this)->listenForQuit()->on('o', function () {
             if ($this->lastDeployment) {
-                openUrl($this->environment->url);
+                openUrl($this->environment->siteUrl());
             }
         });
 

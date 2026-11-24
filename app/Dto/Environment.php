@@ -169,13 +169,15 @@ class Environment extends Data
     }
 
     /**
-     * The URL visitors should use: the primary custom domain once it has been
-     * verified, otherwise the *.laravel.cloud vanity domain. An unverified
-     * custom domain may not resolve yet, so it isn't worth sending anyone to.
+     * Until hostname and SSL both verify, the custom domain may not resolve or may serve a certificate error.
      */
     public function siteUrl(): string
     {
-        if ($this->primaryDomain?->name && $this->primaryDomain->hostnameStatus === 'verified') {
+        if (
+            $this->primaryDomain?->name
+            && $this->primaryDomain->hostnameStatus === 'verified'
+            && $this->primaryDomain->sslStatus === 'verified'
+        ) {
             return (string) str($this->primaryDomain->name)->start('https://');
         }
 
