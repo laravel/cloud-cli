@@ -12,6 +12,18 @@
             <directory>./tests/Unit</directory>
         </testsuite>
     </testsuites>
+    <php>
+        <!--
+            The CLI picks interactive or headless behaviour from the environment (TTY, CI and
+            agent env vars). The suite expects headless, which CI and agents provide but a
+            developer's own terminal doesn't, so pin it to match CI.
+
+            NO_COLOR matters because decorated (TTY) output makes Laravel Prompts' spinner fork
+            a child process, which can outlive the test and signal the test runner.
+        -->
+        <env name="CI" value="true" force="true"/>
+        <env name="NO_COLOR" value="1" force="true"/>
+    </php>
     <source>
         <include>
             <directory>./app</directory>
