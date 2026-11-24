@@ -172,6 +172,7 @@ class EnvironmentsResource extends Resource
             'database',
             'cache',
             'websocketApplication',
+            'modelGatewayKey',
             'buckets',
         );
     }
