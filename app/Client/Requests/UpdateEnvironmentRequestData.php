@@ -19,6 +19,7 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?string $buildCommand = null,
         public readonly ?string $nodeVersion = null,
         public readonly ?string $deployCommand = null,
+        public readonly ?string $postDeployCommand = null,
         /** @var string|null '' clears it */
         public readonly ?string $startCommand = null,
         public readonly ?bool $usesVanityDomain = null,
@@ -46,6 +47,9 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?bool $firewallBrowserIntegrityCheck = null,
         /** @var array{mode: 'process', root: string|null}|null */
         public readonly ?array $serving = null,
+        public readonly ?bool $usesHttpBasicAuth = null,
+        #[SensitiveParameter]
+        public readonly ?string $httpBasicAuthPassword = null,
     ) {
         //
     }
@@ -64,6 +68,7 @@ class UpdateEnvironmentRequestData extends RequestData
             'build_command' => $this->buildCommand,
             'node_version' => $this->nodeVersion,
             'deploy_command' => $this->deployCommand,
+            'post_deploy_command' => $this->postDeployCommand,
             'start_command' => $this->startCommand,
             'uses_vanity_domain' => $this->usesVanityDomain,
             'database_schema_id' => $this->databaseSchemaId,
@@ -84,6 +89,8 @@ class UpdateEnvironmentRequestData extends RequestData
             'firewall_block_path' => $this->firewallBlockPath,
             'firewall_browser_integrity_check' => $this->firewallBrowserIntegrityCheck,
             'serving' => $this->serving,
+            'uses_http_basic_auth' => $this->usesHttpBasicAuth,
+            'http_basic_auth_password' => $this->httpBasicAuthPassword,
         ]);
 
         // filter() drops nulls, so the CLI's '' stands in for the explicit null the API needs to clear these.

@@ -75,3 +75,30 @@ it('keeps a single row when a metric has no series', function () {
 it('formats bytes', function () {
     expect((metricsRenderer()->formatBytes())(2097152))->toBe('2 MB');
 });
+
+it('starts and ends the trend at the first and last intervals with a sample', function () {
+    $renderer = metricsRenderer();
+
+    $series = MetricSeries::fromApiResponse([
+        'data' => [
+            ['x' => '2026-08-14T12:00:00.000000Z', 'y' => null],
+            ['x' => '2026-08-14T12:05:00.000000Z', 'y' => 2],
+            ['x' => '2026-08-14T12:10:00.000000Z', 'y' => 5],
+            ['x' => '2026-08-14T12:15:00.000000Z', 'y' => null],
+        ],
+    ]);
+
+    [$trend] = $renderer->seriesLines($series, $renderer->formatCount());
+
+    expect($trend[1])->toBe('2 → 5');
+});
+
+it('shows no data for a series with no samples at all', function () {
+    $renderer = metricsRenderer();
+
+    $series = MetricSeries::fromApiResponse([
+        'data' => [['x' => '2026-08-14T12:00:00.000000Z', 'y' => null]],
+    ]);
+
+    expect($renderer->seriesLines($series, $renderer->formatCount()))->toBe([['No data']]);
+});

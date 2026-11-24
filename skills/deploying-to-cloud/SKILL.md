@@ -137,6 +137,8 @@ For multi-step operations, see [reference/checklists.md](reference/checklists.md
 4. Fix the issue and rerun the command.
 5. If the same error occurs after one fix, stop and ask the user rather than repeating the operation.
 
+When the CLI, API, or docs got in the way (a wrong result, a confusing error, a docs gap, a missing command or endpoint), tell the Cloud team with `cloud feedback "<what happened>" --tool=<command> -n`. For a question the docs could not answer, add `--type=question`. Tell the user what you are sending first, and leave out secrets, environment variable values, and customer data. Keep it to one short note per problem; each organization and each user can send 20 a day.
+
 Always run `cloud deploy:monitor -n` after every deploy. If it fails, run `cloud deployment:logs {deploymentId} --json -n` to find the build or deploy step with `"status": "failed"` and read its `output`. Show the user what went wrong before attempting a fix.
 
 ### Subagent Delegation

@@ -10,6 +10,7 @@ use App\Middleware\Concerns\SkipsInternalCommands;
 use App\Support\DetectsNonInteractiveEnvironments;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
+use Symfony\Component\Console\Output\ConsoleOutput;
 
 use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\info;
@@ -66,7 +67,7 @@ class OffersSkillsInstall implements CommandMiddleware
         );
 
         if ($install) {
-            $this->runInstall();
+            $this->runInstall($detectedAgents);
         } else {
             $this->showDeclineHint();
         }
@@ -74,9 +75,16 @@ class OffersSkillsInstall implements CommandMiddleware
         return $next();
     }
 
-    protected function runInstall(): void
+    /**
+     * @param  array<int, string>  $agents
+     */
+    protected function runInstall(array $agents): void
     {
-        Artisan::call(SkillsInstall::class);
+        // A bare Artisan::call buffers output, then waits on a prompt the user cannot see.
+        Artisan::call(SkillsInstall::class, [
+            '--global' => true,
+            '--agent' => $agents,
+        ], new ConsoleOutput);
     }
 
     protected function showDeclineHint(): void

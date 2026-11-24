@@ -1,20 +1,36 @@
 <?php
 
 use App\Support\ContextDetector;
+use Laravel\AgentDetector\AgentDetector;
+
+// Running the suite from inside an agent (Claude Code, Cursor, etc.) or a terminal
+// leaks these into the process, so clear them up front and restore them afterwards.
+function contextDetectorEnvVars(): array
+{
+    return [
+        'AI_AGENT',
+        'CLAUDE_CODE_IS_COWORK',
+        'TERM_PROGRAM',
+        ...array_keys(AgentDetector::AGENT_ENV_VARS),
+    ];
+}
 
 beforeEach(function () {
+    $this->originalEnv = [];
+
+    foreach (contextDetectorEnvVars() as $var) {
+        $this->originalEnv[$var] = getenv($var);
+        putenv($var);
+    }
+
     ContextDetector::flush();
 });
 
 afterEach(function () {
-    putenv('CLAUDECODE');
-    putenv('CLAUDE_CODE');
-    putenv('CODEX_SANDBOX');
-    putenv('CURSOR_AGENT');
-    putenv('CURSOR_TRACE_ID');
-    putenv('OPENCODE');
-    putenv('OPENCODE_CLIENT');
-    putenv('TERM_PROGRAM');
+    foreach ($this->originalEnv as $var => $value) {
+        putenv($value === false ? $var : "{$var}={$value}");
+    }
+
     ContextDetector::flush();
 });
 
