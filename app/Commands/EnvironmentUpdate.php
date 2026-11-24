@@ -157,12 +157,7 @@ class EnvironmentUpdate extends BaseCommand
 
         $keys = $this->parseBucketKeys($value);
 
-        $attached = spin(
-            fn () => $this->client->environments()->include('buckets')->get($environment->id)->bucketIds,
-            'Fetching attached buckets...',
-        );
-
-        if ($attached !== []) {
+        if ($environment->bucketIds !== []) {
             $this->confirmDestructive($keys === []
                 ? "Detach every bucket from {$environment->name}?"
                 : "Replace the buckets attached to {$environment->name}? Any attached bucket not listed will be detached.");
