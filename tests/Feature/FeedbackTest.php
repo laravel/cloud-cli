@@ -3,10 +3,15 @@
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\SubmitFeedbackRequest;
 use App\ConfigRepository;
+use App\Prompts\Renderer;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Testing\PendingCommand;
+use Laravel\Prompts\Key;
+use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
 use Saloon\Http\Faking\MockResponse;
 use Saloon\Http\PendingRequest;
+use Tests\Fixtures\InteractiveFeedbackCommand;
 
 beforeEach(function () {
     $this->mockConfig = Mockery::mock(ConfigRepository::class);
@@ -84,10 +89,43 @@ it('requires a message when run non-interactively', function () {
     expect($sent()->url ?? null)->toBeNull();
 });
 
-it('explains the daily limit when it is reached', function () {
+function runInteractiveFeedback(): PendingCommand
+{
+    Artisan::registerCommand(new InteractiveFeedbackCommand);
+
+    // Accept the default type, then leave the optional command blank.
+    Prompt::fake([Key::ENTER, Key::ENTER]);
+
+    return test()->artisan('test:interactive-feedback', ['message' => 'Hi']);
+}
+
+it('explains the daily limit and when to try again', function () {
     setupFeedbackMocks(MockResponse::make(['message' => 'Too Many Attempts.'], 429, ['Retry-After' => '7260']));
 
-    $this->artisan('feedback', ['message' => 'Hi', '--no-interaction' => true])->assertFailed();
+    $suppressed = Renderer::$suppressOutput;
+
+    try {
+        runInteractiveFeedback()
+            // The error box wraps the message and is one write, which only one expectation can claim.
+            ->expectsOutputToContain('Try again in 2 hours 1')
+            ->assertFailed();
+    } finally {
+        Renderer::$suppressOutput = $suppressed;
+    }
+});
+
+it('says to try again tomorrow when the limit response has no Retry-After', function () {
+    setupFeedbackMocks(MockResponse::make(['message' => 'Too Many Attempts.'], 429));
+
+    $suppressed = Renderer::$suppressOutput;
+
+    try {
+        runInteractiveFeedback()
+            ->expectsOutputToContain('Try again tomorrow.')
+            ->assertFailed();
+    } finally {
+        Renderer::$suppressOutput = $suppressed;
+    }
 });
 
 it('outputs JSON', function () {
