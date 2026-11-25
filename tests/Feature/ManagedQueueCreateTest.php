@@ -202,3 +202,136 @@ it('does not ask about FIFO when --fifo is passed', function () {
 
     expect($sentBody()['fifo'])->toBeTrue();
 });
+
+it('sends no queue timeouts unless given', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    $this->artisan('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'emails',
+        '--size' => 'mq.pro.1gb',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())
+        ->not->toHaveKey('visibility_timeout')
+        ->not->toHaveKey('shutdown_timeout');
+});
+
+it('sends the queue timeouts given as options', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    $this->artisan('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'emails',
+        '--size' => 'mq.pro.1gb',
+        '--visibility-timeout' => '240',
+        '--shutdown-timeout' => '75',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray([
+        'visibility_timeout' => 240,
+        'shutdown_timeout' => 75,
+    ]);
+});
+
+it('sends no queue timeouts for empty answers when interactive', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    // Not FIFO, empty visibility and shutdown timeouts, then the backoff, tries and timeout defaults.
+    Prompt::fake([Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+    ])->assertSuccessful();
+
+    expect($sentBody())
+        ->not->toHaveKey('visibility_timeout')
+        ->not->toHaveKey('shutdown_timeout');
+});
+
+it('sends the queue timeouts answered when interactive', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    // Not FIFO, a 240 second visibility and 75 second shutdown timeout, then the job defaults.
+    Prompt::fake([Key::ENTER, '2', '4', '0', Key::ENTER, '7', '5', Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray([
+        'visibility_timeout' => 240,
+        'shutdown_timeout' => 75,
+    ]);
+});
+
+it('does not ask again for queue timeouts left empty when the API rejects another field', function () {
+    $bodies = [];
+
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetEnvironmentRequest::class => MockResponse::make(['data' => createEnvironmentResponse()], 200),
+        ListInstanceSizesRequest::class => MockResponse::make([
+            'data' => ['managed_queue' => [managedQueueSize('mq.pro.1gb')]],
+        ], 200),
+        CreateInstanceRequest::class => function (PendingRequest $request) use (&$bodies) {
+            $bodies[] = $request->body()->all();
+
+            return count($bodies) === 1
+                ? MockResponse::make(['message' => 'Invalid.', 'errors' => ['name' => ['The name has already been taken.']]], 422)
+                : MockResponse::make(['data' => [
+                    'id' => 'instance-1',
+                    'type' => 'instances',
+                    'attributes' => ['name' => 'orders', 'type' => 'managed_queue', 'size' => 'mq.pro.1gb', 'scaling_type' => 'custom', 'min_replicas' => 1, 'max_replicas' => 3, 'uses_scheduler' => false],
+                ]], 201);
+        },
+    ]);
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    Prompt::fake([
+        // Not FIFO, empty visibility and shutdown timeouts, then the backoff, tries and timeout defaults.
+        Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER,
+        // Asked for the name again, and kept. Nothing else: asking for a timeout again reads a key too many.
+        Key::ENTER,
+    ]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+    ])->assertSuccessful();
+
+    expect($bodies)->toHaveCount(2)
+        ->and($bodies[1])->not->toHaveKey('visibility_timeout')
+        ->and($bodies[1])->not->toHaveKey('shutdown_timeout');
+});
+
+it('sends a zero visibility timeout and leaves out the shutdown timeout', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    $this->artisan('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'emails',
+        '--size' => 'mq.pro.1gb',
+        '--visibility-timeout' => '0',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())
+        ->toMatchArray(['visibility_timeout' => 0])
+        ->not->toHaveKey('shutdown_timeout');
+});

@@ -170,5 +170,7 @@ it('creates a managed queue on the first current-generation size', function () {
         'name' => 'default',
     ])
         ->and($sent->body)->not->toHaveKey('polling_interval')
+        ->and($sent->body)->not->toHaveKey('visibility_timeout')
+        ->and($sent->body)->not->toHaveKey('shutdown_timeout')
         ->and($sent->body['background_processes'][0]['config']['connection'])->toBe('cloud');
 });

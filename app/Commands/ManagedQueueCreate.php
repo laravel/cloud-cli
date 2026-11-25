@@ -25,9 +25,9 @@ class ManagedQueueCreate extends BaseCommand
                             {--name= : Queue name}
                             {--size= : Instance size}
                             {--max-workers= : Maximum number of workers}
-                            {--visibility-timeout= : Visibility timeout in seconds (0-43200)}
+                            {--visibility-timeout= : Visibility timeout in seconds (0-43200). Needs the advanced managed queues entitlement; left out, Laravel Cloud chooses it}
                             {--polling-interval= : Polling interval in seconds (0-60), previous-generation sizes only}
-                            {--shutdown-timeout= : Shutdown timeout in seconds}
+                            {--shutdown-timeout= : Shutdown timeout in seconds. Needs the advanced managed queues entitlement; left out, Laravel Cloud chooses it}
                             {--fifo : Create a FIFO queue; Laravel Cloud appends .fifo to the name}';
 
     protected $description = 'Create a new managed queue';
@@ -118,20 +118,13 @@ class ManagedQueueCreate extends BaseCommand
             'max-workers',
         );
 
-        $this->form()->prompt(
+        $this->promptForQueueTimeout(
             'visibility_timeout',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => (int) number(
-                        label: 'Visibility timeout (seconds)',
-                        hint: 'How long an in-flight job is hidden from other workers (0-43200)',
-                        default: $value ?? '60',
-                        min: 0,
-                        max: 43200,
-                    ),
-                )
-                ->nonInteractively(fn () => 60),
             'visibility-timeout',
+            label: 'Visibility timeout (seconds)',
+            hint: 'How long an in-flight job is hidden from other workers (0-43200). Leave empty to let Laravel Cloud choose; a custom value needs the advanced managed queues entitlement.',
+            min: 0,
+            max: 43200,
         );
 
         $size = $this->form()->get('size');
@@ -159,19 +152,12 @@ class ManagedQueueCreate extends BaseCommand
             );
         }
 
-        $this->form()->prompt(
+        $this->promptForQueueTimeout(
             'shutdown_timeout',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => (int) number(
-                        label: 'Shutdown timeout (seconds)',
-                        hint: 'Grace period for workers to finish their current job before terminating',
-                        default: $value ?? '90',
-                        min: 1,
-                    ),
-                )
-                ->nonInteractively(fn () => 90),
             'shutdown-timeout',
+            label: 'Shutdown timeout (seconds)',
+            hint: 'Grace period for workers to finish their current job before terminating. Leave empty to let Laravel Cloud choose; a custom value needs the advanced managed queues entitlement.',
+            min: 1,
         );
 
         $this->form()->prompt(
@@ -231,9 +217,9 @@ class ManagedQueueCreate extends BaseCommand
                     scalingType: InstanceScalingType::CUSTOM,
                     minReplicas: 1,
                     maxReplicas: $this->form()->integer('max_replicas'),
-                    visibilityTimeout: $this->form()->integer('visibility_timeout'),
+                    visibilityTimeout: $this->queueTimeout('visibility_timeout'),
                     pollingInterval: $this->isCurrentGeneration($size) ? null : $this->form()->integer('polling_interval'),
-                    shutdownTimeout: $this->form()->integer('shutdown_timeout'),
+                    shutdownTimeout: $this->queueTimeout('shutdown_timeout'),
                     backgroundProcesses: [
                         [
                             'type' => 'worker',
@@ -258,5 +244,41 @@ class ManagedQueueCreate extends BaseCommand
     protected function isCurrentGeneration(?string $size): bool
     {
         return str_starts_with((string) $size, 'mq.');
+    }
+
+    /**
+     * Laravel Cloud applies a custom queue timeout only for organizations with the advanced managed
+     * queues entitlement, and chooses its own otherwise. So a timeout is sent only when one was given,
+     * never as a default: not for a missing option, and not for an empty answer.
+     */
+    protected function promptForQueueTimeout(string $key, string $option, string $label, string $hint, int $min, ?int $max = null): void
+    {
+        if (! $this->isInteractive() && $this->option($option) === null) {
+            return;
+        }
+
+        $this->form()->prompt(
+            $key,
+            // An empty answer stays '' rather than null: the form asks again for null fields when the
+            // API rejects another one, and the user already chose to leave this one to Laravel Cloud.
+            fn ($resolver) => $resolver->fromInput(fn ($value) => number(
+                label: $label,
+                default: (string) ($value ?? ''),
+                hint: $hint,
+                min: $min,
+                max: $max,
+            )),
+            $option,
+        );
+    }
+
+    /**
+     * The timeout to send: none when it was left out or answered empty.
+     */
+    protected function queueTimeout(string $key): ?int
+    {
+        $value = $this->form()->get($key);
+
+        return $value === null || $value === '' ? null : (int) $value;
     }
 }
