@@ -10,6 +10,8 @@ use App\Client\Resources\Caches\GetCacheMetricsRequest;
 use App\Client\Resources\Caches\GetCacheRequest;
 use App\Client\Resources\Caches\ListCachesRequest;
 use App\Client\Resources\Caches\ListCacheTypesRequest;
+use App\Client\Resources\Caches\StartCacheRequest;
+use App\Client\Resources\Caches\StopCacheRequest;
 use App\Client\Resources\Caches\UpdateCacheRequest;
 use App\Dto\Cache;
 use App\Dto\CacheMetrics;
@@ -52,6 +54,22 @@ class CachesResource extends Resource
     public function update(UpdateCacheRequestData $data): Cache
     {
         $request = new UpdateCacheRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function start(string $cacheId): Cache
+    {
+        $request = new StartCacheRequest($cacheId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function stop(string $cacheId): Cache
+    {
+        $request = new StopCacheRequest($cacheId);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

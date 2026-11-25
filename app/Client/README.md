@@ -138,6 +138,8 @@ $data = $response->json();
 - `CreateCacheRequest` - Create a new cache
 - `UpdateCacheRequest` - Update a cache
 - `DeleteCacheRequest` - Delete a cache
+- `StartCacheRequest` - Start a stopped cache
+- `StopCacheRequest` - Stop a cache
 - `ListCacheTypesRequest` - List available cache types
 
 #### WebSocket Clusters

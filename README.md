@@ -262,8 +262,12 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud cache:create`  | Create a cache             |
 | `cloud cache:update`  | Update a cache             |
 | `cloud cache:delete`  | Delete a cache             |
+| `cloud cache:start`   | Start a stopped cache      |
+| `cloud cache:stop`    | Stop a cache               |
 | `cloud cache:types`   | List available cache types |
 | `cloud cache:metrics` | View cache metrics         |
+
+Environments cannot connect to a stopped cache until it is started again, so `cache:stop` asks for confirmation (or `--force`).
 
 ### Object storage (buckets)
 
