@@ -25,7 +25,7 @@ class CacheStop extends BaseCommand
 
         $cache = $this->resolvers()->cache()->from($this->argument('cache'));
 
-        $this->confirmDestructive("Stop cache '{$cache->name}'? Environments cannot connect to it until it is started again.");
+        $this->confirmDestructive("Stop cache '{$cache->name}'?");
 
         $stopped = spin(
             fn () => $this->client->caches()->stop($cache->id),
