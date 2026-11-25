@@ -1,6 +1,20 @@
 # Release Notes
 
-## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.9...main)
+## [Unreleased](https://github.com/laravel/cloud-cli/compare/v0.7.10...main)
+
+## [v0.7.10](https://github.com/laravel/cloud-cli/compare/v0.7.9...v0.7.10) - 2026-11-25
+
+### What's Changed
+
+* Sync environments with the current API spec: Model gateway key by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/303
+* Sync environments with the current API spec: read-only build token by [@joetannenbaum](https://github.com/joetannenbaum) in https://github.com/laravel/cloud-cli/pull/304
+* Send managed queue timeouts only when given by [@iramello](https://github.com/iramello) in https://github.com/laravel/cloud-cli/pull/308
+
+### New Contributors
+
+* [@iramello](https://github.com/iramello) made their first contribution in https://github.com/laravel/cloud-cli/pull/308
+
+**Full Changelog**: https://github.com/laravel/cloud-cli/compare/v0.7.9...v0.7.10
 
 ## [v0.7.9](https://github.com/laravel/cloud-cli/compare/v0.7.8...v0.7.9) - 2026-11-24
 
