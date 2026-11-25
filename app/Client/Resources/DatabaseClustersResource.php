@@ -11,6 +11,8 @@ use App\Client\Resources\DatabaseClusters\GetDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseClustersRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabasePresetsRequest;
 use App\Client\Resources\DatabaseClusters\ListDatabaseTypesRequest;
+use App\Client\Resources\DatabaseClusters\StartDatabaseClusterRequest;
+use App\Client\Resources\DatabaseClusters\StopDatabaseClusterRequest;
 use App\Client\Resources\DatabaseClusters\UpdateDatabaseClusterRequest;
 use App\Dto\DatabaseCluster;
 use App\Dto\DatabaseClusterMetrics;
@@ -53,6 +55,22 @@ class DatabaseClustersResource extends Resource
     public function update(UpdateDatabaseClusterRequestData $data): DatabaseCluster
     {
         $request = new UpdateDatabaseClusterRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function start(string $clusterId): DatabaseCluster
+    {
+        $request = new StartDatabaseClusterRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function stop(string $clusterId): DatabaseCluster
+    {
+        $request = new StopDatabaseClusterRequest($clusterId);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);

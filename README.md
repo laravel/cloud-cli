@@ -235,6 +235,8 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud database-cluster:create`  | Create a database cluster              |
 | `cloud database-cluster:update`  | Update a database cluster              |
 | `cloud database-cluster:delete`  | Delete a database cluster              |
+| `cloud database-cluster:start`   | Start a stopped database cluster       |
+| `cloud database-cluster:stop`    | Stop a database cluster                |
 | `cloud database-cluster:metrics` | View cluster metrics                   |
 | `cloud database-cluster:types`   | List database types and versions       |
 | `cloud database:list`            | List databases (schemas) in a cluster  |
@@ -252,6 +254,8 @@ op read "op://vault/stripe/api-key" | cloud secret:create --name=STRIPE_KEY -n
 | `cloud database-user:update`     | Update a user's permission and access  |
 | `cloud database-user:delete`     | Delete a database user                 |
 | `cloud database-restore:create`  | Create a restore from snapshot or PITR |
+
+A stopped database cluster keeps its data, but environments cannot connect to it until it is started again, so `database-cluster:stop` asks for confirmation (or `--force`). A Serverless Postgres cluster gets a new hostname when it starts, so redeploy connected environments once it is running.
 
 ### Cache
 

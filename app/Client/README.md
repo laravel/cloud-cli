@@ -93,6 +93,8 @@ $data = $response->json();
 - `CreateDatabaseClusterRequest` - Create a new database cluster
 - `UpdateDatabaseClusterRequest` - Update a database cluster
 - `DeleteDatabaseClusterRequest` - Delete a database cluster
+- `StartDatabaseClusterRequest` - Start a stopped database cluster
+- `StopDatabaseClusterRequest` - Stop a database cluster
 - `ListDatabaseTypesRequest` - List available database types
 
 #### Databases (within clusters)
