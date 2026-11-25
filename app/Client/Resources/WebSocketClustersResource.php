@@ -10,6 +10,8 @@ use App\Client\Resources\WebSocketClusters\GetWebSocketClusterMetricsRequest;
 use App\Client\Resources\WebSocketClusters\GetWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\ListWebSocketClustersRequest;
 use App\Client\Resources\WebSocketClusters\ListWebSocketClusterTypesRequest;
+use App\Client\Resources\WebSocketClusters\StartWebSocketClusterRequest;
+use App\Client\Resources\WebSocketClusters\StopWebSocketClusterRequest;
 use App\Client\Resources\WebSocketClusters\UpdateWebSocketClusterRequest;
 use App\Dto\WebsocketCluster;
 use App\Dto\WebsocketClusterType;
@@ -52,6 +54,22 @@ class WebSocketClustersResource extends Resource
     public function update(UpdateWebSocketClusterRequestData $data): WebsocketCluster
     {
         $request = new UpdateWebSocketClusterRequest($data);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function start(string $clusterId): WebsocketCluster
+    {
+        $request = new StartWebSocketClusterRequest($clusterId);
+        $response = $this->send($request);
+
+        return $request->createDtoFromResponse($response);
+    }
+
+    public function stop(string $clusterId): WebsocketCluster
+    {
+        $request = new StopWebSocketClusterRequest($clusterId);
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
