@@ -217,9 +217,9 @@ class ManagedQueueCreate extends BaseCommand
                     scalingType: InstanceScalingType::CUSTOM,
                     minReplicas: 1,
                     maxReplicas: $this->form()->integer('max_replicas'),
-                    visibilityTimeout: $this->form()->integer('visibility_timeout'),
+                    visibilityTimeout: $this->queueTimeout('visibility_timeout'),
                     pollingInterval: $this->isCurrentGeneration($size) ? null : $this->form()->integer('polling_interval'),
-                    shutdownTimeout: $this->form()->integer('shutdown_timeout'),
+                    shutdownTimeout: $this->queueTimeout('shutdown_timeout'),
                     backgroundProcesses: [
                         [
                             'type' => 'worker',
@@ -259,18 +259,26 @@ class ManagedQueueCreate extends BaseCommand
 
         $this->form()->prompt(
             $key,
-            fn ($resolver) => $resolver->fromInput(function ($value) use ($label, $hint, $min, $max) {
-                $answer = number(
-                    label: $label,
-                    default: (string) ($value ?? ''),
-                    hint: $hint,
-                    min: $min,
-                    max: $max,
-                );
-
-                return $answer === '' ? null : (int) $answer;
-            }),
+            // An empty answer stays '' rather than null: the form asks again for null fields when the
+            // API rejects another one, and the user already chose to leave this one to Laravel Cloud.
+            fn ($resolver) => $resolver->fromInput(fn ($value) => number(
+                label: $label,
+                default: (string) ($value ?? ''),
+                hint: $hint,
+                min: $min,
+                max: $max,
+            )),
             $option,
         );
+    }
+
+    /**
+     * The timeout to send: none when it was left out or answered empty.
+     */
+    protected function queueTimeout(string $key): ?int
+    {
+        $value = $this->form()->get($key);
+
+        return $value === null || $value === '' ? null : (int) $value;
     }
 }
