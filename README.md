@@ -316,6 +316,8 @@ Without an environment argument, `resend:attach` offers only environments withou
 | `cloud websocket-cluster:create`      | Create a WebSocket cluster     |
 | `cloud websocket-cluster:update`      | Update a WebSocket cluster     |
 | `cloud websocket-cluster:delete`      | Delete a WebSocket cluster     |
+| `cloud websocket-cluster:start`       | Start a stopped cluster        |
+| `cloud websocket-cluster:stop`        | Stop a WebSocket cluster       |
 | `cloud websocket-cluster:metrics`     | View cluster metrics           |
 | `cloud websocket-cluster:types`       | List cluster types and tiers   |
 | `cloud websocket-application:list`    | List WebSocket applications    |
@@ -324,6 +326,8 @@ Without an environment argument, `resend:attach` offers only environments withou
 | `cloud websocket-application:update`  | Update a WebSocket application |
 | `cloud websocket-application:delete`  | Delete a WebSocket application |
 | `cloud websocket-application:metrics` | View application metrics       |
+
+A stopped WebSocket cluster's applications stop accepting connections until it is started again, so `websocket-cluster:stop` asks for confirmation (or `--force`).
 
 ### Background processes
 
