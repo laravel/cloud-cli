@@ -370,7 +370,7 @@ Managed queues are a special kind of instance. Pass the instance ID directly or 
 | `cloud managed-queue:retry-failed-job`  | Retry a failed job on a managed queue    |
 | `cloud managed-queue:delete-failed-job` | Delete failed jobs from a managed queue  |
 
-`managed-queue:create` accepts `--name`, `--size`, `--max-workers`, `--visibility-timeout`, `--polling-interval` and `--shutdown-timeout` so it can run non-interactively. `pause`, `purge` and `delete-failed-job` accept `--force` to skip the confirmation prompt. `delete-failed-job` takes one or more job IDs, or `--failed-before` to delete every job that failed before a date.
+`managed-queue:create` accepts `--name`, `--size`, `--max-workers`, `--visibility-timeout`, `--polling-interval` and `--shutdown-timeout` so it can run non-interactively. The two timeouts are sent only when given: Laravel Cloud chooses them otherwise, and applies custom values only for organizations with the advanced managed queues entitlement. `pause`, `purge` and `delete-failed-job` accept `--force` to skip the confirmation prompt. `delete-failed-job` takes one or more job IDs, or `--failed-before` to delete every job that failed before a date.
 
 ### Usage
 

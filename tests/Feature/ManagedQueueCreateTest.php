@@ -202,3 +202,77 @@ it('does not ask about FIFO when --fifo is passed', function () {
 
     expect($sentBody()['fifo'])->toBeTrue();
 });
+
+it('sends no queue timeouts unless given', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    $this->artisan('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'emails',
+        '--size' => 'mq.pro.1gb',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())
+        ->not->toHaveKey('visibility_timeout')
+        ->not->toHaveKey('shutdown_timeout');
+});
+
+it('sends the queue timeouts given as options', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    $this->artisan('managed-queue:create', [
+        'environment' => 'env-1',
+        '--name' => 'emails',
+        '--size' => 'mq.pro.1gb',
+        '--visibility-timeout' => '240',
+        '--shutdown-timeout' => '75',
+        '--no-interaction' => true,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray([
+        'visibility_timeout' => 240,
+        'shutdown_timeout' => 75,
+    ]);
+});
+
+it('sends no queue timeouts for empty answers when interactive', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    // Not FIFO, empty visibility and shutdown timeouts, then the backoff, tries and timeout defaults.
+    Prompt::fake([Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+    ])->assertSuccessful();
+
+    expect($sentBody())
+        ->not->toHaveKey('visibility_timeout')
+        ->not->toHaveKey('shutdown_timeout');
+});
+
+it('sends the queue timeouts answered when interactive', function () {
+    $sentBody = setupManagedQueueCreateMocks();
+
+    Artisan::registerCommand(new InteractiveManagedQueueCreateCommand);
+
+    // Not FIFO, a 240 second visibility and 75 second shutdown timeout, then the job defaults.
+    Prompt::fake([Key::ENTER, '2', '4', '0', Key::ENTER, '7', '5', Key::ENTER, Key::ENTER, Key::ENTER, Key::ENTER]);
+
+    $this->artisan('test:interactive-managed-queue-create', [
+        'environment' => 'env-1',
+        '--name' => 'orders',
+        '--size' => 'mq.pro.1gb',
+        '--max-workers' => 3,
+    ])->assertSuccessful();
+
+    expect($sentBody())->toMatchArray([
+        'visibility_timeout' => 240,
+        'shutdown_timeout' => 75,
+    ]);
+});

@@ -25,9 +25,9 @@ class ManagedQueueCreate extends BaseCommand
                             {--name= : Queue name}
                             {--size= : Instance size}
                             {--max-workers= : Maximum number of workers}
-                            {--visibility-timeout= : Visibility timeout in seconds (0-43200)}
+                            {--visibility-timeout= : Visibility timeout in seconds (0-43200). Needs the advanced managed queues entitlement; left out, Laravel Cloud chooses it}
                             {--polling-interval= : Polling interval in seconds (0-60), previous-generation sizes only}
-                            {--shutdown-timeout= : Shutdown timeout in seconds}
+                            {--shutdown-timeout= : Shutdown timeout in seconds. Needs the advanced managed queues entitlement; left out, Laravel Cloud chooses it}
                             {--fifo : Create a FIFO queue; Laravel Cloud appends .fifo to the name}';
 
     protected $description = 'Create a new managed queue';
@@ -118,20 +118,13 @@ class ManagedQueueCreate extends BaseCommand
             'max-workers',
         );
 
-        $this->form()->prompt(
+        $this->promptForQueueTimeout(
             'visibility_timeout',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => (int) number(
-                        label: 'Visibility timeout (seconds)',
-                        hint: 'How long an in-flight job is hidden from other workers (0-43200)',
-                        default: $value ?? '60',
-                        min: 0,
-                        max: 43200,
-                    ),
-                )
-                ->nonInteractively(fn () => 60),
             'visibility-timeout',
+            label: 'Visibility timeout (seconds)',
+            hint: 'How long an in-flight job is hidden from other workers (0-43200). Leave empty to let Laravel Cloud choose; a custom value needs the advanced managed queues entitlement.',
+            min: 0,
+            max: 43200,
         );
 
         $size = $this->form()->get('size');
@@ -159,19 +152,12 @@ class ManagedQueueCreate extends BaseCommand
             );
         }
 
-        $this->form()->prompt(
+        $this->promptForQueueTimeout(
             'shutdown_timeout',
-            fn ($resolver) => $resolver
-                ->fromInput(
-                    fn ($value) => (int) number(
-                        label: 'Shutdown timeout (seconds)',
-                        hint: 'Grace period for workers to finish their current job before terminating',
-                        default: $value ?? '90',
-                        min: 1,
-                    ),
-                )
-                ->nonInteractively(fn () => 90),
             'shutdown-timeout',
+            label: 'Shutdown timeout (seconds)',
+            hint: 'Grace period for workers to finish their current job before terminating. Leave empty to let Laravel Cloud choose; a custom value needs the advanced managed queues entitlement.',
+            min: 1,
         );
 
         $this->form()->prompt(
@@ -258,5 +244,33 @@ class ManagedQueueCreate extends BaseCommand
     protected function isCurrentGeneration(?string $size): bool
     {
         return str_starts_with((string) $size, 'mq.');
+    }
+
+    /**
+     * Laravel Cloud applies a custom queue timeout only for organizations with the advanced managed
+     * queues entitlement, and chooses its own otherwise. So a timeout is sent only when one was given,
+     * never as a default: not for a missing option, and not for an empty answer.
+     */
+    protected function promptForQueueTimeout(string $key, string $option, string $label, string $hint, int $min, ?int $max = null): void
+    {
+        if (! $this->isInteractive() && $this->option($option) === null) {
+            return;
+        }
+
+        $this->form()->prompt(
+            $key,
+            fn ($resolver) => $resolver->fromInput(function ($value) use ($label, $hint, $min, $max) {
+                $answer = number(
+                    label: $label,
+                    default: (string) ($value ?? ''),
+                    hint: $hint,
+                    min: $min,
+                    max: $max,
+                );
+
+                return $answer === '' ? null : (int) $answer;
+            }),
+            $option,
+        );
     }
 }

@@ -198,9 +198,9 @@ trait ProvisionsQueueWorker
                     scalingType: InstanceScalingType::CUSTOM,
                     minReplicas: 1,
                     maxReplicas: 3,
-                    visibilityTimeout: 60,
+                    // No visibility or shutdown timeout: Laravel Cloud chooses them, and applies custom ones
+                    // only for organizations with the advanced managed queues entitlement.
                     pollingInterval: str_starts_with($size, 'mq.') ? null : 5,
-                    shutdownTimeout: 90,
                     backgroundProcesses: [
                         [
                             'type' => 'worker',
