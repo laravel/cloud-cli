@@ -33,6 +33,8 @@ class Deployment extends Data
         public readonly bool $usesOctane = false,
         public readonly bool $usesHibernation = false,
         public readonly ?int $hibernationWakeUpInterval = null,
+        public readonly ?string $trigger = null,
+        public readonly ?string $triggerReference = null,
         public readonly ?Environment $environment = null,
         public readonly ?User $initiator = null,
     ) {
@@ -124,6 +126,8 @@ class Deployment extends Data
             'usesOctane' => $attributes['uses_octane'] ?? false,
             'usesHibernation' => $attributes['uses_hibernation'] ?? false,
             'hibernationWakeUpInterval' => $attributes['hibernation_wake_up_interval'] ?? null,
+            'trigger' => $attributes['trigger'] ?? null,
+            'triggerReference' => $attributes['trigger_reference'] ?? null,
         ];
 
         if (isset($relationships['environment']['data'])) {
