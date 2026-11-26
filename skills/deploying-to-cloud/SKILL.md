@@ -118,6 +118,7 @@ Determine the task and follow the matching path:
   - Subdomain (`app.example.com`): pass `--www-redirect=none`. Nobody serves `www.app.example.com`, so a www variant never validates.
   - Apex (`example.com`): ask the user whether www redirects to the root (`www_to_root`) or the reverse (`root_to_www`).
   - Leave `--wildcard-enabled` off unless the user asks for wildcard subdomains.
+  - Primary domain: once a root domain is verified, `cloud environment:primary-domain {environment} --domain=<domain> -n` makes it the environment's main address; `--clear` removes it and leaves the domain attached.
 
 - Edge cache: `cloud environment:purge-edge-cache {environment} -n` purges everything; pass one of `--path=/blog/post`, `--prefix=/blog/`, or `--tag=<cache-tag>` to purge less. Tags need a dedicated edge network.
 
