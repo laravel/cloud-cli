@@ -33,6 +33,9 @@ beforeEach(function () {
         'post_deploy_command' => 'php artisan cache:clear',
         'uses_http_basic_auth' => true,
         'uses_read_only_build_token' => true,
+        'cluster_id' => 'cluster-1',
+        'aws_role_arn' => 'arn:aws:iam::123456789012:role/laravel-cloud',
+        'aws_trust_policy' => '{"Version":"2012-10-17","Statement":[]}',
         'internal_networking' => [
             'enabled' => true,
             'hostname' => 'production.internal',
@@ -306,6 +309,33 @@ it('exposes the attached model gateway key', function () {
 
     expect(json_decode(Artisan::output(), true))->toBe(['modelGatewayKeyId' => 'mgk-1'])
         ->and(explode(',', $this->sent->include))->toContain('modelGatewayKey');
+});
+
+it('sends the AWS role ARN', function () {
+    updateEnvironment(['--aws-role-arn' => 'arn:aws:iam::123456789012:role/storefront']);
+
+    expect($this->sent->body)->toBe(['aws_role_arn' => 'arn:aws:iam::123456789012:role/storefront']);
+});
+
+it('removes the AWS role with an empty string', function () {
+    updateEnvironment(['--aws-role-arn' => '']);
+
+    expect($this->sent->body)->toBe(['aws_role_arn' => null]);
+});
+
+it('exposes the dedicated cluster and AWS role', function () {
+    Artisan::call('environment:get', [
+        'environment' => 'env-1',
+        '--json' => true,
+        '--fields' => 'clusterId,awsRoleArn,awsTrustPolicy',
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toBe([
+        'clusterId' => 'cluster-1',
+        'awsRoleArn' => 'arn:aws:iam::123456789012:role/laravel-cloud',
+        'awsTrustPolicy' => '{"Version":"2012-10-17","Statement":[]}',
+    ]);
 });
 
 it('exposes whether builds use a read-only token', function () {

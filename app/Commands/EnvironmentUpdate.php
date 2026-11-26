@@ -65,6 +65,7 @@ class EnvironmentUpdate extends BaseCommand
                             {--cache-id= : Cache ID to attach (empty string to detach)}
                             {--websocket-application-id= : WebSocket application ID to attach (empty string to detach)}
                             {--model-gateway-key-id= : Model gateway key ID to attach, exposed as LARAVEL_CLOUD_MODEL_GATEWAY_API_KEY from the next deployment (empty string to detach)}
+                            {--aws-role-arn= : IAM role ARN the application assumes, on a dedicated cluster with bring your own IAM role (empty string to remove)}
                             {--bucket-keys= : Bucket keys to attach as comma-separated KEY_ID:DISK entries, with :default on at most one (fk-1:local:default,fk-2:public). Replaces every attached bucket; empty string to detach all}
                             {--force : Force update without confirmation}';
 
@@ -130,6 +131,7 @@ class EnvironmentUpdate extends BaseCommand
                     cacheId: $this->form()->get('cache_id'),
                     websocketApplicationId: $this->form()->get('websocket_application_id'),
                     modelGatewayKeyId: $this->form()->get('model_gateway_key_id'),
+                    awsRoleArn: $this->form()->get('aws_role_arn'),
                     usesOctane: $this->form()->boolean('uses_octane'),
                     sleepTimeout: $this->form()->integer('sleep_timeout'),
                     hibernationWakeUpInterval: $this->clearableInteger('hibernation_wake_up_interval'),
@@ -450,6 +452,21 @@ class EnvironmentUpdate extends BaseCommand
             ),
             'model-gateway-key-id',
         )->setPreviousValue($environment->modelGatewayKeyId ?? '')->setLabel('Model gateway key');
+
+        // Only an environment on a dedicated cluster can assume a role of its own, so the others aren't offered it.
+        if ($environment->clusterId !== null || $this->option('aws-role-arn') !== null) {
+            $this->form()->define(
+                'aws_role_arn',
+                fn ($resolver) => $resolver->fromInput(
+                    fn ($value) => text(
+                        label: 'AWS role ARN',
+                        default: $value ?? $environment->awsRoleArn ?? '',
+                        hint: 'Leave empty to remove the role',
+                    ),
+                ),
+                'aws-role-arn',
+            )->setPreviousValue($environment->awsRoleArn ?? '')->setLabel('AWS role ARN');
+        }
 
         // Named after the API field so a validation error on filesystem_keys.* asks for the buckets again.
         $this->form()->define(

@@ -45,6 +45,8 @@ $data = $response->json();
 - `DeleteEnvironmentVariablesRequest` - Delete environment variables by key
 - `StartEnvironmentRequest` - Start an environment
 - `StopEnvironmentRequest` - Stop an environment
+- `UpdatePrimaryDomainRequest` - Set an environment's primary domain
+- `ClearPrimaryDomainRequest` - Clear an environment's primary domain
 
 #### Deployments
 - `ListDeploymentsRequest` - List deployments for an environment

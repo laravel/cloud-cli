@@ -29,6 +29,8 @@ class UpdateEnvironmentRequestData extends RequestData
         public readonly ?string $websocketApplicationId = null,
         /** @var string|null '' detaches it */
         public readonly ?string $modelGatewayKeyId = null,
+        /** @var string|null '' removes it */
+        public readonly ?string $awsRoleArn = null,
         public readonly ?bool $usesOctane = null,
         public readonly ?int $sleepTimeout = null,
         /** @var int|string|null '' disables it */
@@ -79,6 +81,7 @@ class UpdateEnvironmentRequestData extends RequestData
             'cache_id' => $this->cacheId,
             'websocket_application_id' => $this->websocketApplicationId,
             'model_gateway_key_id' => $this->modelGatewayKeyId,
+            'aws_role_arn' => $this->awsRoleArn,
             'uses_octane' => $this->usesOctane,
             'sleep_timeout' => $this->sleepTimeout,
             'hibernation_wake_up_interval' => $this->hibernationWakeUpInterval,
@@ -99,7 +102,7 @@ class UpdateEnvironmentRequestData extends RequestData
         ]);
 
         // filter() drops nulls, so the CLI's '' stands in for the explicit null the API needs to clear these.
-        foreach (['start_command', 'hibernation_wake_up_interval', 'nightwatch_token'] as $key) {
+        foreach (['start_command', 'hibernation_wake_up_interval', 'nightwatch_token', 'aws_role_arn'] as $key) {
             if (($data[$key] ?? null) === '') {
                 $data[$key] = null;
             }

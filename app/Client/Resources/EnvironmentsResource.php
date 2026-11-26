@@ -9,10 +9,12 @@ use App\Client\Requests\DeleteEnvironmentVariablesRequestData;
 use App\Client\Requests\PurgeEdgeCacheRequestData;
 use App\Client\Requests\StartEnvironmentRequestData;
 use App\Client\Requests\StopEnvironmentRequestData;
+use App\Client\Requests\UpdateEnvironmentPrimaryDomainRequestData;
 use App\Client\Requests\UpdateEnvironmentRequestData;
 use App\Client\Requests\UpdateVanityDomainRequestData;
 use App\Client\Resources\Environments\AddEnvironmentVariablesRequest;
 use App\Client\Resources\Environments\AttachEnvironmentSecretsRequest;
+use App\Client\Resources\Environments\ClearPrimaryDomainRequest;
 use App\Client\Resources\Environments\CreateEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentRequest;
 use App\Client\Resources\Environments\DeleteEnvironmentVariablesRequest;
@@ -25,6 +27,7 @@ use App\Client\Resources\Environments\PurgeEdgeCacheRequest;
 use App\Client\Resources\Environments\StartEnvironmentRequest;
 use App\Client\Resources\Environments\StopEnvironmentRequest;
 use App\Client\Resources\Environments\UpdateEnvironmentRequest;
+use App\Client\Resources\Environments\UpdatePrimaryDomainRequest;
 use App\Client\Resources\Environments\UpdateVanityDomainRequest;
 use App\Dto\Environment;
 use App\Dto\EnvironmentLogPage;
@@ -143,6 +146,16 @@ class EnvironmentsResource extends Resource
         $response = $this->send($request);
 
         return $request->createDtoFromResponse($response);
+    }
+
+    public function updatePrimaryDomain(UpdateEnvironmentPrimaryDomainRequestData $data): void
+    {
+        $this->send(new UpdatePrimaryDomainRequest($data));
+    }
+
+    public function clearPrimaryDomain(string $environmentId): void
+    {
+        $this->send(new ClearPrimaryDomainRequest($environmentId));
     }
 
     public function deleteVariables(DeleteEnvironmentVariablesRequestData $data): void

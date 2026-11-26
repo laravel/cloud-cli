@@ -175,10 +175,13 @@ Many commands accept an optional resource ID/name and support `--json` for machi
 | `cloud environment:metrics`          | View environment compute and HTTP metrics                    |
 | `cloud environment:purge-edge-cache` | Purge the edge cache (everything, or a path, prefix, or tag) |
 | `cloud environment:vanity-domain`    | Change the environment's Laravel Cloud domain                |
+| `cloud environment:primary-domain`   | Set or clear the environment's primary domain                |
 
 `environment:purge-edge-cache` purges everything cached at the edge for the environment unless you pass one of `--path`, `--prefix`, or `--tag`. Paths and prefixes start with `/`; purging by tag needs a dedicated edge network. Cloud queues the purge, and repeating the same purge right away has no effect.
 
 `environment:vanity-domain` takes only the first part of the domain: `--name=my-app` gives `my-app.laravel.cloud`. The new domain takes effect on the next deploy, and the domain can be changed only once every 30 minutes, so the command asks for confirmation (or `--force`). Afterward it offers to deploy the environment; pass `--deploy` to do that without asking.
+
+`environment:primary-domain` makes one of the environment's custom domains its main address. Pass `--domain` with a domain ID or name, or `--clear` to remove the primary domain; clearing leaves the domain attached. Cloud accepts only a verified root domain that doesn't redirect to another domain.
 
 ### Secrets
 

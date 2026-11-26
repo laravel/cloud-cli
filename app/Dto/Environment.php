@@ -69,6 +69,11 @@ class Environment extends Data
         public readonly ?string $postDeployCommand = null,
         public readonly bool $usesHttpBasicAuth = false,
         public readonly ?EnvironmentInternalNetworking $internalNetworking = null,
+        /** Null on shared compute. */
+        public readonly ?string $clusterId = null,
+        /** The API sends it only for an environment on a dedicated cluster, in an organization with bring your own IAM role. */
+        public readonly ?string $awsRoleArn = null,
+        public readonly ?string $awsTrustPolicy = null,
     ) {
         //
     }
@@ -115,6 +120,9 @@ class Environment extends Data
             'postDeployCommand' => $attributes['post_deploy_command'] ?? null,
             'usesHttpBasicAuth' => $attributes['uses_http_basic_auth'] ?? false,
             'internalNetworking' => isset($attributes['internal_networking']) ? EnvironmentInternalNetworking::createFromResponse($attributes['internal_networking']) : null,
+            'clusterId' => $attributes['cluster_id'] ?? null,
+            'awsRoleArn' => $attributes['aws_role_arn'] ?? null,
+            'awsTrustPolicy' => $attributes['aws_trust_policy'] ?? null,
             'resend' => isset($attributes['resend']) ? EnvironmentResend::createFromResponse($attributes['resend']) : null,
         ];
 
