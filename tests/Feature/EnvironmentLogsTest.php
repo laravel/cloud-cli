@@ -5,6 +5,7 @@ use App\Client\Resources\Environments\GetEnvironmentRequest;
 use App\Client\Resources\Environments\ListEnvironmentLogsRequest;
 use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\ConfigRepository;
+use App\Dto\EnvironmentLog;
 use App\Git;
 use Illuminate\Support\Facades\Artisan;
 use Saloon\Http\Faking\MockClient;
@@ -132,4 +133,49 @@ it('rejects a log type the API does not accept', function () {
     ])->assertFailed();
 
     expect($this->query)->toBeNull();
+});
+
+it('reads error logs and the context the API sends with exceptions', function () {
+    $entries = [
+        [
+            'message' => 'Undefined variable $order',
+            'level' => 'error',
+            'type' => 'error',
+            'logged_at' => '2026-10-15T12:00:00Z',
+            'data' => [
+                'file' => '/var/www/html/app/Http/Controllers/CheckoutController.php:42',
+                'trace' => ['#0 /var/www/html/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54)'],
+                'channel' => 'production',
+                'context' => ['user_id' => 7],
+                'extra' => null,
+            ],
+        ],
+        [
+            'message' => 'Call to a member function format() on null',
+            'level' => 'error',
+            'type' => 'exception',
+            'logged_at' => '2026-10-15T12:00:01Z',
+            'data' => [
+                'class' => 'Error',
+                'code' => 0,
+                'file' => '/var/www/html/app/Models/Order.php:18',
+                'trace' => [],
+                'context' => ['order_id' => 12],
+                'extra' => ['url' => '/checkout'],
+            ],
+        ],
+    ];
+
+    mockEnvironmentLogs($entries, '');
+
+    $output = runEnvironmentLogs();
+
+    expect(collect($output['logs'])->pluck('type')->all())->toBe(['error', 'exception'])
+        ->and($output['logs'][0]['data']['file'])->toBe('/var/www/html/app/Http/Controllers/CheckoutController.php:42');
+
+    $logs = array_map(EnvironmentLog::createFromResponse(...), $entries);
+
+    expect($logs[0]->isErrorLog())->toBeTrue()
+        ->and($logs[0]->getErrorData()['channel'])->toBe('production')
+        ->and($logs[1]->getExceptionData()['context'])->toBe(['order_id' => 12]);
 });

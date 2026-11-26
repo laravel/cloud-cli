@@ -116,6 +116,15 @@ class EnvironmentLogsPromptRenderer extends Renderer
             return ['body' => $body, 'info' => $info];
         }
 
+        if ($log->isErrorLog()) {
+            $errorData = $log->getErrorData() ?? [];
+
+            return [
+                'body' => $this->getBody($log->message),
+                'info' => $this->getFooter($errorData['channel'] ?? null, $errorData['file'] ?? null),
+            ];
+        }
+
         if ($log->isApplicationLog()) {
             $json = $this->tryToDecodeJson($log->message);
 

@@ -40,6 +40,11 @@ class EnvironmentLog extends Data
         return $this->type === LogType::EXCEPTION;
     }
 
+    public function isErrorLog(): bool
+    {
+        return $this->type === LogType::ERROR;
+    }
+
     public function isSystemLog(): bool
     {
         return $this->type === LogType::SYSTEM;
@@ -87,6 +92,23 @@ class EnvironmentLog extends Data
             'code' => $this->data['code'] ?? null,
             'file' => $this->data['file'] ?? null,
             'trace' => $this->data['trace'] ?? null,
+            'context' => $this->data['context'] ?? null,
+            'extra' => $this->data['extra'] ?? null,
+        ];
+    }
+
+    public function getErrorData(): ?array
+    {
+        if (! $this->isErrorLog() || ! is_array($this->data)) {
+            return null;
+        }
+
+        return [
+            'file' => $this->data['file'] ?? null,
+            'trace' => $this->data['trace'] ?? null,
+            'channel' => $this->data['channel'] ?? null,
+            'context' => $this->data['context'] ?? null,
+            'extra' => $this->data['extra'] ?? null,
         ];
     }
 
@@ -108,6 +130,10 @@ class EnvironmentLog extends Data
             if ($exceptionData['code']) {
                 $output .= " ({$exceptionData['code']})";
             }
+        }
+
+        if ($this->isErrorLog() && ($errorData = $this->getErrorData()) && $errorData['file']) {
+            $output .= " | {$errorData['file']}";
         }
 
         return $output;
