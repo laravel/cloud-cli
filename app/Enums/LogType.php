@@ -7,6 +7,7 @@ enum LogType: string
     case ACCESS = 'access';
     case APPLICATION = 'application';
     case EXCEPTION = 'exception';
+    case ERROR = 'error';
     case SYSTEM = 'system';
 
     public function label(): string
@@ -20,6 +21,7 @@ enum LogType: string
             self::ACCESS => 'cyan',
             self::APPLICATION => 'green',
             self::EXCEPTION => 'red',
+            self::ERROR => 'red',
             self::SYSTEM => 'blue',
         };
     }
