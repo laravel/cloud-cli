@@ -33,8 +33,10 @@ use App\Exceptions\UnreadableResponseException;
 use App\Support\ContextDetector;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Str;
 use Saloon\CachePlugin\Contracts\Driver;
 use Saloon\CachePlugin\Drivers\LaravelCacheDriver;
+use Saloon\Enums\Method;
 use Saloon\Enums\PipeOrder;
 use Saloon\Http\Auth\TokenAuthenticator;
 use Saloon\Http\Connector as SaloonConnector;
@@ -100,6 +102,8 @@ class Connector extends SaloonConnector implements HasPagination
             order: PipeOrder::LAST,
         );
 
+        $this->addIdempotencyKey($pendingRequest);
+
         if (! method_exists($pendingRequest->getRequest(), 'getInclude')) {
             return;
         }
@@ -107,6 +111,26 @@ class Connector extends SaloonConnector implements HasPagination
         if ($include = $pendingRequest->getRequest()->getInclude()) {
             $pendingRequest->query()->add('include', $include);
         }
+    }
+
+    /**
+     * Cloud replays the first successful response for a repeated key instead of creating
+     * or starting the same thing twice. The key lives on the request, so sending the same
+     * request again reuses it.
+     */
+    protected function addIdempotencyKey(PendingRequest $pendingRequest): void
+    {
+        if (! in_array($pendingRequest->getMethod(), [Method::POST, Method::PATCH], true)) {
+            return;
+        }
+
+        $headers = $pendingRequest->getRequest()->headers();
+
+        if ($headers->get('Idempotency-Key') === null) {
+            $headers->add('Idempotency-Key', (string) Str::uuid());
+        }
+
+        $pendingRequest->headers()->add('Idempotency-Key', $headers->get('Idempotency-Key'));
     }
 
     public function resolveBaseUrl(): string
