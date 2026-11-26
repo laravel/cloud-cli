@@ -8,6 +8,7 @@ use App\Client\Resources\Meta\GetOrganizationRequest;
 use App\Client\Resources\Meta\ListRegionsRequest;
 use App\ConfigRepository;
 use App\Git;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Sleep;
 use Laravel\Prompts\Prompt;
 use Saloon\Http\Faking\MockClient;
@@ -29,6 +30,32 @@ beforeEach(function () {
 afterEach(function () {
     MockClient::destroyGlobal();
 });
+
+// ---- application:get ----
+
+it('exposes the source control provider, and null without a repository', function (array $attributes, ?string $expected) {
+    MockClient::global([
+        GetOrganizationRequest::class => MockResponse::make(organizationResponse(), 200),
+        GetApplicationRequest::class => MockResponse::make([
+            'data' => createApplicationResponse(['attributes' => $attributes]),
+            'included' => [
+                ['id' => 'org-1', 'type' => 'organizations', 'attributes' => ['name' => 'My Org', 'slug' => 'my-org']],
+            ],
+        ], 200),
+    ]);
+
+    Artisan::call('application:get', [
+        'application' => 'app-123',
+        '--json' => true,
+        '--fields' => 'sourceControlProviderType',
+        '--no-interaction' => true,
+    ]);
+
+    expect(json_decode(Artisan::output(), true))->toBe(['sourceControlProviderType' => $expected]);
+})->with([
+    'gitlab' => [['source_control_provider_type' => 'gitlab'], 'gitlab'],
+    'no repository' => [['repository' => null, 'source_control_provider_type' => null], null],
+]);
 
 // ---- application:list ----
 

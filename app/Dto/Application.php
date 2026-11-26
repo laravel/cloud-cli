@@ -20,6 +20,8 @@ class Application extends Data
         public readonly array $deploymentIds = [],
         public readonly ?string $repositoryFullName = null,
         public readonly ?string $repositoryBranch = null,
+        /** `github`, `gitlab`, `gitlab_self_hosted` or `bitbucket`; null without a connected repository. */
+        public readonly ?string $sourceControlProviderType = null,
         public readonly ?string $slackChannel = null,
         public readonly ?string $avatarUrl = null,
         public readonly ?string $rootDirectory = null,
@@ -52,6 +54,7 @@ class Application extends Data
             'name' => $attributes['name'],
             'slug' => $attributes['slug'],
             'region' => $attributes['region'],
+            'sourceControlProviderType' => $attributes['source_control_provider_type'] ?? null,
             'slackChannel' => $attributes['slack_channel'] ?? null,
             'avatarUrl' => $attributes['avatar_url'] ?? null,
             'rootDirectory' => $attributes['root_directory'] ?? null,
