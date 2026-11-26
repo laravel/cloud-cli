@@ -116,7 +116,7 @@ trait HasAClient
                 }
             }
 
-            if (! stream_isatty(STDIN) || $this->isNonInteractiveEnvironment()) {
+            if (! $this->isInteractiveSession()) {
                 throw new RuntimeException('Multiple API tokens found. Run `cloud repo:config --organization=<id|name|slug>` to set a default for this repository, or use `cloud auth:token` to manage tokens.');
             }
 
